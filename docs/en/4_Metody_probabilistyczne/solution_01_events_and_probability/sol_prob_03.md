@@ -12,7 +12,6 @@ Note: since there are $3$ time values and $3$ error values, total outcomes shoul
 
 All outcomes are equally likely.
 
----
 
 ## Listing the outcomes
 
@@ -38,8 +37,6 @@ $$
 P = \frac{1}{9}.
 $$
 
----
-
 ## 1. Job completed in 4 hours
 
 Thinking: here I only care about the time, not the number of errors.
@@ -56,7 +53,6 @@ $$
 
 Note: all three error options are allowed here.
 
----
 
 ## 2. Job completed flawlessly in 6 hours
 
@@ -73,8 +69,6 @@ P = \frac{1}{9}.
 $$
 
 Note: this is the only case with both conditions satisfied.
-
----
 
 ## 3. Job completed in at most 5 hours
 
@@ -93,7 +87,6 @@ $$
 
 Note: all error values are allowed here.
 
----
 
 ## 4. Job completed in at most 5 hours and at most one error
 
@@ -115,7 +108,6 @@ $$
 P = \frac{4}{9}.
 $$
 
----
 
 ## Final results
 
@@ -123,7 +115,3 @@ $$
 2. $P = \frac{1}{9}$  
 3. $P = \frac{2}{3}$  
 4. $P = \frac{4}{9}$
-
----
-
-*quick check:* probabilities are between $0$ and $1$, and the sample space has $9$ equally likely outcomes.
