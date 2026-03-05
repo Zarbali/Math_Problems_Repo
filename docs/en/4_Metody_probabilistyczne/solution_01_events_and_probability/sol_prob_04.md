@@ -4,19 +4,19 @@ Two elements $a_1$ and $a_2$ are connected in parallel.
 
 $A_i$ = event that element $a_i$ works for at least time $t$.
 
-Given:
+From the problem:
 
 $P(A_1) = P(A_2) = p$
 
 $P(A_1 \cap A_2) = p^2$
 
-Need: probability that current flows through the system for at least time $t$.
+We need the probability that current flows through the system for at least time $t$.
 
 ---
 
-## Understanding the system
+## Understanding the circuit
 
-note: since the elements are connected in parallel, the current can pass if **at least one element works**.
+note: since the elements are connected in parallel, the current can pass if **at least one of the elements works**.
 
 So the system works if
 
@@ -26,33 +26,33 @@ $A_2$ works.
 
 That corresponds to the event
 
-$A = A_1 \cup A_2$
+$$
+A = A_1 \cup A_2
+$$
 
-note: this is the same idea as in the previous circuit task — parallel → union.
+note: this is the same idea as in the previous circuit problem — parallel connection means union of events.
 
 ---
 
-## Computing the probability
+## Using the probability formula
 
-To find the probability of a union of two events I use the formula
+To compute the probability of the union of two events I use the formula
 
 $$
 P(A \cup B) = P(A) + P(B) - P(A \cap B)
 $$
 
-note: the intersection must be subtracted because otherwise the case where both events occur would be counted twice.
+note: the intersection is subtracted because otherwise the case where both events occur would be counted twice.
 
 Applying this to our events:
 
 $$
-P(A_1 \cup A_2)
-=
-P(A_1) + P(A_2) - P(A_1 \cap A_2)
+P(A_1 \cup A_2) = P(A_1) + P(A_2) - P(A_1 \cap A_2)
 $$
 
 ---
 
-## Substituting the values
+## Substituting the given values
 
 From the problem:
 
@@ -63,22 +63,20 @@ $P(A_1 \cap A_2) = p^2$
 So
 
 $$
-P(A_1 \cup A_2)
-=
-p + p - p^2
+P(A_1 \cup A_2) = p + p - p^2
 $$
 
 $$
 = 2p - p^2
 $$
 
-note: this can also be written as $p(2 - p)$.
+note: this can also be written as $p(2-p)$.
 
 ---
 
 ## Result
 
-Probability that the current flows for at least time $t$:
+The probability that the current flows through the system is
 
 $$
 P = 2p - p^2
@@ -88,11 +86,11 @@ $$
 
 ## Quick check
 
-note: check extreme cases to see if the formula makes sense.
+note: it is useful to check extreme cases.
 
 If $p = 0$  
-→ both elements always fail  
-→ no current flows  
+→ both elements fail  
+→ current cannot flow  
 → $P = 0$
 
 If $p = 1$  
@@ -100,6 +98,6 @@ If $p = 1$
 → current always flows  
 → $P = 1$
 
-note: so the result behaves correctly.
+So the expression behaves correctly.
 
-Also $P(A_1 \cap A_2) = p^2$ looks like the elements are independent, but here I just use the value given in the problem.
+note: $P(A_1 \cap A_2) = p^2$ suggests independence, but here I just use the value given in the problem.
