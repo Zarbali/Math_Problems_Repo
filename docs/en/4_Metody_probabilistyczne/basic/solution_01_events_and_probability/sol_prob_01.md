@@ -2,16 +2,18 @@
 
 Experiment: tossing a fair coin.
 
-Important assumption: the order of outcomes matters.  
-For example, HT and TH represent different results.
+Important: **the order of outcomes matters**, so sequences like HT and TH represent different results.
 
+---
 
-### Sample space Ω₁ (one toss)
+## 1. Sample space Ω₁ (one coin toss)
 
-For one coin toss there are two possible outcomes:
+For one coin toss there are only two possible outcomes.
 
-H — heads  
-T — tails
+| Outcome | Meaning |
+|-------|--------|
+| H | Heads |
+| T | Tails |
 
 $$
 \Omega_1 = \{H, T\}
@@ -23,19 +25,23 @@ $$
 |\Omega_1| = 2
 $$
 
-Note: an elementary outcome represents the result of one single toss.
+Note: an elementary outcome represents one complete result of the experiment.
 
+---
 
-### Sample space Ω₂ (two tosses)
+## 2. Sample space Ω₂ (two coin tosses)
 
-For two tosses we must consider ordered sequences of results.
+For two tosses we must consider **ordered pairs of outcomes**.
 
-Possible outcomes:
+First toss can be H or T.  
+Second toss can also be H or T.
 
-HH  
-HT  
-TH  
-TT
+| First toss | Second toss | Outcome |
+|------------|-------------|--------|
+| H | H | HH |
+| H | T | HT |
+| T | H | TH |
+| T | T | TT |
 
 $$
 \Omega_2 = \{HH, HT, TH, TT\}
@@ -47,25 +53,22 @@ $$
 |\Omega_2| = 4
 $$
 
-Note: HT means heads on the first toss and tails on the second toss.
+Note: HT means **heads on the first toss and tails on the second toss**.
 
+---
 
-### Sample space Ω₃ (three tosses)
+## 3. Sample space Ω₃ (three coin tosses)
 
 For three tosses we extend the same idea.
 
-Each sequence from Ω₂ can be followed by H or T.
+Each outcome from Ω₂ can be followed by either H or T.
 
-Possible sequences:
-
-HHH  
-HHT  
-HTH  
-HTT  
-THH  
-THT  
-TTH  
-TTT
+| From Ω₂ | Add H | Add T |
+|--------|-------|-------|
+| HH | HHH | HHT |
+| HT | HTH | HTT |
+| TH | THH | THT |
+| TT | TTH | TTT |
 
 $$
 \Omega_3 =
@@ -78,27 +81,38 @@ $$
 |\Omega_3| = 8
 $$
 
-Observation: each additional coin toss doubles the number of possible outcomes.
+Observation: each additional toss doubles the number of possible outcomes.
 
+---
 
-### General rule
+## 4. Number of elementary outcomes
 
-For n coin tosses the number of outcomes is
+| Sample space | Number of tosses | Outcomes |
+|---------------|-----------------|---------|
+| Ω₁ | 1 | 2 |
+| Ω₂ | 2 | 4 |
+| Ω₃ | 3 | 8 |
+
+We observe the rule:
 
 $$
 |\Omega_n| = 2^n
 $$
 
-because each toss has two possible results.
+because each coin toss has two possible results.
 
+---
 
-### Meaning of an elementary outcome
+## 5. Meaning of an elementary outcome
 
-An elementary outcome represents one complete possible result of the experiment.
+An **elementary outcome** represents one complete possible result of the experiment.
 
-For example:
+Examples:
 
-HTH means  
-first toss = heads  
-second toss = tails  
-third toss = heads
+| Outcome | Interpretation |
+|--------|---------------|
+| H | Heads in one toss |
+| HT | Heads first, tails second |
+| HTH | Heads, tails, heads in three tosses |
+
+Each elementary outcome describes **exactly one possible sequence of results**.
