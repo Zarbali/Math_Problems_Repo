@@ -43,7 +43,7 @@ We assume $L \le d$ so the needle can intersect **at most one line**.
 
 ## Event A — needle intersects a line
 
-$$A = \left\{ (x,\theta) : 0 \le x \le \frac{L}{2}\sin\theta,\; 0 \le \theta \le \frac{\pi}{2} \right\}$$
+$$A = \{(x,\theta) : 0 \le x \le \frac{L}{2}\sin\theta,\; 0 \le \theta \le \frac{\pi}{2} \}$$
 
 For each fixed $\theta$, the possible values of $x$ range from $0$ to $\frac{L}{2}\sin\theta$. So the area of region $A$ is
 
@@ -71,7 +71,7 @@ $$P(B) = 1 - P(A) = 1 - \frac{2L}{\pi d}$$
 
 ## Event C — angle less than $\frac{\pi}{6}$
 
-$$C = \left\{ (x,\theta) : 0 \le x \le \frac{d}{2},\; 0 \le \theta < \frac{\pi}{6} \right\}$$
+$$C = \{(x,\theta) : 0 \le x \le \frac{d}{2},\; 0 \le \theta < \frac{\pi}{6} \}$$
 
 This region is a rectangle.
 
@@ -79,13 +79,13 @@ $$\mathrm{Area}(C) = \frac{d}{2} \cdot \frac{\pi}{6} = \frac{d\pi}{12}$$
 
 $$P(C) = \frac{d\pi/12}{d\pi/4} = \frac{1}{3}$$
 
-The angle interval \([0,\pi/6]\) is exactly one third of \([0,\pi/2]\).
+The angle interval $[0,\pi/6]$ is exactly one third of $[0,\pi/2]$.
 
 ---
 
 ## Event D — center within $\frac{d}{4}$ of the nearest line
 
-$$D = \left\{ (x,\theta) : 0 \le x < \frac{d}{4},\; 0 \le \theta \le \frac{\pi}{2} \right\}$$
+$$D = \{(x,\theta) : 0 \le x < \frac{d}{4},\; 0 \le \theta \le \frac{\pi}{2} \}$$
 
 $$\mathrm{Area}(D) = \frac{d}{4} \cdot \frac{\pi}{2} = \frac{d\pi}{8}$$
 
@@ -95,7 +95,7 @@ $$P(D) = \frac{d\pi/8}{d\pi/4} = \frac{1}{2}$$
 
 ## Event E — needle crosses a line and angle greater than $\frac{\pi}{4}$
 
-$$E = \left\{ (x,\theta) : 0 \le x \le \frac{L}{2}\sin\theta,\; \frac{\pi}{4} < \theta \le \frac{\pi}{2} \right\}$$
+$$E = \{(x,\theta) : 0 \le x \le \frac{L}{2}\sin\theta,\; \frac{\pi}{4} < \theta \le \frac{\pi}{2} \}$$
 
 $$\mathrm{Area}(E) = \int_{\pi/4}^{\pi/2} \frac{L}{2}\sin\theta\, d\theta = \frac{L}{2}\bigl[-\cos\theta\bigr]_{\pi/4}^{\pi/2} = \frac{L}{2}\left(-\cos\frac{\pi}{2} + \cos\frac{\pi}{4}\right) = \frac{L}{2}\left(0 + \frac{\sqrt{2}}{2}\right) = \frac{L\sqrt{2}}{4}$$
 
@@ -107,9 +107,9 @@ $$P(E) = \frac{L\sqrt{2}/4}{d\pi/4} = \frac{L\sqrt{2}}{d\pi}$$
 
 Let $F$ be the event that the needle makes an angle of at least **60 degrees** with the parallel lines.
 
-$$F = \left\{ (x,\theta) : 0 \le x \le \frac{d}{2},\; \frac{\pi}{3} \le \theta \le \frac{\pi}{2} \right\}$$
+$$F = \{(x,\theta) : 0 \le x \le \frac{d}{2},\; \frac{\pi}{3} \le \theta \le \frac{\pi}{2} \}$$
 
-Height of the interval: \(\frac{\pi}{2} - \frac{\pi}{3} = \frac{\pi}{6}\).
+Height of the interval: $\frac{\pi}{2} - \frac{\pi}{3} = \frac{\pi}{6}$.
 
 $$\mathrm{Area}(F) = \frac{d}{2} \cdot \frac{\pi}{6} = \frac{d\pi}{12}$$
 
