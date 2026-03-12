@@ -1,294 +1,632 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Buffon's Needle Monte Carlo Simulation</title>
-  <style>
-    * {
-      box-sizing: border-box;
-    }
-    body {
-      font-family: 'Segoe UI', system-ui, sans-serif;
-      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-      color: #e8e8e8;
-      min-height: 100vh;
-      margin: 0;
-      padding: 2rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    h1 {
-      font-size: 1.75rem;
-      font-weight: 600;
-      margin-bottom: 1.5rem;
-      text-align: center;
-      letter-spacing: 0.02em;
-    }
-    .container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 1.5rem;
-      max-width: 800px;
-    }
-    .canvas-wrapper {
-      background: #0f0f1a;
-      border-radius: 12px;
-      padding: 12px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-    }
-    #canvas {
-      display: block;
-      background: #1a1a2e;
-      border-radius: 6px;
-      cursor: crosshair;
-    }
-    .controls {
-      display: flex;
-      gap: 1rem;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-    button {
-      font-size: 1rem;
-      padding: 0.6rem 1.2rem;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 500;
-      transition: transform 0.1s, box-shadow 0.2s;
-    }
-    button:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    }
-    button:active {
-      transform: translateY(0);
-    }
-    .btn-throw {
-      background: #4a9eff;
-      color: #0d1117;
-    }
-    .btn-batch {
-      background: #34d399;
-      color: #0d1117;
-    }
-    .btn-reset {
-      background: #f87171;
-      color: #0d1117;
-    }
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 1rem;
-      width: 100%;
-      max-width: 600px;
-    }
-    .stat-card {
-      background: rgba(255,255,255,0.06);
-      border-radius: 10px;
-      padding: 1rem;
-      text-align: center;
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-    .stat-label {
-      font-size: 0.8rem;
-      color: #94a3b8;
-      margin-bottom: 0.25rem;
-    }
-    .stat-value {
-      font-size: 1.5rem;
-      font-weight: 600;
-      font-family: 'Consolas', 'Monaco', monospace;
-    }
-    .stat-value.pi {
-      color: #fbbf24;
-    }
-    .info {
-      font-size: 0.85rem;
-      color: #94a3b8;
-      text-align: center;
-      max-width: 500px;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Task 5 — Buffon's Needle</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0f13;
+    --surface: #16161d;
+    --surface2: #1e1e28;
+    --border: #2a2a38;
+    --accent: #7c6af7;
+    --accent2: #4ecdc4;
+    --accent3: #f7c948;
+    --red: #ff6b6b;
+    --text: #e8e8f0;
+    --muted: #6b6b88;
+    --line: #3a3a55;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+    padding: 24px 32px;
+  }
+
+  /* LAYOUT — balanced two-column, professional spacing */
+  .page {
+    display: grid;
+    grid-template-columns: minmax(320px, 1.1fr) minmax(380px, 1fr);
+    min-height: calc(100vh - 48px);
+    max-width: 1200px;
+    margin: 0 auto;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.4), 0 0 0 1px var(--border);
+  }
+  @media (max-width: 900px) {
+    body { padding: 16px 20px; }
+    .page { grid-template-columns: 1fr; grid-template-rows: auto 1fr; min-height: auto; }
+    .notes-panel { padding: 32px 28px 40px; max-height: none; border-right: none; border-bottom: 1px solid var(--border); }
+    .sim-panel { padding: 32px 28px 40px; max-height: none; gap: 20px; }
+  }
+
+  /* LEFT — NOTES */
+  .notes-panel {
+    padding: 48px 44px 56px 48px;
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    max-height: calc(100vh - 48px);
+    min-width: 0;
+  }
+  .notes-panel::-webkit-scrollbar { width: 4px; }
+  .notes-panel::-webkit-scrollbar-track { background: transparent; }
+  .notes-panel::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  .notes-panel p { max-width: 42ch; }
+
+  .tag {
+    display: inline-block;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 5px 12px;
+    border-radius: 4px;
+    margin-bottom: 24px;
+  }
+  h1 {
+    font-family: 'Instrument Serif', serif;
+    font-size: 32px;
+    font-weight: 400;
+    line-height: 1.35;
+    color: var(--text);
+    margin-bottom: 12px;
+  }
+  .subtitle {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 44px;
+    letter-spacing: 0.05em;
+    line-height: 1.6;
+  }
+
+  .section { margin-bottom: 40px; }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+  .section-num {
+    font-size: 10px;
+    color: var(--accent);
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    min-width: 24px;
+  }
+  .section-title {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text);
+  }
+  .section-line { flex: 1; height: 1px; background: var(--border); }
+
+  p {
+    font-size: 13px;
+    line-height: 1.85;
+    color: #b0b0c8;
+    font-weight: 300;
+    margin-bottom: 14px;
+  }
+  .italic { font-style: italic; color: var(--muted); font-size: 12px; }
+
+  .param-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 18px 0;
+    font-size: 13px;
+  }
+  .param-table th {
+    text-align: left;
+    padding: 12px 16px;
+    background: var(--surface2);
+    color: var(--accent);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border: 1px solid var(--border);
+  }
+  .param-table td {
+    padding: 12px 16px;
+    border: 1px solid var(--border);
+    color: #b0b0c8;
+    font-weight: 300;
+  }
+  .param-table td:first-child { color: var(--accent2); font-weight: 600; }
+
+  .math-block {
+    background: var(--surface2);
+    border-left: 3px solid var(--accent);
+    padding: 16px 20px;
+    margin: 16px 0;
+    font-size: 14px;
+    color: var(--accent2);
+    letter-spacing: 0.05em;
+  }
+  .note-box {
+    background: rgba(124, 106, 247, 0.06);
+    border: 1px solid rgba(124, 106, 247, 0.2);
+    padding: 16px 20px;
+    border-radius: 6px;
+    margin: 16px 0;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.75;
+  }
+  .bullet-list { list-style: none; margin: 14px 0; }
+  .bullet-list li {
+    font-size: 13px;
+    color: #b0b0c8;
+    padding: 6px 0 6px 20px;
+    position: relative;
+    font-weight: 300;
+  }
+  .bullet-list li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+    font-size: 10px;
+  }
+  .continuous-badge {
+    display: inline-block;
+    background: rgba(78, 205, 196, 0.1);
+    border: 1px solid var(--accent2);
+    color: var(--accent2);
+    padding: 4px 10px;
+    font-size: 11px;
+    border-radius: 2px;
+    margin-top: 6px;
+  }
+
+  /* RIGHT — SIMULATION */
+  .sim-panel {
+    background: var(--surface);
+    display: flex;
+    flex-direction: column;
+    padding: 40px 36px 48px 40px;
+    gap: 24px;
+    overflow-y: auto;
+    max-height: calc(100vh - 48px);
+    min-width: 0;
+  }
+  .sim-panel::-webkit-scrollbar { width: 4px; }
+  .sim-panel::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .sim-title {
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding-bottom: 16px;
+    margin-bottom: 4px;
+    border-bottom: 1px solid var(--border);
+  }
+  .sim-title span { color: var(--accent); }
+
+  .canvas-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 364 / 260;
+    min-height: 200px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    background: #12121a;
+    flex-shrink: 0;
+  }
+  .canvas-wrap canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: contain;
+  }
+
+  /* CONTROLS */
+  .controls {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .btn {
+    flex: 1;
+    min-width: 100px;
+    padding: 12px 18px;
+    border: none;
+    border-radius: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-throw { background: var(--accent); color: #fff; }
+  .btn-throw:hover { background: #6a58e5; }
+  .btn-bulk { background: var(--accent2); color: #0f1a19; }
+  .btn-bulk:hover { background: #3ab8b0; }
+  .btn-reset { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
+  .btn-reset:hover { color: var(--red); border-color: var(--red); }
+
+  /* STATS */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+  .stat-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 18px;
+    min-height: 76px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .stat-label { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+  .stat-value { font-size: 22px; font-weight: 600; color: var(--text); font-family: 'Instrument Serif', serif; }
+  .stat-value.accent { color: var(--accent); }
+  .stat-value.accent2 { color: var(--accent2); }
+  .stat-value.yellow { color: var(--accent3); }
+
+  .pi-card {
+    background: var(--surface2);
+    border: 1px solid var(--accent3);
+    border-radius: 8px;
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .pi-left .pi-label { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+  .pi-left .pi-formula { font-size: 11px; color: var(--accent3); opacity: 0.7; }
+  .pi-value { font-size: 36px; font-family: 'Instrument Serif', serif; color: var(--accent3); }
+  .pi-error { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+  /* PARAMS */
+  .params-section { border-top: 1px solid var(--border); padding-top: 24px; margin-top: 8px; }
+  .params-title { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 18px; }
+  .param-row { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+  .param-row label { font-size: 11px; color: var(--accent2); min-width: 90px; }
+  input[type=range] {
+    flex: 1;
+    -webkit-appearance: none;
+    height: 2px;
+    background: var(--border);
+    border-radius: 1px;
+    outline: none;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+  }
+  .param-val { font-size: 11px; color: var(--text); min-width: 28px; text-align: right; }
+
+  /* HISTORY */
+  .history-section { border-top: 1px solid var(--border); padding-top: 24px; margin-top: 8px; }
+  .history-title { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
+  .history-bar-wrap { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .history-label { font-size: 11px; color: var(--muted); min-width: 72px; }
+  .history-bar-bg { flex: 1; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .history-bar { height: 100%; border-radius: 4px; transition: width 0.3s; }
+  .history-val { font-size: 10px; color: var(--text); min-width: 36px; text-align: right; }
+</style>
 </head>
 <body>
-  <div class="container">
-    <h1>Buffon's Needle Monte Carlo Simulation</h1>
+<div class="page">
 
-    <div class="canvas-wrapper">
-      <canvas id="canvas" width="600" height="400"></canvas>
+  <!-- LEFT: NOTES -->
+  <div class="notes-panel">
+    <div class="tag">Task 5</div>
+    <h1>Buffon's Needle<br>Experiment</h1>
+    <p class="subtitle">Probability · Continuous Sample Spaces · Monte Carlo</p>
+
+    <!-- Intro -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">00</span>
+        <span class="section-title">Experiment</span>
+        <div class="section-line"></div>
+      </div>
+      <p>A needle of length <strong>L</strong> is thrown randomly onto a floor with equally spaced parallel lines. The distance between neighboring lines is <strong>d</strong>.</p>
+      <p>Right away I noticed this problem feels different from the previous ones. In earlier tasks we always had discrete outcomes — coin tosses, die rolls, drawing cards. Here the needle can land in infinitely many positions and angles.</p>
+      <div class="note-box">That means the sample space will be <strong>continuous</strong> — we cannot list all possible outcomes individually.</div>
+    </div>
+
+    <!-- Sample Space -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">01</span>
+        <span class="section-title">Sample Space Ω</span>
+        <div class="section-line"></div>
+      </div>
+      <p>The sample space Ω contains all possible outcomes of a single throw. I asked myself: what information is actually needed to fully describe where the needle landed? Two quantities are enough.</p>
+    </div>
+
+    <!-- Parameters -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">02</span>
+        <span class="section-title">The Two Parameters</span>
+        <div class="section-line"></div>
+      </div>
+      <table class="param-table">
+        <tr><th>Parameter</th><th>Meaning</th></tr>
+        <tr><td>x</td><td>Distance from needle's center to nearest line</td></tr>
+        <tr><td>θ</td><td>Angle between needle and the parallel lines</td></tr>
+      </table>
+      <p>Once we know both the position of the center and the orientation, the entire configuration is determined.</p>
+    </div>
+
+    <!-- x -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">03a</span>
+        <span class="section-title">Position — x</span>
+        <div class="section-line"></div>
+      </div>
+      <p>Because the lines repeat every distance d, I only need to track position within one strip. By symmetry I restrict to half the strip:</p>
+      <div class="math-block">x ∈ [0, d/2]</div>
+      <p class="italic">x = 0 → center on a line &nbsp;|&nbsp; x = d/2 → center halfway between lines</p>
+    </div>
+
+    <!-- theta -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">03b</span>
+        <span class="section-title">Orientation — θ</span>
+        <div class="section-line"></div>
+      </div>
+      <p>Rotating the needle by 180° gives the same physical configuration — so I only need half a full rotation:</p>
+      <div class="math-block">θ ∈ [0, π/2]</div>
+      <p class="italic">θ = 0 → parallel to lines &nbsp;|&nbsp; θ = π/2 → perpendicular</p>
+    </div>
+
+    <!-- Sample space set -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">04</span>
+        <span class="section-title">Sample Space as a Set</span>
+        <div class="section-line"></div>
+      </div>
+      <p>Each elementary outcome is a pair (x, θ). The full sample space:</p>
+      <div class="math-block">Ω = { (x, θ) : x ∈ [0, d/2], θ ∈ [0, π/2] }</div>
+      <div class="math-block">Ω = [0, d/2] × [0, π/2]</div>
+      <p>Geometrically this is a rectangle — every point inside corresponds to one possible outcome.</p>
+    </div>
+
+    <!-- Continuous -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">05</span>
+        <span class="section-title">Why Continuous</span>
+        <div class="section-line"></div>
+      </div>
+      <ul class="bullet-list">
+        <li>Coin toss → 2 outcomes</li>
+        <li>Die → 6 outcomes</li>
+        <li>Cards → finite outcomes</li>
+        <li>Weather → finite outcomes</li>
+      </ul>
+      <p>Here both x and θ can take infinitely many values — 0.1, 0.101, 0.10123… no complete list is possible.</p>
+      <span class="continuous-badge">∴ Sample space is continuous</span>
+      <div class="note-box" style="margin-top:18px">A single exact outcome (x, θ) has probability <strong>zero</strong>. Probabilities are calculated over <em>regions</em> using probability density and integration.</div>
+    </div>
+  </div>
+
+  <!-- RIGHT: SIMULATION -->
+  <div class="sim-panel">
+    <div class="sim-title">Monte Carlo <span>Simulation</span></div>
+
+    <div class="canvas-wrap">
+      <canvas id="canvas" width="364" height="260"></canvas>
     </div>
 
     <div class="controls">
-      <button class="btn-throw" id="btnThrow">Throw Needle</button>
-      <button class="btn-batch" id="btnBatch">Run 1000 Experiments</button>
-      <button class="btn-reset" id="btnReset">Reset</button>
+      <button class="btn btn-throw" onclick="throwOne()">Throw Needle</button>
+      <button class="btn btn-bulk" onclick="throwMany()">× 1000</button>
+      <button class="btn btn-reset" onclick="resetSim()">Reset</button>
     </div>
 
-    <div class="stats">
+    <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-label">Total Throws</div>
-        <div class="stat-value" id="totalThrows">0</div>
+        <div class="stat-value accent" id="stat-throws">0</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">Intersections</div>
-        <div class="stat-value" id="intersections">0</div>
+        <div class="stat-value accent2" id="stat-hits">0</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">Est. Probability P</div>
-        <div class="stat-value" id="estProb">—</div>
+        <div class="stat-value" id="stat-prob">—</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Est. π ≈ 2L/(d·P)</div>
-        <div class="stat-value stat-value pi" id="estPi">—</div>
+        <div class="stat-label">True P (2L/πd)</div>
+        <div class="stat-value yellow" id="stat-true">—</div>
       </div>
     </div>
 
-    <p class="info">
-      When L ≤ d, the theoretical probability of intersection is P = 2L/(πd).
-      Rearranging: π ≈ 2L/(d·P). More throws → better approximation.
-    </p>
+    <div class="pi-card">
+      <div class="pi-left">
+        <div class="pi-label">Estimated π ≈ 2L / (d · P)</div>
+        <div class="pi-formula">from Buffon's formula</div>
+        <div class="pi-error" id="pi-error"></div>
+      </div>
+      <div class="pi-value" id="pi-estimate">—</div>
+    </div>
+
+    <div class="params-section">
+      <div class="params-title">Parameters</div>
+      <div class="param-row">
+        <label>Needle L</label>
+        <input type="range" id="sl" min="10" max="60" value="30" oninput="updateParams()">
+        <span class="param-val" id="vl">30</span>
+      </div>
+      <div class="param-row">
+        <label>Spacing d</label>
+        <input type="range" id="sd" min="30" max="80" value="60" oninput="updateParams()">
+        <span class="param-val" id="vd">60</span>
+      </div>
+    </div>
+
+    <div class="history-section">
+      <div class="history-title">Convergence to π</div>
+      <div class="history-bar-wrap">
+        <span class="history-label">Hits / Total</span>
+        <div class="history-bar-bg"><div class="history-bar" id="bar-ratio" style="background:var(--accent2);width:0%"></div></div>
+        <span class="history-val" id="bar-ratio-val">0%</span>
+      </div>
+      <div class="history-bar-wrap">
+        <span class="history-label">π accuracy</span>
+        <div class="history-bar-bg"><div class="history-bar" id="bar-acc" style="background:var(--accent3);width:0%"></div></div>
+        <span class="history-val" id="bar-acc-val">—</span>
+      </div>
+    </div>
   </div>
+</div>
 
-  <script>
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+let L = 30, d = 60;
+let throws = 0, hits = 0;
+let needles = [];
 
-    // Parameters
-    const d = 80;           // distance between parallel lines
-    const L = 60;            // needle length (L ≤ d for standard formula)
-    const lineColor = '#475569';
-    const needleHitColor = '#34d399';
-    const needleMissColor = '#64748b';
+function updateParams() {
+  L = parseInt(document.getElementById('sl').value);
+  d = parseInt(document.getElementById('sd').value);
+  document.getElementById('vl').textContent = L;
+  document.getElementById('vd').textContent = d;
+  const trueP = (2 * L) / (Math.PI * d);
+  document.getElementById('stat-true').textContent = trueP.toFixed(4);
+  redraw();
+}
 
-    // State
-    let totalThrows = 0;
-    let intersections = 0;
-    const needles = [];     // {x, y, angle, hits}
+function drawFloor() {
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = '#12121a';
+  ctx.fillRect(0, 0, W, H);
 
-    // Draw parallel horizontal lines
-    function drawLines() {
-      ctx.strokeStyle = lineColor;
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      for (let y = 0; y <= canvas.height + d; y += d) {
-        ctx.moveTo(0, y);
-        ctx.lineTo(canvas.width, y);
-      }
-      ctx.stroke();
-    }
+  // draw lines
+  ctx.strokeStyle = '#3a3a55';
+  ctx.lineWidth = 1;
+  for (let y = d; y < H; y += d) {
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(W, y);
+    ctx.stroke();
+  }
+}
 
-    // Check if needle crosses a line
-    // Needle center (cx, cy), angle θ ∈ [0, π]
-    // Distance from center to nearest line: min distance to any horizontal line
-    // Needle crosses when: perpendicular distance to nearest line ≤ (L/2)*sin(θ)
-    function needleHitsLine(cx, cy, angle) {
-      const nearestLineY = Math.round(cy / d) * d;
-      const distToLine = Math.abs(cy - nearestLineY);
-      const halfNeedle = (L / 2) * Math.sin(angle);
-      return distToLine <= halfNeedle;
-    }
+function redraw() {
+  drawFloor();
+  for (const n of needles) drawNeedle(n);
+}
 
-    // Draw a single needle
-    function drawNeedle(x, y, angle, hits) {
-      const halfL = L / 2;
-      const x1 = x - halfL * Math.cos(angle);
-      const y1 = y - halfL * Math.sin(angle);
-      const x2 = x + halfL * Math.cos(angle);
-      const y2 = y + halfL * Math.sin(angle);
+function drawNeedle(n) {
+  const dx = (L / 2) * Math.cos(n.theta);
+  const dy = (L / 2) * Math.sin(n.theta);
+  ctx.beginPath();
+  ctx.moveTo(n.cx - dx, n.cy - dy);
+  ctx.lineTo(n.cx + dx, n.cy + dy);
+  ctx.strokeStyle = n.hit ? 'rgba(255,107,107,0.7)' : 'rgba(78,205,196,0.5)';
+  ctx.lineWidth = n.hit ? 1.5 : 1;
+  ctx.stroke();
 
-      ctx.strokeStyle = hits ? needleHitColor : needleMissColor;
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(x1, y1);
-      ctx.lineTo(x2, y2);
-      ctx.stroke();
-    }
+  // center dot
+  ctx.beginPath();
+  ctx.arc(n.cx, n.cy, 1.5, 0, Math.PI * 2);
+  ctx.fillStyle = n.hit ? '#ff6b6b' : '#4ecdc4';
+  ctx.fill();
+}
 
-    // Redraw entire canvas
-    function redraw() {
-      ctx.fillStyle = '#1a1a2e';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      drawLines();
-      needles.forEach(n => drawNeedle(n.x, n.y, n.angle, n.hits));
-    }
+function throwNeedle() {
+  const W = canvas.width, H = canvas.height;
+  const cx = Math.random() * W;
+  const cy = Math.random() * H;
+  const theta = Math.random() * Math.PI;
+  const dy = (L / 2) * Math.sin(theta);
+  const y1 = cy - dy, y2 = cy + dy;
 
-    // Throw one needle
-    function throwNeedle() {
-      const x = Math.random() * canvas.width;
-      const y = Math.random() * canvas.height;
-      const angle = Math.random() * Math.PI;  // 0 to π
+  // check crossing: does [y1,y2] cross any multiple of d?
+  const lo = Math.min(y1, y2), hi = Math.max(y1, y2);
+  let hit = false;
+  for (let line = d; line < H; line += d) {
+    if (lo <= line && line <= hi) { hit = true; break; }
+  }
 
-      const hits = needleHitsLine(x, y, angle);
-      needles.push({ x, y, angle, hits });
+  const needle = { cx, cy, theta, hit };
+  needles.push(needle);
+  if (needles.length > 3000) needles.shift();
 
-      totalThrows++;
-      if (hits) intersections++;
+  throws++;
+  if (hit) hits++;
+  drawNeedle(needle);
+  updateStats();
+}
 
-      redraw();
-      updateStats();
-    }
+function updateStats() {
+  document.getElementById('stat-throws').textContent = throws;
+  document.getElementById('stat-hits').textContent = hits;
 
-    // Run many experiments (with animation for visibility)
-    async function runBatch(count = 1000) {
-      const btn = document.getElementById('btnBatch');
-      btn.disabled = true;
+  if (hits > 0) {
+    const P = hits / throws;
+    const piEst = (2 * L) / (d * P);
+    const err = Math.abs(piEst - Math.PI) / Math.PI * 100;
 
-      const batchSize = 50;
-      let done = 0;
-      while (done < count) {
-        const step = Math.min(batchSize, count - done);
-        for (let i = 0; i < step; i++) throwNeedle();
-        done += step;
-        await new Promise(r => setTimeout(r, 10));
-      }
+    document.getElementById('stat-prob').textContent = P.toFixed(4);
+    document.getElementById('pi-estimate').textContent = piEst.toFixed(5);
+    document.getElementById('pi-error').textContent = `error: ${err.toFixed(2)}%`;
 
-      btn.disabled = false;
-    }
+    const trueP = (2 * L) / (Math.PI * d);
+    document.getElementById('bar-ratio').style.width = Math.min(P / trueP * 50, 100) + '%';
+    document.getElementById('bar-ratio-val').textContent = (P * 100).toFixed(1) + '%';
 
-    // Update displayed statistics
-    function updateStats() {
-      document.getElementById('totalThrows').textContent = totalThrows;
-      document.getElementById('intersections').textContent = intersections;
+    const acc = Math.max(0, 100 - err);
+    document.getElementById('bar-acc').style.width = Math.min(acc, 100) + '%';
+    document.getElementById('bar-acc-val').textContent = acc.toFixed(1) + '%';
+  }
+}
 
-      if (totalThrows > 0) {
-        const P = intersections / totalThrows;
-        document.getElementById('estProb').textContent = P.toFixed(6);
-        if (P > 0) {
-          const estPi = (2 * L) / (d * P);
-          document.getElementById('estPi').textContent = estPi.toFixed(4);
-        } else {
-          document.getElementById('estPi').textContent = '∞';
-        }
-      } else {
-        document.getElementById('estProb').textContent = '—';
-        document.getElementById('estPi').textContent = '—';
-      }
-    }
+function throwOne() { throwNeedle(); }
 
-    // Reset
-    function reset() {
-      totalThrows = 0;
-      intersections = 0;
-      needles.length = 0;
-      redraw();
-      updateStats();
-    }
+function throwMany() {
+  for (let i = 0; i < 1000; i++) throwNeedle();
+}
 
-    // Event listeners
-    document.getElementById('btnThrow').addEventListener('click', () => throwNeedle());
-    document.getElementById('btnBatch').addEventListener('click', () => runBatch(1000));
-    document.getElementById('btnReset').addEventListener('click', reset);
+function resetSim() {
+  throws = 0; hits = 0; needles = [];
+  drawFloor();
+  document.getElementById('stat-throws').textContent = '0';
+  document.getElementById('stat-hits').textContent = '0';
+  document.getElementById('stat-prob').textContent = '—';
+  document.getElementById('pi-estimate').textContent = '—';
+  document.getElementById('pi-error').textContent = '';
+  document.getElementById('bar-ratio').style.width = '0%';
+  document.getElementById('bar-ratio-val').textContent = '0%';
+  document.getElementById('bar-acc').style.width = '0%';
+  document.getElementById('bar-acc-val').textContent = '—';
+}
 
-    // Click on canvas = throw needle
-    canvas.addEventListener('click', () => throwNeedle());
-
-    // Initial draw
-    redraw();
-    updateStats();
-  </script>
+// init
+updateParams();
+</script>
 </body>
 </html>
