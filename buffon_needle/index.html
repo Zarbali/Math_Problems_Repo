@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Buffon's Needle Monte Carlo Simulation</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      color: #e8e8e8;
+      min-height: 100vh;
+      margin: 0;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      text-align: center;
+      letter-spacing: 0.02em;
+    }
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5rem;
+      max-width: 800px;
+    }
+    .canvas-wrapper {
+      background: #0f0f1a;
+      border-radius: 12px;
+      padding: 12px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+    #canvas {
+      display: block;
+      background: #1a1a2e;
+      border-radius: 6px;
+      cursor: crosshair;
+    }
+    .controls {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    button {
+      font-size: 1rem;
+      padding: 0.6rem 1.2rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: transform 0.1s, box-shadow 0.2s;
+    }
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    button:active {
+      transform: translateY(0);
+    }
+    .btn-throw {
+      background: #4a9eff;
+      color: #0d1117;
+    }
+    .btn-batch {
+      background: #34d399;
+      color: #0d1117;
+    }
+    .btn-reset {
+      background: #f87171;
+      color: #0d1117;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1rem;
+      width: 100%;
+      max-width: 600px;
+    }
+    .stat-card {
+      background: rgba(255,255,255,0.06);
+      border-radius: 10px;
+      padding: 1rem;
+      text-align: center;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .stat-label {
+      font-size: 0.8rem;
+      color: #94a3b8;
+      margin-bottom: 0.25rem;
+    }
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 600;
+      font-family: 'Consolas', 'Monaco', monospace;
+    }
+    .stat-value.pi {
+      color: #fbbf24;
+    }
+    .info {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      text-align: center;
+      max-width: 500px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Buffon's Needle Monte Carlo Simulation</h1>
+
+    <div class="canvas-wrapper">
+      <canvas id="canvas" width="600" height="400"></canvas>
+    </div>
+
+    <div class="controls">
+      <button class="btn-throw" id="btnThrow">Throw Needle</button>
+      <button class="btn-batch" id="btnBatch">Run 1000 Experiments</button>
+      <button class="btn-reset" id="btnReset">Reset</button>
+    </div>
+
+    <div class="stats">
+      <div class="stat-card">
+        <div class="stat-label">Total Throws</div>
+        <div class="stat-value" id="totalThrows">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Intersections</div>
+        <div class="stat-value" id="intersections">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Est. Probability P</div>
+        <div class="stat-value" id="estProb">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Est. π ≈ 2L/(d·P)</div>
+        <div class="stat-value stat-value pi" id="estPi">—</div>
+      </div>
+    </div>
+
+    <p class="info">
+      When L ≤ d, the theoretical probability of intersection is P = 2L/(πd).
+      Rearranging: π ≈ 2L/(d·P). More throws → better approximation.
+    </p>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    // Parameters
+    const d = 80;           // distance between parallel lines
+    const L = 60;            // needle length (L ≤ d for standard formula)
+    const lineColor = '#475569';
+    const needleHitColor = '#34d399';
+    const needleMissColor = '#64748b';
+
+    // State
+    let totalThrows = 0;
+    let intersections = 0;
+    const needles = [];     // {x, y, angle, hits}
+
+    // Draw parallel horizontal lines
+    function drawLines() {
+      ctx.strokeStyle = lineColor;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (let y = 0; y <= canvas.height + d; y += d) {
+        ctx.moveTo(0, y);
+        ctx.lineTo(canvas.width, y);
+      }
+      ctx.stroke();
+    }
+
+    // Check if needle crosses a line
+    // Needle center (cx, cy), angle θ ∈ [0, π]
+    // Distance from center to nearest line: min distance to any horizontal line
+    // Needle crosses when: perpendicular distance to nearest line ≤ (L/2)*sin(θ)
+    function needleHitsLine(cx, cy, angle) {
+      const nearestLineY = Math.round(cy / d) * d;
+      const distToLine = Math.abs(cy - nearestLineY);
+      const halfNeedle = (L / 2) * Math.sin(angle);
+      return distToLine <= halfNeedle;
+    }
+
+    // Draw a single needle
+    function drawNeedle(x, y, angle, hits) {
+      const halfL = L / 2;
+      const x1 = x - halfL * Math.cos(angle);
+      const y1 = y - halfL * Math.sin(angle);
+      const x2 = x + halfL * Math.cos(angle);
+      const y2 = y + halfL * Math.sin(angle);
+
+      ctx.strokeStyle = hits ? needleHitColor : needleMissColor;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+    }
+
+    // Redraw entire canvas
+    function redraw() {
+      ctx.fillStyle = '#1a1a2e';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      drawLines();
+      needles.forEach(n => drawNeedle(n.x, n.y, n.angle, n.hits));
+    }
+
+    // Throw one needle
+    function throwNeedle() {
+      const x = Math.random() * canvas.width;
+      const y = Math.random() * canvas.height;
+      const angle = Math.random() * Math.PI;  // 0 to π
+
+      const hits = needleHitsLine(x, y, angle);
+      needles.push({ x, y, angle, hits });
+
+      totalThrows++;
+      if (hits) intersections++;
+
+      redraw();
+      updateStats();
+    }
+
+    // Run many experiments (with animation for visibility)
+    async function runBatch(count = 1000) {
+      const btn = document.getElementById('btnBatch');
+      btn.disabled = true;
+
+      const batchSize = 50;
+      let done = 0;
+      while (done < count) {
+        const step = Math.min(batchSize, count - done);
+        for (let i = 0; i < step; i++) throwNeedle();
+        done += step;
+        await new Promise(r => setTimeout(r, 10));
+      }
+
+      btn.disabled = false;
+    }
+
+    // Update displayed statistics
+    function updateStats() {
+      document.getElementById('totalThrows').textContent = totalThrows;
+      document.getElementById('intersections').textContent = intersections;
+
+      if (totalThrows > 0) {
+        const P = intersections / totalThrows;
+        document.getElementById('estProb').textContent = P.toFixed(6);
+        if (P > 0) {
+          const estPi = (2 * L) / (d * P);
+          document.getElementById('estPi').textContent = estPi.toFixed(4);
+        } else {
+          document.getElementById('estPi').textContent = '∞';
+        }
+      } else {
+        document.getElementById('estProb').textContent = '—';
+        document.getElementById('estPi').textContent = '—';
+      }
+    }
+
+    // Reset
+    function reset() {
+      totalThrows = 0;
+      intersections = 0;
+      needles.length = 0;
+      redraw();
+      updateStats();
+    }
+
+    // Event listeners
+    document.getElementById('btnThrow').addEventListener('click', () => throwNeedle());
+    document.getElementById('btnBatch').addEventListener('click', () => runBatch(1000));
+    document.getElementById('btnReset').addEventListener('click', reset);
+
+    // Click on canvas = throw needle
+    canvas.addEventListener('click', () => throwNeedle());
+
+    // Initial draw
+    redraw();
+    updateStats();
+  </script>
+</body>
+</html>
