@@ -73,9 +73,7 @@ $$\text{Area}(A) = \int_0^{\pi/2} \frac{L}{2}\sin\theta\; d\theta$$
 
 Computing the integral:
 
-$$= \frac{L}{2}\left[-\cos\theta\right]_0^{\pi/2}
-= \frac{L}{2}\left(-\cos\frac{\pi}{2} + \cos 0\right)
-= \frac{L}{2}(0 + 1) = \frac{L}{2}$$
+$$= \frac{L}{2}\left[-\cos\theta\right]_0^{\pi/2} = \frac{L}{2}\left(-\cos\frac{\pi}{2} + \cos 0\right) = \frac{L}{2}(0 + 1) = \frac{L}{2}$$
 
 Therefore:
 
@@ -139,17 +137,14 @@ and the interval $[0, d/4]$ covers exactly half of that range.
 This event combines the crossing condition from Event A with an
 additional constraint on the angle:
 
-$$E = \left\{(x,\theta) : 0 \leq x \leq \frac{L}{2}\sin\theta,\;
-\frac{\pi}{4} < \theta \leq \frac{\pi}{2}\right\}$$
+$$E = \left\{(x,\theta) : 0 \leq x \leq \frac{L}{2}\sin\theta,\; \frac{\pi}{4} < \theta \leq \frac{\pi}{2}\right\}$$
 
 The region is the same shape as in Event A, but the integral now
 starts at $\frac{\pi}{4}$ instead of $0$:
 
-$$\text{Area}(E) = \int_{\pi/4}^{\pi/2} \frac{L}{2}\sin\theta\; d\theta
-= \frac{L}{2}\left[-\cos\theta\right]_{\pi/4}^{\pi/2}$$
+$$\text{Area}(E) = \int_{\pi/4}^{\pi/2} \frac{L}{2}\sin\theta\; d\theta = \frac{L}{2}\left[-\cos\theta\right]_{\pi/4}^{\pi/2}$$
 
-$$= \frac{L}{2}\left(-\cos\frac{\pi}{2} + \cos\frac{\pi}{4}\right)
-= \frac{L}{2}\left(0 + \frac{\sqrt{2}}{2}\right) = \frac{L\sqrt{2}}{4}$$
+$$= \frac{L}{2}\left(-\cos\frac{\pi}{2} + \cos\frac{\pi}{4}\right) = \frac{L}{2}\left(0 + \frac{\sqrt{2}}{2}\right) = \frac{L\sqrt{2}}{4}$$
 
 $$P(E) = \frac{L\sqrt{2}/4}{d\pi/4} = \frac{L\sqrt{2}}{d\pi}$$
 
@@ -163,8 +158,7 @@ both sine and cosine equal $\frac{\sqrt{2}}{2}$.
 Let $F$ be the event that the needle makes an angle of at least
 60 degrees with the parallel lines.
 
-$$F = \left\{(x,\theta) : 0 \leq x \leq \frac{d}{2},\;
-\frac{\pi}{3} \leq \theta \leq \frac{\pi}{2}\right\}$$
+$$F = \left\{(x,\theta) : 0 \leq x \leq \frac{d}{2},\; \frac{\pi}{3} \leq \theta \leq \frac{\pi}{2}\right\}$$
 
 No constraint on $x$, so this is again a rectangle.
 The height of the angle range is:
