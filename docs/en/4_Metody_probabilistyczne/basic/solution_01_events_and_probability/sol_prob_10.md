@@ -1,355 +1,118 @@
 # Task 10 — Events and Probabilities in Buffon's Needle Experiment
 
-This task continues from **Task 5**, where the sample space for the
-Buffon's needle experiment was defined.
+This task continues from **Task 5**, where the sample space for the Buffon's needle experiment was defined.
 
 ---
 
-# Setup and probability formula
+## Setup and probability formula
 
-In Task 5 we showed that each throw of the needle is completely
-described by two parameters:
+In Task 5 we showed that each throw of the needle is completely described by two parameters:
 
-- $x \in [0, d/2]$ — distance from the center of the needle to the nearest line  
-- $\theta \in [0, \pi/2]$ — angle between the needle and the parallel lines  
+- $x \in [0, d/2]$ — distance from the center of the needle to the nearest line
+- $\theta \in [0, \pi/2]$ — angle between the needle and the parallel lines
 
 Both variables are **independent** and **uniformly distributed**.
 
 The sample space is therefore
 
-$$
-\Omega = [0, d/2] \times [0, \pi/2]
-$$
+$$\Omega = [0, d/2] \times [0, \pi/2]$$
 
-This is a rectangle.
+This is a rectangle. Its area equals
 
-Its area equals
+$$\mathrm{Area}(\Omega) = \frac{d}{2} \cdot \frac{\pi}{2} = \frac{d\pi}{4}$$
 
-$$
-\text{Area}(\Omega) =
-\frac{d}{2} \cdot \frac{\pi}{2}
-=
-\frac{d\pi}{4}
-$$
+Because the variables are uniformly distributed, the probability of a region $R \subseteq \Omega$ is
 
-Because the variables are uniformly distributed,
-the probability of a region $R \subseteq \Omega$ is
-
-$$
-P(R) =
-\frac{\text{Area}(R)}{\text{Area}(\Omega)}
-$$
-
-or equivalently
-
-$$
-P(R) =
-\frac{4}{d\pi} \cdot \text{Area}(R)
-$$
+$$P(R) = \frac{\mathrm{Area}(R)}{\mathrm{Area}(\Omega)} = \frac{4}{d\pi} \cdot \mathrm{Area}(R)$$
 
 This is called **geometric probability**.
 
 ---
 
-# The intersection condition
+## The intersection condition
 
-To compute probabilities we first determine when
-the needle intersects a line.
+The needle has length $L$. Its center is at distance $x$ from the nearest line and the needle forms angle $\theta$ with the lines.
 
-The needle has length $L$.
+The vertical reach of half the needle is $\frac{L}{2}\sin\theta$.
 
-Its center is at distance $x$ from the nearest line
-and the needle forms angle $\theta$ with the lines.
+The needle crosses a line if $x \leq \frac{L}{2}\sin\theta$.
 
-The vertical reach of half the needle is
-
-$$
-\frac{L}{2}\sin\theta
-$$
-
-The needle crosses a line if this reach is at least $x$:
-
-$$
-x \leq \frac{L}{2}\sin\theta
-$$
-
-We assume
-
-$$
-L \le d
-$$
-
-so the needle can intersect **at most one line**.
+We assume $L \le d$ so the needle can intersect **at most one line**.
 
 ---
 
-# Event A — needle intersects a line
+## Event A — needle intersects a line
 
-$$
-A =
-\{(x,\theta) :
-0 \le x \le \tfrac{L}{2}\sin\theta,
-\;
-0 \le \theta \le \tfrac{\pi}{2}
-\}
-$$
+$$A = \left\{ (x,\theta) : 0 \le x \le \frac{L}{2}\sin\theta,\; 0 \le \theta \le \frac{\pi}{2} \right\}$$
 
-For each fixed $\theta$, the possible values of $x$
-range from
+For each fixed $\theta$, the possible values of $x$ range from $0$ to $\frac{L}{2}\sin\theta$. So the area of region $A$ is
 
-$$
-0 \le x \le \frac{L}{2}\sin\theta
-$$
-
-So the area of region $A$ is
-
-$$
-\text{Area}(A)
-=
-\int_0^{\pi/2}
-\frac{L}{2}\sin\theta
-\, d\theta
-$$
+$$\mathrm{Area}(A) = \int_0^{\pi/2} \frac{L}{2}\sin\theta\, d\theta$$
 
 Compute the integral:
 
-$$
-\text{Area}(A)
-=
-\frac{L}{2}[-\cos\theta]_0^{\pi/2}
-$$
-
-$$
-=
-\frac{L}{2}
-\left(
--\cos(\tfrac{\pi}{2}) + \cos(0)
-\right)
-$$
-
-$$
-=
-\frac{L}{2}(0 + 1)
-$$
-
-$$
-=
-\frac{L}{2}
-$$
+$$\mathrm{Area}(A) = \frac{L}{2}\bigl[-\cos\theta\bigr]_0^{\pi/2} = \frac{L}{2}\left(-\cos\frac{\pi}{2} + \cos 0\right) = \frac{L}{2}(0 + 1) = \frac{L}{2}$$
 
 Therefore
 
-$$
-P(A)
-=
-\frac{\text{Area}(A)}{\text{Area}(\Omega)}
-=
-\frac{L/2}{d\pi/4}
-=
-\frac{2L}{\pi d}
-$$
+$$P(A) = \frac{\mathrm{Area}(A)}{\mathrm{Area}(\Omega)} = \frac{L/2}{d\pi/4} = \frac{2L}{\pi d}$$
 
 This is the **classical Buffon's needle formula**.
 
 ---
 
-# Event B — needle does not intersect a line
+## Event B — needle does not intersect a line
 
-Event $B$ is the complement of $A$.
+Event $B$ is the complement of $A$: $B = \Omega \setminus A$.
 
-$$
-B = \Omega \setminus A
-$$
-
-Therefore
-
-$$
-P(B)
-=
-1 - P(A)
-=
-1 - \frac{2L}{\pi d}
-$$
+$$P(B) = 1 - P(A) = 1 - \frac{2L}{\pi d}$$
 
 ---
 
-# Event C — angle less than $\frac{\pi}{6}$
+## Event C — angle less than $\frac{\pi}{6}$
 
-$$
-C =
-\{(x,\theta) :
-0 \le x \le \tfrac{d}{2},
-\;
-0 \le \theta < \tfrac{\pi}{6}
-\}
-$$
+$$C = \left\{ (x,\theta) : 0 \le x \le \frac{d}{2},\; 0 \le \theta < \frac{\pi}{6} \right\}$$
 
 This region is a rectangle.
 
-Area:
+$$\mathrm{Area}(C) = \frac{d}{2} \cdot \frac{\pi}{6} = \frac{d\pi}{12}$$
 
-$$
-\text{Area}(C)
-=
-\frac{d}{2} \cdot \frac{\pi}{6}
-=
-\frac{d\pi}{12}
-$$
+$$P(C) = \frac{d\pi/12}{d\pi/4} = \frac{1}{3}$$
 
-Probability:
-
-$$
-P(C)
-=
-\frac{d\pi/12}{d\pi/4}
-=
-\frac{1}{3}
-$$
-
-This result makes sense because the angle interval
-$[0,\pi/6]$ is exactly one third of $[0,\pi/2]$.
+The angle interval \([0,\pi/6]\) is exactly one third of \([0,\pi/2]\).
 
 ---
 
-# Event D — center within $\frac{d}{4}$ of the nearest line
+## Event D — center within $\frac{d}{4}$ of the nearest line
 
-$$
-D =
-\{(x,\theta) :
-0 \le x < \tfrac{d}{4},
-\;
-0 \le \theta \le \tfrac{\pi}{2}
-\}
-$$
+$$D = \left\{ (x,\theta) : 0 \le x < \frac{d}{4},\; 0 \le \theta \le \frac{\pi}{2} \right\}$$
 
-Area:
+$$\mathrm{Area}(D) = \frac{d}{4} \cdot \frac{\pi}{2} = \frac{d\pi}{8}$$
 
-$$
-\text{Area}(D)
-=
-\frac{d}{4} \cdot \frac{\pi}{2}
-=
-\frac{d\pi}{8}
-$$
-
-Probability:
-
-$$
-P(D)
-=
-\frac{d\pi/8}{d\pi/4}
-=
-\frac{1}{2}
-$$
-
-Again this follows from the uniform distribution of $x$.
+$$P(D) = \frac{d\pi/8}{d\pi/4} = \frac{1}{2}$$
 
 ---
 
-# Event E — needle crosses a line and angle greater than $\frac{\pi}{4}$
+## Event E — needle crosses a line and angle greater than $\frac{\pi}{4}$
 
-$$
-E =
-\{(x,\theta) :
-0 \le x \le \tfrac{L}{2}\sin\theta,
-\;
-\tfrac{\pi}{4} < \theta \le \tfrac{\pi}{2}
-\}
-$$
+$$E = \left\{ (x,\theta) : 0 \le x \le \frac{L}{2}\sin\theta,\; \frac{\pi}{4} < \theta \le \frac{\pi}{2} \right\}$$
 
-Area:
+$$\mathrm{Area}(E) = \int_{\pi/4}^{\pi/2} \frac{L}{2}\sin\theta\, d\theta = \frac{L}{2}\bigl[-\cos\theta\bigr]_{\pi/4}^{\pi/2} = \frac{L}{2}\left(-\cos\frac{\pi}{2} + \cos\frac{\pi}{4}\right) = \frac{L}{2}\left(0 + \frac{\sqrt{2}}{2}\right) = \frac{L\sqrt{2}}{4}$$
 
-$$
-\text{Area}(E)
-=
-\int_{\pi/4}^{\pi/2}
-\frac{L}{2}\sin\theta
-\, d\theta
-$$
-
-$$
-=
-\frac{L}{2}
-[-\cos\theta]_{\pi/4}^{\pi/2}
-$$
-
-$$
-=
-\frac{L}{2}
-\left(
--\cos(\tfrac{\pi}{2}) + \cos(\tfrac{\pi}{4})
-\right)
-$$
-
-$$
-=
-\frac{L}{2}
-\left(
-0 + \frac{\sqrt{2}}{2}
-\right)
-$$
-
-$$
-=
-\frac{L\sqrt{2}}{4}
-$$
-
-Probability:
-
-$$
-P(E)
-=
-\frac{L\sqrt{2}/4}{d\pi/4}
-=
-\frac{L\sqrt{2}}{d\pi}
-$$
+$$P(E) = \frac{L\sqrt{2}/4}{d\pi/4} = \frac{L\sqrt{2}}{d\pi}$$
 
 ---
 
-# Additional event F — angle at least $\frac{\pi}{3}$
+## Additional event F — angle at least $\frac{\pi}{3}$
 
-Let $F$ be the event that the needle makes an angle
-of at least **60 degrees** with the parallel lines.
+Let $F$ be the event that the needle makes an angle of at least **60 degrees** with the parallel lines.
 
-$$
-F =
-\{(x,\theta) :
-0 \le x \le \tfrac{d}{2},
-\;
-\tfrac{\pi}{3} \le \theta \le \tfrac{\pi}{2}
-\}
-$$
+$$F = \left\{ (x,\theta) : 0 \le x \le \frac{d}{2},\; \frac{\pi}{3} \le \theta \le \frac{\pi}{2} \right\}$$
 
-Height of the interval:
+Height of the interval: \(\frac{\pi}{2} - \frac{\pi}{3} = \frac{\pi}{6}\).
 
-$$
-\frac{\pi}{2} - \frac{\pi}{3}
-=
-\frac{3\pi}{6} - \frac{2\pi}{6}
-=
-\frac{\pi}{6}
-$$
+$$\mathrm{Area}(F) = \frac{d}{2} \cdot \frac{\pi}{6} = \frac{d\pi}{12}$$
 
-Area:
+$$P(F) = \frac{d\pi/12}{d\pi/4} = \frac{1}{3}$$
 
-$$
-\text{Area}(F)
-=
-\frac{d}{2} \cdot \frac{\pi}{6}
-=
-\frac{d\pi}{12}
-$$
-
-Probability:
-
-$$
-P(F)
-=
-\frac{d\pi/12}{d\pi/4}
-=
-\frac{1}{3}
-$$
-
-Events $C$ and $F$ have the same probability because
-the variable $\theta$ is uniformly distributed.
-Equal-length angle intervals give equal probabilities.
+Events $C$ and $F$ have the same probability because $\theta$ is uniformly distributed.
