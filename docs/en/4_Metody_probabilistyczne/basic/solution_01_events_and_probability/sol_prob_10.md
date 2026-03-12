@@ -153,9 +153,8 @@ $$= \frac{L}{2}\left(-\cos\frac{\pi}{2} + \cos\frac{\pi}{4}\right)
 
 $$P(E) = \frac{L\sqrt{2}/4}{d\pi/4} = \frac{L\sqrt{2}}{d\pi}$$
 
-Note: $\cos\frac{\pi}{4} = \frac{\sqrt{2}}{2}$ because $\frac{\pi}{4}$
-is 45 degrees, and at 45 degrees both sine and cosine equal
-$\frac{\sqrt{2}}{2}$.
+Note: $\cos\frac{\pi}{4} = \frac{\sqrt{2}}{2}$ because at 45 degrees
+both sine and cosine equal $\frac{\sqrt{2}}{2}$.
 
 ---
 
