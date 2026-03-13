@@ -58,7 +58,7 @@ would be more complicated.
 
 ## Event A — needle intersects a line
 
-$$A = \left\{(x,\theta) : 0 \leq x \leq \frac{L}{2}\sin\theta,\; 0 \leq \theta \leq \frac{\pi}{2}\right\}$$
+$$A = \{(x,\theta) : 0 \leq x \leq \frac{L}{2}\sin\theta,\; 0 \leq \theta \leq \frac{\pi}{2}\}$$
 
 The boundary of this region is the curve $x = \frac{L}{2}\sin\theta$,
 which is not a straight line — so $A$ is not a rectangle. I cannot just
@@ -105,7 +105,7 @@ No new integration needed — the complement rule gives the answer directly.
 
 ## Event C — angle less than $\frac{\pi}{6}$
 
-$$C = \left\{(x,\theta) : 0 \leq x \leq \frac{d}{2},\; 0 \leq \theta < \frac{\pi}{6}\right\}$$
+$$C = \{(x,\theta) : 0 \leq x \leq \frac{d}{2},\; 0 \leq \theta < \frac{\pi}{6}\}$$
 
 There is no constraint on $x$ here — it runs freely over its full range.
 Only the angle is restricted. This means the region is a rectangle, so I
@@ -124,7 +124,7 @@ distribution always have equal probability.
 
 ## Event D — center within $\frac{d}{4}$ of the nearest line
 
-$$D = \left\{(x,\theta) : 0 \leq x < \frac{d}{4},\; 0 \leq \theta \leq \frac{\pi}{2}\right\}$$
+$$D = \{(x,\theta) : 0 \leq x < \frac{d}{4},\; 0 \leq \theta \leq \frac{\pi}{2}\}$$
 
 Here only $x$ is constrained — $\theta$ runs freely. Again a rectangle:
 
@@ -141,7 +141,7 @@ regardless of the value of $\pi$ or $d$.
 
 ## Event E — needle crosses a line and angle greater than $\frac{\pi}{4}$
 
-$$E = \left\{(x,\theta) : 0 \leq x \leq \frac{L}{2}\sin\theta,\; \frac{\pi}{4} < \theta \leq \frac{\pi}{2}\right\}$$
+$$E = \{(x,\theta) : 0 \leq x \leq \frac{L}{2}\sin\theta,\; \frac{\pi}{4} < \theta \leq \frac{\pi}{2}\}$$
 
 This event is the intersection of two conditions: the crossing condition
 from Event A, and the additional requirement that $\theta > \pi/4$.
@@ -174,7 +174,7 @@ $\sqrt{2} < 2$. Confirmed.
 Let $F$ be the event that the needle makes an angle of at least
 **60 degrees** with the parallel lines.
 
-$$F = \left\{(x,\theta) : 0 \leq x \leq \frac{d}{2},\; \frac{\pi}{3} \leq \theta \leq \frac{\pi}{2}\right\}$$
+$$F = \{(x,\theta) : 0 \leq x \leq \frac{d}{2},\; \frac{\pi}{3} \leq \theta \leq \frac{\pi}{2}\}$$
 
 No constraint on $x$, so this is a rectangle. The height of the angle
 interval is:
