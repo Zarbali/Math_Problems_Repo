@@ -4,6 +4,8 @@
 
 ## Problem Statement
 
+A standard deck contains 52 cards.
+
 1. In how many ways can 5 cards be drawn so that the hand contains **exactly 2 hearts**?  
 2. In how many ways can a 5-card hand contain **at least one heart**?  
 3. In how many ways can a 5-card hand contain **no face cards (J, Q, K)**?  
@@ -12,18 +14,23 @@
 
 ## Definitions / Theory
 
-A standard deck contains:
+Standard 52-card deck:
+- 4 suits → 13 cards each  
+- Hearts: 13  
+- Non-hearts: 39  
+- Face cards (J, Q, K): 3 per suit → 12 total  
+- Non-face cards: 52 − 12 = 40  
 
-- 52 total cards  
-- 13 hearts  
-- 39 non-hearts  
-- 12 face cards (J, Q, K)  
-- 40 non-face cards  
-
-In card problems, **order does not matter**, so combinations are used:
+A 5-card hand is an **unordered selection**, so combinations are used:
 
 $$
 \binom{n}{k} = \frac{n!}{k!(n-k)!}
+$$
+
+Total number of 5-card hands:
+
+$$
+\binom{52}{5} = 2\,598\,960
 $$
 
 ---
@@ -32,12 +39,33 @@ $$
 
 ---
 
-### Problem 1 — Exactly 2 hearts
+### 🔹 Problem 1 — Exactly 2 hearts
 
-We split the selection:
+The hand must contain:
+- exactly 2 hearts  
+- exactly 3 non-hearts  
 
-- choose 2 hearts from 13  
-- choose 3 non-hearts from 39  
+This splits the selection into two independent parts.
+
+---
+
+**Step 1 — Choose 2 hearts from 13**
+
+$$
+\binom{13}{2} = \frac{13 \cdot 12}{2} = 78
+$$
+
+---
+
+**Step 2 — Choose 3 non-hearts from 39**
+
+$$
+\binom{39}{3} = \frac{39 \cdot 38 \cdot 37}{3 \cdot 2 \cdot 1} = 9\,139
+$$
+
+---
+
+**Step 3 — Multiply (independent choices)**
 
 $$
 \binom{13}{2} \cdot \binom{39}{3}
@@ -49,15 +77,38 @@ $$
 
 ---
 
-### Problem 2 — At least one heart
+### 🔹 Problem 2 — At least one heart
 
-Use complement:
+“At least one” means:
+- 1 heart  
+- 2 hearts  
+- 3 hearts  
+- 4 hearts  
+- 5 hearts  
 
-- total hands:  
-$$\binom{52}{5} = 2\,598\,960$$  
+Counting all cases directly is complicated, so the complement method is used.
 
-- hands with no hearts:  
-$$\binom{39}{5} = 575\,757$$  
+---
+
+**Step 1 — Total number of hands**
+
+$$
+\binom{52}{5} = 2\,598\,960
+$$
+
+---
+
+**Step 2 — Hands with NO hearts**
+
+All 5 cards are chosen from non-hearts (39 cards):
+
+$$
+\binom{39}{5} = 575\,757
+$$
+
+---
+
+**Step 3 — Subtract**
 
 $$
 \binom{52}{5} - \binom{39}{5}
@@ -69,9 +120,23 @@ $$
 
 ---
 
-### Problem 3 — No face cards
+### 🔹 Problem 3 — No face cards
 
-All cards must come from non-face cards (40 cards):
+The hand must contain only non-face cards.
+
+There are 40 such cards.
+
+---
+
+**Step 1 — Choose all 5 cards from 40**
+
+$$
+\binom{40}{5}
+$$
+
+---
+
+**Step 2 — Compute**
 
 $$
 \binom{40}{5} = 658\,008
@@ -107,4 +172,4 @@ $$
 \frac{712\,842}{2\,598\,960} \approx 0.274
 $$
 
-This is a reasonable value since getting exactly 2 hearts is more specific than getting at least one.
+This is reasonable because getting exactly 2 hearts is more restrictive than getting at least one.
