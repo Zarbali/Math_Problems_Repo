@@ -12,21 +12,31 @@
 
 ## Definitions / Theory
 
-### Ordered selections
+### Counting model selection
 
-In this task, the order **matters**.
+The key question in counting problems is:
 
-Examples:
-- first, second, third place → different order = different outcome  
-- digits in a number → position matters  
+- Does **order matter**?
+- Is **repetition allowed**?
 
-So we use **k-permutations**.
+The answers determine which model to use.
+
+---
+
+### Ordered selection without repetition
+
+In this task:
+
+- Order **matters** (positions or digit order change the result)
+- Repetition is **not allowed**
+
+Therefore, we use **k-permutations**.
 
 ---
 
 ### k-permutation formula
 
-The number of ways to choose and arrange $k$ objects from $n$ distinct objects:
+The number of ways to choose and arrange $k$ objects from $n$ distinct objects is:
 
 $$
 P(n,k) = \frac{n!}{(n-k)!}
@@ -34,22 +44,51 @@ $$
 
 ---
 
-### Equivalent multiplicative form
+### Meaning of the formula
 
-Instead of factorials, we can write:
+- $n!$ counts all arrangements of all objects  
+- $(n-k)!$ removes the unused part  
+- The result gives arrangements of only $k$ elements  
+
+---
+
+### Multiplicative interpretation
+
+Instead of factorials, we can think step-by-step:
 
 $$
 P(n,k) = n \cdot (n-1) \cdot (n-2) \cdots (n-k+1)
 $$
 
-This is often easier to compute step-by-step.
+This reflects the process:
+
+- first choice → $n$ options  
+- second → $n-1$  
+- third → $n-2$  
+
+Each step has fewer options because repetition is not allowed.
 
 ---
 
-### Key idea
+### Why multiplication is used
 
-- No repetition → each next choice has fewer options  
-- Order matters → we multiply choices step-by-step  
+Each step is independent:
+
+- choosing the first element does not depend on future choices  
+- total number of outcomes is the product of choices  
+
+This follows the **multiplication principle**.
+
+---
+
+### Special constraints
+
+Sometimes we impose conditions:
+
+- fixing a position (e.g., last digit must be 5)  
+- removing elements from the pool  
+
+These constraints reduce the number of available choices at each step.
 
 ---
 
@@ -59,28 +98,30 @@ This is often easier to compute step-by-step.
 
 ## 🔹 Problem 1 — First three places among 12 runners
 
-We assign:
+We assign ordered positions:
 - first place  
 - second place  
 - third place  
+
+Order matters because changing positions gives a different result.
 
 ---
 
 ### Step 1 — First place
 
-12 choices.
+There are 12 runners → 12 choices.
 
 ---
 
 ### Step 2 — Second place
 
-11 choices (one already used).
+One runner already used → 11 choices.
 
 ---
 
 ### Step 3 — Third place
 
-10 choices.
+Two runners already used → 10 choices.
 
 ---
 
@@ -96,10 +137,10 @@ $$
 
 ---
 
-### Using formula
+### Formula form
 
 $$
-P(12,3) = \frac{12!}{9!} = 12 \cdot 11 \cdot 10 = 1320
+P(12,3) = \frac{12!}{9!} = 12 \cdot 11 \cdot 10
 $$
 
 ---
@@ -112,35 +153,35 @@ $$
 
 ---
 
-## 🔹 Problem 2 — 4-digit numbers with distinct digits (1–9)
+## 🔹 Problem 2 — 4-digit numbers with distinct digits
 
-We form a number digit by digit.
+We form numbers digit by digit.
 
-Digits available: 1 to 9 (no zero).
+Digits available: 1–9 (no zero).
 
 ---
 
 ### Step 1 — First digit
 
-9 choices.
+Any of 9 digits → 9 choices.
 
 ---
 
 ### Step 2 — Second digit
 
-8 choices (no repetition).
+One used → 8 choices.
 
 ---
 
 ### Step 3 — Third digit
 
-7 choices.
+Two used → 7 choices.
 
 ---
 
 ### Step 4 — Fourth digit
 
-6 choices.
+Three used → 6 choices.
 
 ---
 
@@ -156,10 +197,10 @@ $$
 
 ---
 
-### Using formula
+### Formula form
 
 $$
-P(9,4) = \frac{9!}{5!} = 9 \cdot 8 \cdot 7 \cdot 6 = 3024
+P(9,4) = \frac{9!}{5!} = 3024
 $$
 
 ---
@@ -174,25 +215,25 @@ $$
 
 ## 🔹 Problem 3 — Numbers divisible by 5
 
-A number is divisible by 5 if its last digit is 5.
+A number is divisible by 5 if the last digit is 5.
 
-So we fix the last digit.
+So we fix the last position.
 
 ---
 
 ### Step 1 — Fix last digit
 
-Last digit = 5 (1 choice).
+Last digit = 5 → 1 choice.
 
 ---
 
-### Step 2 — Remaining digits
+### Step 2 — Available digits
 
-We choose the first 3 digits from:
+Remaining digits:
 
 {1,2,3,4,6,7,8,9}
 
-→ 8 digits (we remove 5).
+Total: 8 digits.
 
 ---
 
@@ -226,10 +267,10 @@ $$
 
 ---
 
-### Using formula
+### Formula form
 
 $$
-P(8,3) = \frac{8!}{5!} = 8 \cdot 7 \cdot 6 = 336
+P(8,3) = \frac{8!}{5!} = 336
 $$
 
 ---
@@ -254,8 +295,8 @@ $$
 
 ## Interpretation / Sanity Check
 
-- In Problem 1, the number is large because order of winners matters  
-- In Problem 2, the number decreases with each digit because repetition is not allowed  
-- In Problem 3, fixing the last digit reduces the number of possibilities  
+- Problem 1: large number because all orders are different  
+- Problem 2: decreases each step due to no repetition  
+- Problem 3: fixing a digit reduces possibilities  
 
-This confirms that constraints reduce the number of valid outcomes.
+This confirms that constraints directly reduce the number of valid outcomes.
