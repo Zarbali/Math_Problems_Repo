@@ -557,7 +557,7 @@ function drawNeedle(n) {
   ctx.fill();
 }
 
-function throwNeedle() {
+function throwNeedle(drawImmediately = true) {
   const W = canvas.width, H = canvas.height;
   const cx = Math.random() * W;
   const cy = Math.random() * H;
@@ -565,11 +565,11 @@ function throwNeedle() {
   const dy = (L / 2) * Math.sin(theta);
   const y1 = cy - dy, y2 = cy + dy;
 
-  // check crossing: does [y1,y2] cross any multiple of d?
+  // check crossing: does [y1,y2] cross any line?
   const lo = Math.min(y1, y2), hi = Math.max(y1, y2);
   let hit = false;
-  for (let line = d; line < H; line += d) {
-    if (lo <= line && line <= hi) { hit = true; break; }
+  for (let lineY = d; lineY < H; lineY += d) {
+    if (lo <= lineY && lineY <= hi) { hit = true; break; }
   }
 
   const needle = { cx, cy, theta, hit };
@@ -578,15 +578,19 @@ function throwNeedle() {
 
   throws++;
   if (hit) hits++;
-  drawNeedle(needle);
-  updateStats();
+
+  if (drawImmediately) {
+    drawNeedle(needle);
+    updateStats();
+  }
+  return needle;
 }
 
 function updateStats() {
   document.getElementById('stat-throws').textContent = throws;
   document.getElementById('stat-hits').textContent = hits;
 
-  if (hits > 0) {
+  if (throws > 0 && hits > 0) {
     const P = hits / throws;
     const piEst = (2 * L) / (d * P);
     const err = Math.abs(piEst - Math.PI) / Math.PI * 100;
@@ -602,13 +606,25 @@ function updateStats() {
     const acc = Math.max(0, 100 - err);
     document.getElementById('bar-acc').style.width = Math.min(acc, 100) + '%';
     document.getElementById('bar-acc-val').textContent = acc.toFixed(1) + '%';
+  } else {
+    document.getElementById('stat-prob').textContent = '—';
+    document.getElementById('pi-estimate').textContent = '—';
+    document.getElementById('pi-error').textContent = '';
+    document.getElementById('bar-ratio').style.width = '0%';
+    document.getElementById('bar-ratio-val').textContent = '0%';
+    document.getElementById('bar-acc').style.width = '0%';
+    document.getElementById('bar-acc-val').textContent = '—';
   }
 }
 
-function throwOne() { throwNeedle(); }
+function throwOne() { throwNeedle(true); }
 
 function throwMany() {
-  for (let i = 0; i < 1000; i++) throwNeedle();
+  L = parseInt(document.getElementById('sl').value);
+  d = parseInt(document.getElementById('sd').value);
+  for (let i = 0; i < 1000; i++) throwNeedle(false);
+  redraw();
+  updateStats();
 }
 
 function resetSim() {
