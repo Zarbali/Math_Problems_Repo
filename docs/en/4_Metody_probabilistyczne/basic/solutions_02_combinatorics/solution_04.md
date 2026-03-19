@@ -1,78 +1,160 @@
-# Solution
-
-## Task 4 — Circular Permutations
-
-Key idea: in circular arrangements, rotations are identical, so one position is fixed.
-
-Formula:
-$$(n - 1)!$$
+# Task 4 — Circular Permutations
 
 ---
 
-### 1. 7 people around a round table
+## Definitions / Theory
 
-All 7 people are arranged in a circle.
+In circular arrangements:
 
-Rotations are equivalent, so one position is fixed.
-
-→ Model: circular permutation
-
-$$
-(7 - 1)! = 6! = 720
-$$
-
-Note: fixing one person removes duplicate rotations.
+- rotating the arrangement does NOT create a new outcome  
+- only relative positions matter  
 
 ---
 
-### 2. 7 people — two particular people must sit next to each other
-
-The two people are treated as one block.
-
-Now there are:
-- 1 block
-- 5 remaining people  
-→ total: 6 units
-
-Arrange these in a circle:
+### Key Formula
 
 $$
-(6 - 1)! = 5!
+(n-1)!
 $$
 
-Inside the block, the two people can switch positions:
+---
+
+### Why (n-1)!
+
+We fix one object to eliminate rotation symmetry, then arrange the rest.
+
+---
+
+## Solutions
+
+---
+
+## 🔹 1. 7 people
+
+---
+
+### Step 1 — fix one person
+
+Fix 1 person → remove rotation.
+
+Remaining:
+
+$$
+6 \text{ people}
+$$
+
+---
+
+### Step 2 — arrange
+
+$$
+6! = 720
+$$
+
+---
+
+### Final Answer
+
+$$
+720
+$$
+
+---
+
+## 🔹 2. Two people together
+
+---
+
+### Step 1 — create block
+
+Treat the two people as one unit.
+
+Total units:
+
+$$
+6
+$$
+
+---
+
+### Step 2 — circular arrangement
+
+$$
+(6-1)! = 5! = 120
+$$
+
+---
+
+### Step 3 — internal order
+
+Inside the block:
 
 $$
 2 \text{ ways}
 $$
 
-Total:
+---
+
+### Step 4 — multiply
 
 $$
-5! \cdot 2 = 120 \cdot 2 = 240
+120 \cdot 2 = 240
 $$
-
-Note: the block guarantees adjacency, and internal order adds a factor of 2.
 
 ---
 
-### 3. 7 people — two particular people must sit opposite each other
-
-Fix one person to remove rotational symmetry.
-
-Now consider the position of the second person.
-
-In a circle of 7 seats, there are exactly 2 positions opposite (maximally distant).
-
-So:
-
-- choose position for second person: $2$ ways  
-- arrange remaining 5 people freely: $5!$
-
-Total:
+### Final Answer
 
 $$
-2 \cdot 5! = 2 \cdot 120 = 240
+240
 $$
 
-Note: fixing one person avoids overcounting rotations.
+---
+
+## 🔹 3. Opposite seats
+
+---
+
+### Step 1 — fix one person
+
+Fix person A.
+
+---
+
+### Step 2 — choose position for B
+
+Opposite positions:
+
+$$
+2 \text{ choices}
+$$
+
+---
+
+### Step 3 — arrange remaining
+
+$$
+5! = 120
+$$
+
+---
+
+### Step 4 — multiply
+
+$$
+2 \cdot 120 = 240
+$$
+
+---
+
+### Final Answer
+
+$$
+240
+$$
+
+---
+
+## Key Insight
+
+Fixing one element removes rotational duplicates.
