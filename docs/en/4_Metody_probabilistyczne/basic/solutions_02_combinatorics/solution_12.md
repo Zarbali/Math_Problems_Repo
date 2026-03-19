@@ -1,84 +1,436 @@
-# Solution
-
-## Task 12 — Mixed Counting Problem
+# Task 12 — Mixed Counting Problem
 
 ---
 
-### 1. Student ID Codes
+## Problem Statement
 
-Format: 2 letters from $\{A,B,C,D,E\}$, then 3 digits (0–9).
+This task combines multiple counting models.
 
-#### (a) Letters and digits may repeat
+For each part, we must:
 
-Sequence with repetition: $5^2 \times 10^3 = 25\,000$
-
-#### (b) Letters may not repeat, digits may repeat
-
-Letters: $P(5,2) = 5 \times 4 = 20$. Digits: $10^3 = 1\,000$.
-
-$$20 \times 1\,000 = 20\,000$$
-
-#### (c) Neither letters nor digits repeat
-
-$$P(5,2) \times P(10,3) = 20 \times 720 = 14\,400$$
+- identify the correct counting model  
+- compute the number of possible outcomes  
 
 ---
 
-### 2. Medal Assignment (12 runners)
+## Definitions / Theory
 
-#### (a) Assign gold, silver, bronze
+### Choosing the correct model
 
-k-permutation: $\frac{12!}{9!} = 12 \times 11 \times 10 = 1\,320$
+To solve each part, we analyze:
 
-#### (b) Two particular runners must both receive medals
-
-They get 2 of the 3 medals. Choose which 2 medals: $\binom{3}{2} = 3$. Assign those 2 medals to the 2 runners: $2! = 2$. Assign the remaining medal to one of 10 others: $10$.
-
-$$3 \times 2 \times 10 = 60$$
+- Does **order matter**?  
+- Is **repetition allowed**?  
+- Are objects **distinct or identical**?  
 
 ---
 
-### 3. Committee Selection (10 students: 6 men, 4 women)
+### Main counting models used
 
-#### (a) Committee of 4
+1. **Sequence with repetition**
 
-$$\binom{10}{4} = 210$$
+Used when:
+- order matters  
+- repetition allowed  
 
-#### (b) Exactly two women
-
-$$\binom{4}{2} \times \binom{6}{2} = 6 \times 15 = 90$$
-
-#### (c) At least one woman
-
-Complement: $\binom{10}{4} - \binom{6}{4} = 210 - 15 = 195$
+$$
+n^k
+$$
 
 ---
 
-### 4. Circular Seating (7 people)
+2. **k-permutation (no repetition)**
 
-#### (a) Seating arrangements
+Used when:
+- order matters  
+- no repetition  
 
-$$(7-1)! = 6! = 720$$
-
-#### (b) Two particular people next to each other
-
-Treat as block: $(6-1)! \times 2 = 5! \times 2 = 240$
+$$
+P(n,k) = \frac{n!}{(n-k)!}
+$$
 
 ---
 
-### 5. Passwords (5 characters from 0–9 and A–Z)
+3. **Combination**
 
-Total symbols: $10 + 26 = 36$.
+Used when:
+- order does NOT matter  
 
-#### (a) Repetition allowed
+$$
+\binom{n}{k}
+$$
 
-Sequence with repetition: $36^5 = 60\,466\,176$
+---
 
-#### (b) No character may repeat
+4. **Circular permutation**
 
-k-permutation: $P(36,5) = 36 \times 35 \times 34 \times 33 \times 32 = 45\,239\,040$
+$$
+(n-1)!
+$$
 
-#### (c) Counting models
+---
 
-- (a): **sequence with repetition** ($n^k$)
-- (b): **k-permutation** ($P(n,k)$)
+5. **Product rule**
+
+If a process has multiple independent steps:
+
+$$
+\text{Total} = (\text{step 1}) \times (\text{step 2}) \times \dots
+$$
+
+---
+
+## 1. Student ID Codes
+
+Format:
+
+- 2 letters from 5 options  
+- 3 digits from 10 options  
+
+---
+
+### 🔹 (a) Repetition allowed
+
+Each position is independent.
+
+---
+
+Letters:
+
+$$
+5 \cdot 5 = 5^2 = 25
+$$
+
+Digits:
+
+$$
+10^3 = 1000
+$$
+
+---
+
+### Multiply
+
+$$
+25 \cdot 1000 = 25\,000
+$$
+
+---
+
+### Model
+
+Sequence with repetition
+
+---
+
+### 🔹 (b) Letters no repeat, digits repeat
+
+---
+
+Letters:
+
+$$
+5 \cdot 4 = 20
+$$
+
+Digits:
+
+$$
+10^3 = 1000
+$$
+
+---
+
+### Multiply
+
+$$
+20 \cdot 1000 = 20\,000
+$$
+
+---
+
+### Model
+
+k-permutation (letters) + sequence (digits)
+
+---
+
+### 🔹 (c) No repetition at all
+
+---
+
+Letters:
+
+$$
+5 \cdot 4 = 20
+$$
+
+Digits:
+
+$$
+10 \cdot 9 \cdot 8 = 720
+$$
+
+---
+
+### Multiply
+
+$$
+20 \cdot 720 = 14\,400
+$$
+
+---
+
+### Model
+
+k-permutation
+
+---
+
+## 2. Medal Assignment
+
+12 runners, 3 medals.
+
+---
+
+### 🔹 (a) Assign medals
+
+Order matters (gold ≠ silver ≠ bronze)
+
+---
+
+$$
+12 \cdot 11 \cdot 10 = 1320
+$$
+
+---
+
+### Model
+
+k-permutation
+
+---
+
+### 🔹 (b) Two specific runners must win medals
+
+---
+
+Step 1 — choose medals for them:
+
+$$
+\binom{3}{2} = 3
+$$
+
+---
+
+Step 2 — assign medals:
+
+$$
+2! = 2
+$$
+
+---
+
+Step 3 — remaining medal:
+
+$$
+10 \text{ choices}
+$$
+
+---
+
+### Multiply
+
+$$
+3 \cdot 2 \cdot 10 = 60
+$$
+
+---
+
+## 3. Committee Selection
+
+10 students: 6 men, 4 women.
+
+---
+
+### 🔹 (a) Total committees
+
+$$
+\binom{10}{4} = 210
+$$
+
+---
+
+### 🔹 (b) Exactly 2 women
+
+---
+
+Women:
+
+$$
+\binom{4}{2} = 6
+$$
+
+Men:
+
+$$
+\binom{6}{2} = 15
+$$
+
+---
+
+### Multiply
+
+$$
+6 \cdot 15 = 90
+$$
+
+---
+
+### 🔹 (c) At least one woman
+
+---
+
+Complement method:
+
+$$
+\binom{10}{4} - \binom{6}{4}
+$$
+
+---
+
+$$
+210 - 15 = 195
+$$
+
+---
+
+## 4. Circular Seating
+
+7 people around a table.
+
+---
+
+### 🔹 (a) Total arrangements
+
+$$
+(7-1)! = 6! = 720
+$$
+
+---
+
+### 🔹 (b) Two people together
+
+---
+
+Treat as block → 6 objects:
+
+$$
+(6-1)! = 5! = 120
+$$
+
+Internal order:
+
+$$
+2
+$$
+
+---
+
+### Multiply
+
+$$
+120 \cdot 2 = 240
+$$
+
+---
+
+## 5. Passwords
+
+Symbols:
+
+$$
+10 + 26 = 36
+$$
+
+---
+
+### 🔹 (a) Repetition allowed
+
+$$
+36^5
+$$
+
+---
+
+### Compute
+
+$$
+36^5 = 60\,466\,176
+$$
+
+---
+
+### Model
+
+Sequence with repetition
+
+---
+
+### 🔹 (b) No repetition
+
+---
+
+$$
+36 \cdot 35 \cdot 34 \cdot 33 \cdot 32
+$$
+
+---
+
+$$
+= 45\,239\,040
+$$
+
+---
+
+### Model
+
+k-permutation
+
+---
+
+### 🔹 (c) Models used
+
+- Repetition allowed → sequence  
+- No repetition → k-permutation  
+
+---
+
+## Final Summary
+
+| Section | Model | Answer |
+|--------|------|--------|
+| IDs (a) | sequence | 25,000 |
+| IDs (b) | mixed | 20,000 |
+| IDs (c) | k-permutation | 14,400 |
+| Medals (a) | k-permutation | 1,320 |
+| Medals (b) | mixed | 60 |
+| Committee (a) | combination | 210 |
+| Committee (b) | combination | 90 |
+| Committee (c) | complement | 195 |
+| Circular | circular permutation | 720 |
+| Circular + block | block method | 240 |
+| Passwords (a) | sequence | 60,466,176 |
+| Passwords (b) | k-permutation | 45,239,040 |
+
+---
+
+## Key Insight
+
+This task shows that the **correct model selection is the most important step**.
+
+The same situation can give completely different results depending on:
+
+- order  
+- repetition  
+- structure of the problem
