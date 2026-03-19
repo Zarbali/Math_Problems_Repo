@@ -1,7 +1,5 @@
 # Task List 02 — Combinatorics for Probability
 
-> **Note:** This task list is still being developed. For now, please don’t work on it yet. :)
-
 ## Introduction
 
 Many probability problems start by counting outcomes: the size of a sample space, the number of favorable outcomes, or the number of possible codes or arrangements. The main difficulty is usually not the formula, but recognizing which counting model applies.
@@ -340,17 +338,17 @@ For each situation determine which combinatorial model is most appropriate:
 
 ## Task 3 — Permutations with Repeated Elements
 
-1. How many distinct arrangements of the word  
+1. How many distinct arrangements of the word
    $$
    MISSISSIPPI
    $$
    are possible?
-2. How many distinct arrangements of  
+3. How many distinct arrangements of  
    $$
    STATISTICS
    $$
    are possible?
-3. How many of the arrangements of **STATISTICS** start with the letter **S**?
+4. How many of the arrangements of **STATISTICS** start with the letter **S**?
 
 ---
 
