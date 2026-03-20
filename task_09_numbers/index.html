@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Task 9 — 5-Digit Numbers Simulation</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      color: #e8e8e8;
+      min-height: 100vh;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+    .explanation {
+      background: rgba(255,255,255,0.06);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.5rem;
+      max-width: 600px;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      color: #b0b0c8;
+    }
+    .controls {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+    button {
+      padding: 0.6rem 1.2rem;
+      border: none;
+      border-radius: 6px;
+      font-weight: 500;
+      cursor: pointer;
+      font-size: 0.95rem;
+      transition: transform 0.1s;
+    }
+    button:hover { transform: translateY(-1px); }
+    .btn-one { background: #4a9eff; color: #0d1117; }
+    .btn-100 { background: #34d399; color: #0d1117; }
+    .btn-reset { background: #f87171; color: #0d1117; }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1rem;
+      width: 100%;
+      max-width: 600px;
+      margin-bottom: 1.5rem;
+    }
+    .stat-card {
+      background: rgba(255,255,255,0.06);
+      border-radius: 8px;
+      padding: 1rem;
+      text-align: center;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .stat-label { font-size: 0.75rem; color: #94a3b8; margin-bottom: 0.25rem; }
+    .stat-value { font-size: 1.5rem; font-weight: 600; }
+    .stat-pct { font-size: 0.8rem; color: #94a3b8; margin-top: 0.25rem; }
+    .list-wrap {
+      width: 100%;
+      max-width: 600px;
+      max-height: 320px;
+      overflow-y: auto;
+      background: rgba(0,0,0,0.2);
+      border-radius: 8px;
+      padding: 0.75rem;
+    }
+    .num-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.4rem 0.6rem;
+      border-radius: 4px;
+      margin-bottom: 0.25rem;
+      font-family: 'Consolas', monospace;
+      font-size: 1rem;
+    }
+    .num-item.distinct { background: rgba(34, 197, 94, 0.15); border-left: 3px solid #22c55e; }
+    .num-item.repeated { background: rgba(248, 113, 113, 0.15); border-left: 3px solid #f87171; }
+    .badge {
+      font-size: 0.7rem;
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+    .badge-even { background: #3b82f6; color: #fff; }
+  </style>
+</head>
+<body>
+  <h1>Task 9 — 5-Digit Numbers Simulation</h1>
+
+  <p class="explanation">
+    This simulation generates random 5-digit numbers.
+    Each number is analyzed to determine whether it is even and whether its digits are distinct or repeated.
+    This helps visualize how different restrictions affect the outcomes.
+  </p>
+
+  <div class="controls">
+    <button class="btn-one" onclick="generate(1)">Generate 1 number</button>
+    <button class="btn-100" onclick="generate(100)">Generate 100 numbers</button>
+    <button class="btn-reset" onclick="reset()">Reset</button>
+  </div>
+
+  <div class="stats">
+    <div class="stat-card">
+      <div class="stat-label">Total</div>
+      <div class="stat-value" id="total">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Even</div>
+      <div class="stat-value" id="even">0</div>
+      <div class="stat-pct" id="evenPct">0%</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">All distinct</div>
+      <div class="stat-value" id="distinct">0</div>
+      <div class="stat-pct" id="distinctPct">0%</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Repeated digits</div>
+      <div class="stat-value" id="repeated">0</div>
+      <div class="stat-pct" id="repeatedPct">0%</div>
+    </div>
+  </div>
+
+  <div class="list-wrap" id="list"></div>
+
+  <script>
+    let total = 0, evenCount = 0, distinctCount = 0, repeatedCount = 0;
+    const items = [];
+
+    function randomDigit(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function randomFiveDigit() {
+      const first = randomDigit(1, 9);
+      let s = String(first);
+      for (let i = 0; i < 4; i++) s += randomDigit(0, 9);
+      return s;
+    }
+
+    function isEven(num) {
+      return ['0','2','4','6','8'].includes(num[4]);
+    }
+
+    function hasRepeatedDigits(num) {
+      const set = new Set(num);
+      return set.size < 5;
+    }
+
+    function generate(n) {
+      const listEl = document.getElementById('list');
+      const frag = document.createDocumentFragment();
+
+      for (let i = 0; i < n; i++) {
+        const num = randomFiveDigit();
+        const even = isEven(num);
+        const repeated = hasRepeatedDigits(num);
+        const distinct = !repeated;
+
+        total++;
+        if (even) evenCount++;
+        if (distinct) distinctCount++;
+        if (repeated) repeatedCount++;
+
+        const div = document.createElement('div');
+        div.className = 'num-item ' + (distinct ? 'distinct' : 'repeated');
+        div.innerHTML = '<span>' + num + '</span>' +
+          (even ? '<span class="badge badge-even">even</span>' : '');
+        frag.appendChild(div);
+
+        items.push(div);
+      }
+
+      listEl.appendChild(frag);
+      if (items.length > 200) {
+        while (items.length > 200) {
+          listEl.removeChild(items.shift());
+        }
+      }
+      updateStats();
+    }
+
+    function updateStats() {
+      document.getElementById('total').textContent = total;
+      document.getElementById('even').textContent = evenCount;
+      document.getElementById('distinct').textContent = distinctCount;
+      document.getElementById('repeated').textContent = repeatedCount;
+      const pct = total ? (x) => (100 * x / total).toFixed(1) + '%' : () => '0%';
+      document.getElementById('evenPct').textContent = pct(evenCount);
+      document.getElementById('distinctPct').textContent = pct(distinctCount);
+      document.getElementById('repeatedPct').textContent = pct(repeatedCount);
+    }
+
+    function reset() {
+      total = evenCount = distinctCount = repeatedCount = 0;
+      items.length = 0;
+      document.getElementById('list').innerHTML = '';
+      updateStats();
+    }
+  </script>
+</body>
+</html>

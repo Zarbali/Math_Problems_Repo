@@ -13,28 +13,40 @@
 
 ## Definitions / Theory
 
-### Structure of 5-digit numbers
+### Structure of a 5-digit number
 
-A 5-digit number:
+A 5-digit number has 5 positions:
 
-- cannot start with 0  
-- first digit is from 1 to 9 → 9 choices  
-- remaining digits are from 0 to 9 → 10 choices each  
+| Position | Description |
+|---------|------------|
+| Ten-thousands | cannot be 0 |
+| Others | can be 0–9 |
+
+So:
+
+- First digit → {1,...,9} → 9 choices  
+- Other digits → {0,...,9} → 10 choices each  
 
 ---
 
-### Order and repetition
+### Order and sequences
 
-- Order matters → digits form a number  
-- Repetition may or may not be allowed depending on the problem  
+Digits form a number, so:
+
+- order matters  
+- we are working with sequences  
 
 ---
 
 ### Multiplication principle
 
-If a number is constructed step-by-step:
+If a number is built step-by-step:
 
-- total number of outcomes is the product of choices at each position  
+$$
+\text{Total} = n_1 \cdot n_2 \cdot \dots \cdot n_k
+$$
+
+Each step corresponds to one position in the number.
 
 ---
 
@@ -42,33 +54,34 @@ If a number is constructed step-by-step:
 
 A number is even if its last digit is:
 
-0, 2, 4, 6, or 8 → 5 choices  
+$$
+\{0,2,4,6,8\}
+$$
+
+→ 5 possible choices  
 
 ---
 
 ### No repetition
 
-If digits cannot repeat:
+If repetition is not allowed:
 
-- each next position has fewer available digits  
+- each chosen digit is removed from future choices  
+- the number of options decreases step by step  
 
 ---
 
 ### Complement method
 
-Instead of counting:
-
-“at least one repeated digit”
-
-we compute:
+Instead of counting complex cases:
 
 $$
-\text{total} - \text{no repetition}
+\text{at least one repeat} = \text{total} - \text{no repetition}
 $$
 
 ---
 
-## Step-by-Step Solutions
+## Step-by-Step Solution
 
 ---
 
@@ -76,19 +89,19 @@ $$
 
 ---
 
-### Step 1 — First digit
+### Step 1 — Positions and choices
 
-Digits 1–9 → 9 choices.
+| Position | Available digits | Choices |
+|----------|----------------|--------|
+| Ten-thousands | {1,...,9} | 9 |
+| Thousands | {0,...,9} | 10 |
+| Hundreds | {0,...,9} | 10 |
+| Tens | {0,...,9} | 10 |
+| Units | {0,...,9} | 10 |
 
 ---
 
-### Step 2 — Remaining digits
-
-Each of the next 4 digits has 10 choices.
-
----
-
-### Step 3 — Multiply
+### Step 2 — Apply product rule
 
 $$
 9 \cdot 10 \cdot 10 \cdot 10 \cdot 10
@@ -96,14 +109,10 @@ $$
 
 ---
 
-### Step 4 — Compute
+### Step 3 — Compute
 
 $$
-10^4 = 10,000
-$$
-
-$$
-9 \cdot 10,000 = 90,000
+9 \cdot 10^4 = 9 \cdot 10,000 = 90,000
 $$
 
 ---
@@ -118,29 +127,25 @@ $$
 
 ## 🔹 Problem 2 — Even numbers
 
-Last digit must be even.
+---
+
+### Step 1 — Key observation
+
+Only the last digit determines whether the number is even.
 
 ---
 
-### Step 1 — First digit
+### Step 2 — Positions and choices
 
-9 choices.
-
----
-
-### Step 2 — Middle digits
-
-3 digits → each has 10 choices.
+| Position | Choices |
+|----------|--------|
+| First digit | 9 |
+| Middle 3 digits | 10 each |
+| Last digit (even) | 5 |
 
 ---
 
-### Step 3 — Last digit
-
-Even digits: 0, 2, 4, 6, 8 → 5 choices.
-
----
-
-### Step 4 — Multiply
+### Step 3 — Apply product rule
 
 $$
 9 \cdot 10 \cdot 10 \cdot 10 \cdot 5
@@ -148,18 +153,14 @@ $$
 
 ---
 
-### Step 5 — Compute
+### Step 4 — Compute
 
 $$
-10 \cdot 10 \cdot 10 = 1,000
-$$
-
-$$
-9 \cdot 1,000 = 9,000
+10^3 = 1,000
 $$
 
 $$
-9,000 \cdot 5 = 45,000
+9 \cdot 1,000 \cdot 5 = 45,000
 $$
 
 ---
@@ -172,43 +173,41 @@ $$
 
 ---
 
+### Sanity check
+
+Exactly half of all numbers should be even:
+
+$$
+\frac{90,000}{2} = 45,000
+$$
+
+✔ consistent result
+
+---
+
 ## 🔹 Problem 3 — No repeated digits
 
-Now repetition is not allowed.
+---
+
+### Step 1 — Key idea
+
+Digits cannot repeat → choices decrease after each step.
 
 ---
 
-### Step 1 — First digit
+### Step 2 — Positions and choices
 
-Digits 1–9 → 9 choices.
-
----
-
-### Step 2 — Second digit
-
-From 0–9, excluding first digit → 9 choices.
-
----
-
-### Step 3 — Third digit
-
-8 choices.
+| Position | Choices | Explanation |
+|----------|--------|------------|
+| First digit | 9 | cannot be 0 |
+| Second digit | 9 | any except first |
+| Third digit | 8 | exclude first two |
+| Fourth digit | 7 | exclude used |
+| Fifth digit | 6 | exclude used |
 
 ---
 
-### Step 4 — Fourth digit
-
-7 choices.
-
----
-
-### Step 5 — Fifth digit
-
-6 choices.
-
----
-
-### Step 6 — Multiply
+### Step 3 — Apply product rule
 
 $$
 9 \cdot 9 \cdot 8 \cdot 7 \cdot 6
@@ -216,7 +215,7 @@ $$
 
 ---
 
-### Step 7 — Compute
+### Step 4 — Compute
 
 $$
 9 \cdot 9 = 81
@@ -246,27 +245,20 @@ $$
 
 ## 🔹 Problem 4 — At least one repeated digit
 
-Use complement:
+---
 
-$$
-\text{at least one repeat} = \text{total} - \text{no repetition}
-$$
+### Step 1 — Strategy
+
+Use complement instead of direct counting.
 
 ---
 
-### Step 1 — Total
+### Step 2 — Known values
 
-$$
-90,000
-$$
-
----
-
-### Step 2 — No repetition
-
-$$
-27,216
-$$
+| Quantity | Value |
+|---------|------|
+| Total numbers | 90,000 |
+| No repetition | 27,216 |
 
 ---
 
@@ -288,19 +280,19 @@ $$
 
 ## Final Results
 
-| Problem | Answer |
+| Problem | Result |
 |--------|--------|
 | Total numbers | 90,000 |
 | Even numbers | 45,000 |
 | No repetition | 27,216 |
-| At least one repeat | 62,784 |
+| At least one repetition | 62,784 |
 
 ---
 
-## Interpretation / Sanity Check
+## Interpretation
 
-- About half of the numbers are even → 45,000 out of 90,000  
-- Numbers without repetition are fewer → 27,216  
-- Most numbers contain repetition → 62,784  
+- About half of all numbers are even  
+- Numbers with repetition are more common  
+- Restrictions reduce the number of outcomes  
 
-This confirms that allowing repetition increases the number of possibilities.
+This confirms that allowing repetition increases the total number of possibilities.
