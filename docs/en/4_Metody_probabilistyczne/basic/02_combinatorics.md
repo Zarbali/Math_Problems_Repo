@@ -338,16 +338,8 @@ For each situation determine which combinatorial model is most appropriate:
 
 ## Task 3 — Permutations with Repeated Elements
 
-1. How many distinct arrangements of the word
-   $$
-   MISSISSIPPI
-   $$
-   are possible?
-3. How many distinct arrangements of  
-   $$
-   STATISTICS
-   $$
-   are possible?
+1. How many distinct arrangements of the word **MISSISSIPPI** are possible?
+3. How many distinct arrangements of **STATISTICS** are possible?
 4. How many of the arrangements of **STATISTICS** start with the letter **S**?
 
 ---
@@ -445,10 +437,7 @@ A box contains:
 Thus there are 11 balls in total.
 
 1. How many **linear arrangements of all 11 balls** are possible if balls of the same color are treated as **indistinguishable**?
-2. How many arrangements are possible if every ball is **individually labeled**, for example
-$$
-R_1, R_2, R_3, R_4, B_1, B_2, B_3, B_4, G_1, G_2, G_3
-$$
+2. How many arrangements are possible if every ball is **individually labeled**, for example $R_1, R_2, R_3, R_4, B_1, B_2, B_3, B_4, G_1, G_2, G_3$?
 3. Explain why the answers in parts (1) and (2) are different.
 
 ---
@@ -471,15 +460,7 @@ A security system uses **4-digit PIN codes** consisting of digits from 0 to 9.
 2. Consider **4-digit numbers**, where the first digit cannot be zero.  
    How many such numbers exist?
 3. Explain why a **PIN code** and a **4-digit number** are counted using different rules.
-4. Explain why the codes
-$$
-1234
-$$
-and
-$$
-4321
-$$
-must be treated as **different outcomes**.
+4. Explain why the codes $1234$ and $4321$ must be treated as **different outcomes**.
 
 ---
 
@@ -497,10 +478,7 @@ For each part:
 
 A university introduces student identifiers consisting of:
 
-- two **letters** chosen from the set  
-  $$
-  \{A,B,C,D,E\}
-  $$
+- two **letters** chosen from the set $\{ A,B,C,D,E\}$
 - followed by **three digits** from $0$ to $9$.
 
 #### Problems:
