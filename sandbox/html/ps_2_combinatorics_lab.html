@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laboratorium Kombinatoryki</title>
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: Georgia, "Times New Roman", serif;
+            background: #f7f4ed;
+            color: #21313d;
+        }
+
+        .page {
+            max-width: 1380px;
+            margin: 0 auto;
+            padding: 24px 18px 42px;
+        }
+
+        .panel {
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #d8d1c4;
+            border-radius: 24px;
+            box-shadow: 0 14px 34px rgba(33, 49, 61, 0.08);
+        }
+
+        .hero {
+            padding: 24px;
+        }
+
+        .eyebrow {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: #dbeafe;
+            color: #1d4d7a;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        h1 {
+            margin: 14px 0 10px;
+            font-size: clamp(2.2rem, 4vw, 3.8rem);
+            line-height: 0.95;
+            letter-spacing: -0.04em;
+            color: #17324c;
+        }
+
+        h2, h3 {
+            margin: 0 0 10px;
+            color: #17324c;
+        }
+
+        p {
+            margin: 0;
+            line-height: 1.65;
+        }
+
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .small-card {
+            border: 1px solid #d8d1c4;
+            border-radius: 18px;
+            background: #fffdfa;
+            padding: 14px 16px;
+        }
+
+        .small-list {
+            display: grid;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .small-item {
+            border: 1px solid #e7e1d8;
+            border-radius: 14px;
+            background: white;
+            padding: 10px 12px;
+        }
+
+        .workspace {
+            margin-top: 20px;
+            padding: 20px;
+        }
+
+        .tabs {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .tab, .choice, button, input {
+            font: inherit;
+        }
+
+        .tab, .choice {
+            border: 1px solid #d8d1c4;
+            border-radius: 16px;
+            background: #fffdfa;
+            color: #21313d;
+            padding: 12px 10px;
+            text-align: left;
+            cursor: pointer;
+        }
+
+        .tab.active, .choice.active {
+            background: #dbeafe;
+            border-color: #1d4d7a;
+            box-shadow: inset 0 0 0 1px #1d4d7a;
+        }
+
+        .tab small {
+            display: block;
+            margin-top: 4px;
+            color: #62717c;
+            font-size: 0.76rem;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 320px minmax(0, 1fr);
+            gap: 18px;
+            align-items: start;
+        }
+
+        .sidebar {
+            display: grid;
+            gap: 14px;
+            position: sticky;
+            top: 10px;
+        }
+
+        .card {
+            border: 1px solid #d8d1c4;
+            border-radius: 20px;
+            background: #fffdfa;
+            padding: 16px;
+        }
+
+        .content {
+            border: 1px solid #d8d1c4;
+            border-radius: 22px;
+            background: white;
+            padding: 18px;
+        }
+
+        .split {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            align-items: start;
+        }
+
+        .note {
+            padding: 12px 14px;
+            border-left: 4px solid #1d4d7a;
+            border-radius: 16px;
+            background: #eef6ff;
+        }
+
+        .formula {
+            font-family: "Courier New", monospace;
+            background: #fbfaf7;
+            border: 1px solid #d8d1c4;
+            border-radius: 14px;
+            padding: 10px 12px;
+            line-height: 1.55;
+        }
+
+        .formula sup, .formula sub, .math sup, .math sub {
+            line-height: 0;
+        }
+
+        .math {
+            font-family: "Courier New", monospace;
+            white-space: nowrap;
+        }
+
+        .box-list, .model-list, .example-list, .control-list, .example-cloud {
+            display: grid;
+            gap: 10px;
+        }
+
+        .box, .model-card, .example-button {
+            border: 1px solid #e7e1d8;
+            border-radius: 16px;
+            background: #fffdfa;
+            padding: 12px 14px;
+        }
+
+        .model-card.active {
+            background: #dbeafe;
+            border-color: #1d4d7a;
+        }
+
+        .example-button {
+            text-align: left;
+            cursor: pointer;
+        }
+
+        .choice-row {
+            display: grid;
+            gap: 8px;
+        }
+
+        .choice-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .result {
+            padding: 14px 16px;
+            border-left: 4px solid #0f766e;
+            border-radius: 18px;
+            background: #dff7f3;
+            color: #0f5e58;
+        }
+
+        .example-chip {
+            border: 1px solid #d8d1c4;
+            border-radius: 14px;
+            background: #fbfaf7;
+            padding: 10px 12px;
+            font-family: "Courier New", monospace;
+        }
+
+        .token-row, .slot-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .token {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            display: grid;
+            place-items: center;
+            color: white;
+            font-weight: 700;
+        }
+
+        .t1 { background: #2563eb; }
+        .t2 { background: #d97706; }
+        .t3 { background: #0f766e; }
+        .t4 { background: #b4235c; }
+        .t5 { background: #6d28d9; }
+
+        .slot {
+            min-width: 70px;
+            min-height: 70px;
+            border: 2px dashed #cbd5df;
+            border-radius: 16px;
+            padding: 10px;
+            display: grid;
+            place-items: center;
+            color: #62717c;
+            background: white;
+            text-align: center;
+        }
+
+        details.help {
+            border: 1px solid #d8d1c4;
+            border-radius: 16px;
+            background: #fffdfa;
+            overflow: hidden;
+        }
+
+        details.help summary {
+            cursor: pointer;
+            padding: 12px 14px;
+            font-weight: 700;
+            background: #eef6ff;
+            color: #17324c;
+        }
+
+        .help-body {
+            padding: 12px 14px 14px;
+            display: grid;
+            gap: 8px;
+            color: #5f6e79;
+            line-height: 1.6;
+        }
+
+        .mini {
+            color: #5f6e79;
+            line-height: 1.6;
+        }
+
+        label {
+            display: grid;
+            gap: 6px;
+            color: #46545f;
+        }
+
+        input {
+            border: 1px solid #d8d1c4;
+            border-radius: 12px;
+            padding: 10px 12px;
+            background: white;
+            color: #21313d;
+        }
+
+        @media (max-width: 1100px) {
+            .layout, .split, .hero-grid { grid-template-columns: 1fr; }
+            .sidebar { position: static; }
+        }
+
+        @media (max-width: 720px) {
+            .tabs, .choice-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <section class="panel hero">
+            <div class="eyebrow">Sandbox · Kombinatoryka</div>
+            <h1>Laboratorium Kombinatoryki</h1>
+            <p>
+                To jest aplikacja do <strong>zrozumienia tematu</strong>. Mozesz rozpoznawac model,
+                czytac wyjasnienia, porownywac przypadki i bawic sie parametrami bez uczenia sie wzorow na pamiec.
+            </p>
+            <div class="hero-grid">
+                <div class="small-card">
+                    <h3>Pytania startowe</h3>
+                    <div class="small-list">
+                        <div class="small-item">Czy bierzemy <strong>wszystkie</strong> elementy czy tylko <strong>czesc</strong>?</div>
+                        <div class="small-item">Czy <strong>kolejnosc ma znaczenie</strong>?</div>
+                        <div class="small-item">Czy <strong>powtorzenia</strong> sa dozwolone?</div>
+                        <div class="small-item">Czy obiekty sa <strong>rozne</strong>, czy czesc jest identyczna?</div>
+                    </div>
+                </div>
+                <div class="small-card">
+                    <h3>Co tu zrobisz?</h3>
+                    <div class="small-list">
+                        <div class="small-item">Rozpoznasz, jaki model liczenia pasuje do sytuacji.</div>
+                        <div class="small-item">Zrozumiesz roznice miedzy permutacja, kombinacja i k-permutacja.</div>
+                        <div class="small-item">Zobaczysz, jak jedna zmiana zasady zmienia wynik.</div>
+                        <div class="small-item">Pobawisz sie parametrami i zbudujesz intuicje.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel workspace">
+            <div class="tabs" id="tabs"></div>
+            <div class="layout">
+                <aside class="sidebar">
+                    <div class="card">
+                        <h3>Szybka sciaga</h3>
+                        <div class="box-list">
+                            <div class="box"><strong>Permutacja</strong><br>wszystkie, kolejnosc tak</div>
+                            <div class="box"><strong>Kombinacja</strong><br>czesc, kolejnosc nie</div>
+                            <div class="box"><strong>k-permutacja</strong><br>czesc, kolejnosc tak</div>
+                            <div class="box"><strong>Powtorzenia</strong><br>mozna uzywac ponownie</div>
+                            <div class="box"><strong>Kolowa</strong><br>obroty sa tym samym</div>
+                            <div class="box"><strong>Powtorzone elementy</strong><br>czesc obiektow identyczna</div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h3>Przyklady do klikniecia</h3>
+                        <div class="example-list" id="examples"></div>
+                    </div>
+                </aside>
+                <main class="content" id="content"></main>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        var state = {
+            tab: "recognize",
+            model: "permutation",
+            selector: {
+                useAll: "all",
+                order: "yes",
+                repetition: "no",
+                identical: "no",
+                circle: "no"
+            },
+            params: {
+                permutation: { n: 5 },
+                circular: { n: 6 },
+                combination: { n: 8, k: 3 },
+                kpermutation: { n: 8, k: 3 },
+                repetition: { n: 4, k: 5 },
+                repeated: { n: 8, a: 3, b: 3, c: 2 }
+            }
+        };
+
+        var tabs = [
+            { key: "recognize", label: "1. Rozpoznaj model", small: "drzewko decyzji" },
+            { key: "learn", label: "2. Poznaj modele", small: "intuicja i wzory" },
+            { key: "play", label: "3. Pobaw sie", small: "parametry i sens" },
+            { key: "compare", label: "4. Porownaj", small: "co zmienia zasada" }
+        ];
+
+        var modelInfo = {
+            permutation: {
+                label: "Permutacja",
+                formula: "P(n) = n!",
+                idea: "Ustawiamy wszystkie rozne elementy w kolejnosci.",
+                example: "Ksiazki na polce, osoby w rzedzie."
+            },
+            circular: {
+                label: "Permutacja kolowa",
+                formula: "P_kol(n) = (n-1)!",
+                idea: "Ustawiamy wszystkie elementy wokol okregu.",
+                example: "Osoby przy okraglym stole."
+            },
+            combination: {
+                label: "Kombinacja",
+                formula: "C(n,k) = n! / (k!(n-k)!)",
+                idea: "Wybieramy tylko czesc elementow i kolejnosc nie ma znaczenia.",
+                example: "Wybor komisji, wybor kart."
+            },
+            kpermutation: {
+                label: "k-permutacja",
+                formula: "P(n,k) = n! / (n-k)!",
+                idea: "Wybieramy czesc elementow, ale kolejnosc ma znaczenie.",
+                example: "Miejsca 1,2,3 albo medale."
+            },
+            repetition: {
+                label: "Ciag z powtorzeniami",
+                formula: "n^k",
+                idea: "Kazda pozycja moze byc wybrana niezaleznie i element moze sie powtarzac.",
+                example: "PIN, kod, rzuty kostka."
+            },
+            repeated: {
+                label: "Permutacja z powtorzeniami",
+                formula: "n! / (a! b! c! ...)",
+                idea: "Ustawiamy wszystkie elementy, ale czesc z nich jest identyczna.",
+                example: "Rozne ustawienia liter w slowie."
+            }
+        };
+
+        var examples = [
+            { label: "Ksiazki na polce", model: "permutation", desc: "5 roznych ksiazek ustawionych w rzedzie." },
+            { label: "Okragly stol", model: "circular", desc: "6 osob przy okraglym stole." },
+            { label: "Komisja", model: "combination", desc: "3 osoby wybrane z 8." },
+            { label: "Medale", model: "kpermutation", desc: "Zloto, srebro, braz." },
+            { label: "PIN", model: "repetition", desc: "Kod dlugosci 5 z 4 symboli." },
+            { label: "Slowo z powtorzeniami", model: "repeated", desc: "Litery A, A, B, B, C." }
+        ];
+
+        function fact(n) {
+            var out = 1;
+            for (var i = 2; i <= n; i += 1) out *= i;
+            return out;
+        }
+
+        function choose(n, k) {
+            if (k < 0 || k > n) return 0;
+            return fact(n) / (fact(k) * fact(n - k));
+        }
+
+        function math(text) {
+            return '<span class="math">' + text + '</span>';
+        }
+
+        function details(title, lines) {
+            var body = '';
+            for (var i = 0; i < lines.length; i += 1) {
+                body += '<div>' + lines[i] + '</div>';
+            }
+            return '<details class="help"><summary>' + title + '</summary><div class="help-body">' + body + '</div></details>';
+        }
+
+        function symbols(n) {
+            var base = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+            return base.slice(0, n);
+        }
+
+        function takeFirst(arr, limit) {
+            return arr.slice(0, limit);
+        }
+
+        function genPermutations(items, limit) {
+            var out = [];
+            function rec(prefix, rest) {
+                if (out.length >= limit) return;
+                if (rest.length === 0) {
+                    out.push(prefix.join(''));
+                    return;
+                }
+                for (var i = 0; i < rest.length; i += 1) {
+                    var next = rest.slice();
+                    var picked = next.splice(i, 1)[0];
+                    rec(prefix.concat([picked]), next);
+                    if (out.length >= limit) return;
+                }
+            }
+            rec([], items);
+            return out;
+        }
+
+        function genCombinations(items, k, limit) {
+            var out = [];
+            function rec(start, picked) {
+                if (out.length >= limit) return;
+                if (picked.length === k) {
+                    out.push('{' + picked.join(',') + '}');
+                    return;
+                }
+                for (var i = start; i < items.length; i += 1) {
+                    rec(i + 1, picked.concat([items[i]]));
+                    if (out.length >= limit) return;
+                }
+            }
+            rec(0, []);
+            return out;
+        }
+
+        function genKPermutations(items, k, limit) {
+            var out = [];
+            function rec(prefix, rest) {
+                if (out.length >= limit) return;
+                if (prefix.length === k) {
+                    out.push(prefix.join(''));
+                    return;
+                }
+                for (var i = 0; i < rest.length; i += 1) {
+                    var next = rest.slice();
+                    var picked = next.splice(i, 1)[0];
+                    rec(prefix.concat([picked]), next);
+                    if (out.length >= limit) return;
+                }
+            }
+            rec([], items);
+            return out;
+        }
+
+        function genSequences(items, k, limit) {
+            var out = [];
+            function rec(prefix) {
+                if (out.length >= limit) return;
+                if (prefix.length === k) {
+                    out.push(prefix.join(''));
+                    return;
+                }
+                for (var i = 0; i < items.length; i += 1) {
+                    rec(prefix.concat([items[i]]));
+                    if (out.length >= limit) return;
+                }
+            }
+            rec([]);
+            return out;
+        }
+
+        function genCircular(items, limit) {
+            if (items.length === 0) return [];
+            var first = items[0];
+            var rest = items.slice(1);
+            var perms = genPermutations(rest, limit);
+            var out = [];
+            for (var i = 0; i < perms.length; i += 1) {
+                out.push('(' + first + '|' + perms[i].split('').join(' ') + ')');
+            }
+            return out;
+        }
+
+        function genRepeated(a, b, c, limit) {
+            var counts = { A: a, B: b, C: c };
+            var total = a + b + c;
+            var out = [];
+            function rec(prefix) {
+                if (out.length >= limit) return;
+                if (prefix.length === total) {
+                    out.push(prefix.join(''));
+                    return;
+                }
+                var keys = ['A', 'B', 'C'];
+                for (var i = 0; i < keys.length; i += 1) {
+                    var key = keys[i];
+                    if (counts[key] > 0) {
+                        counts[key] -= 1;
+                        rec(prefix.concat([key]));
+                        counts[key] += 1;
+                        if (out.length >= limit) return;
+                    }
+                }
+            }
+            rec([]);
+            return out;
+        }
+
+        function playExamples() {
+            var key = state.model;
+            var p = state.params[key];
+            if (key === 'permutation') return takeFirst(genPermutations(symbols(Math.min(p.n, 5)), 12), 12);
+            if (key === 'circular') return takeFirst(genCircular(symbols(Math.min(p.n, 5)), 12), 12);
+            if (key === 'combination') return takeFirst(genCombinations(symbols(Math.min(p.n, 6)), Math.min(p.k, 4), 12), 12);
+            if (key === 'kpermutation') return takeFirst(genKPermutations(symbols(Math.min(p.n, 6)), Math.min(p.k, 4), 12), 12);
+            if (key === 'repetition') return takeFirst(genSequences(symbols(Math.min(p.n, 4)), Math.min(p.k, 4), 18), 18);
+            return takeFirst(genRepeated(Math.min(p.a, 4), Math.min(p.b, 4), Math.min(p.c, 4), 18), 18);
+        }
+
+        function mechanicsText() {
+            var key = state.model;
+            if (key === 'permutation') return 'Zmiana kolejnosci zawsze tworzy nowy wynik. ABCD i BACD to dwie rozne permutacje.';
+            if (key === 'circular') return 'W kolowej wersji obrot nie daje nowego wyniku. Dlatego jeden element mozemy myslec jako "przypiety".';
+            if (key === 'combination') return 'Tu zmiana kolejnosci nic nie zmienia. {A,B,C} i {C,B,A} to dalej ten sam wybor.';
+            if (key === 'kpermutation') return 'Wybierasz tylko czesc elementow, ale miejsca maja znaczenie, wiec ABC i ACB sa rozne.';
+            if (key === 'repetition') return 'Kazde miejsce wybierasz niezaleznie i ten sam symbol moze pojawic sie znowu, np. AABA.';
+            return 'Zamiany identycznych liter nie tworza nowego przypadku. AABBC i AABBC po zamianie dwoch A to nadal ten sam uklad.';
+        }
+
+        function detectModel() {
+            var s = state.selector;
+            if (s.useAll === "all") {
+                if (s.circle === "yes") return "circular";
+                if (s.identical === "yes") return "repeated";
+                return "permutation";
+            }
+            if (s.order === "no") return "combination";
+            if (s.repetition === "yes") return "repetition";
+            return "kpermutation";
+        }
+
+        function renderTabs() {
+            var html = '';
+            for (var i = 0; i < tabs.length; i += 1) {
+                var tab = tabs[i];
+                var active = state.tab === tab.key ? ' active' : '';
+                html += '<button class="tab' + active + '" data-tab="' + tab.key + '">' + tab.label + '<small>' + tab.small + '</small></button>';
+            }
+            document.getElementById('tabs').innerHTML = html;
+            var btns = document.querySelectorAll('[data-tab]');
+            for (var j = 0; j < btns.length; j += 1) {
+                btns[j].addEventListener('click', function () {
+                    state.tab = this.getAttribute('data-tab');
+                    render();
+                });
+            }
+        }
+
+        function renderExamples() {
+            var html = '';
+            for (var i = 0; i < examples.length; i += 1) {
+                html += '<button class="example-button" data-example-model="' + examples[i].model + '"><strong>' + examples[i].label + '</strong><br><span class="mini">' + examples[i].desc + '</span></button>';
+            }
+            document.getElementById('examples').innerHTML = html;
+            var btns = document.querySelectorAll('[data-example-model]');
+            for (var j = 0; j < btns.length; j += 1) {
+                btns[j].addEventListener('click', function () {
+                    state.model = this.getAttribute('data-example-model');
+                    state.tab = 'learn';
+                    render();
+                });
+            }
+        }
+
+        function choice(name, value, label, current) {
+            var active = value === current ? ' active' : '';
+            return '<button class="choice' + active + '" data-choice-name="' + name + '" data-choice-value="' + value + '">' + label + '</button>';
+        }
+
+        function renderRecognize() {
+            var matched = detectModel();
+            var info = modelInfo[matched];
+            return '' +
+                '<div class="split">' +
+                    '<div class="box-list">' +
+                        '<h2>Rozpoznaj model po pytaniach</h2>' +
+                        '<div class="note">Nie zaczynaj od wzoru. Najpierw odpowiedz, jaki typ wyniku opisuje zadanie.</div>' +
+                        '<div class="choice-row"><strong>Czy bierzemy wszystkie elementy?</strong><div class="choice-grid">' +
+                            choice('useAll', 'all', 'Tak, wszystkie', state.selector.useAll) +
+                            choice('useAll', 'some', 'Nie, tylko czesc', state.selector.useAll) +
+                        '</div></div>' +
+                        '<div class="choice-row"><strong>Czy kolejnosc ma znaczenie?</strong><div class="choice-grid">' +
+                            choice('order', 'yes', 'Tak', state.selector.order) +
+                            choice('order', 'no', 'Nie', state.selector.order) +
+                        '</div></div>' +
+                        '<div class="choice-row"><strong>Czy powtorzenia sa dozwolone?</strong><div class="choice-grid">' +
+                            choice('repetition', 'yes', 'Tak', state.selector.repetition) +
+                            choice('repetition', 'no', 'Nie', state.selector.repetition) +
+                        '</div></div>' +
+                        '<div class="choice-row"><strong>Czy czesc elementow jest identyczna?</strong><div class="choice-grid">' +
+                            choice('identical', 'yes', 'Tak', state.selector.identical) +
+                            choice('identical', 'no', 'Nie', state.selector.identical) +
+                        '</div></div>' +
+                        '<div class="choice-row"><strong>Czy uklad jest kolowy?</strong><div class="choice-grid">' +
+                            choice('circle', 'yes', 'Tak', state.selector.circle) +
+                            choice('circle', 'no', 'Nie', state.selector.circle) +
+                        '</div></div>' +
+                        details('Rozwin argumentacje', [
+                            'To jest najwazniejsza czesc calego tematu: najpierw nazwac typ wyniku, dopiero potem siegnac po wzor.',
+                            'Jesli zadanie mowi o komisji, kolejnosc zwykle nie ma znaczenia. Jesli mowi o miejscach 1, 2, 3, kolejnosc nagle staje sie kluczowa.'
+                        ]) +
+                    '</div>' +
+                    '<div>' +
+                        '<div class="result"><strong>Pasujacy model: ' + info.label + '</strong>' + info.idea + '<br>' + math(info.formula) + '</div>' +
+                        '<div class="box" style="margin-top:14px;"><strong>Przyklad:</strong><br>' + info.example + '</div>' +
+                        details('Jak to czytac?', [
+                            'Ten etap jeszcze nie daje liczby. On tylko pomaga dobrze nazwac model.',
+                            'Gdy model jest trafiony, podstawienie danych staje sie proste i logiczne.'
+                        ]) +
+                    '</div>' +
+                '</div>';
+        }
+
+        function modelCard(key) {
+            var info = modelInfo[key];
+            var active = state.model === key ? ' active' : '';
+            return '<button class="model-card' + active + '" data-model-button="' + key + '"><h3>' + info.label + '</h3><div class="formula">' + info.formula + '</div><div class="mini" style="margin-top:10px;">' + info.idea + '</div></button>';
+        }
+
+        function renderLearn() {
+            var key = state.model;
+            var info = modelInfo[key];
+            var visual = '';
+            if (key === 'permutation') {
+                visual = '<div class="token-row"><div class="token t1">A</div><div class="token t2">B</div><div class="token t3">C</div><div class="token t4">D</div></div><div class="slot-row"><div class="slot">miejsce 1</div><div class="slot">miejsce 2</div><div class="slot">miejsce 3</div><div class="slot">miejsce 4</div></div>';
+            } else if (key === 'combination') {
+                visual = '<div class="mini">Zestaw {A,B,C} to ten sam wybor co {C,B,A}. Tu kolejnosc nie buduje nowego wyniku.</div>';
+            } else if (key === 'kpermutation') {
+                visual = '<div class="mini">ABC i BAC sa rozne, bo miejsca sa czescia wyniku.</div>';
+            } else if (key === 'repetition') {
+                visual = '<div class="mini">Ten sam symbol moze pojawic sie ponownie. To najwygodniej myslec jako niezalezny wybor na kazdej pozycji.</div>';
+            } else if (key === 'circular') {
+                visual = '<div class="mini">Jesli wszyscy przesuna sie o jedno miejsce przy tym samym stole, ukladu nie traktujemy jako nowego.</div>';
+            } else {
+                visual = '<div class="mini">AAB i ABA sa rozne, ale zamiana pierwszego A z drugim A niczego nie zmienia, bo A sa nierozroznialne.</div>';
+            }
+
+            return '' +
+                '<div class="model-list">' +
+                    modelCard('permutation') +
+                    modelCard('circular') +
+                    modelCard('combination') +
+                    modelCard('kpermutation') +
+                    modelCard('repetition') +
+                    modelCard('repeated') +
+                '</div>' +
+                '<div style="margin-top:16px;" class="split">' +
+                    '<div>' +
+                        '<h2>' + info.label + '</h2>' +
+                        '<div class="note">' + info.idea + '</div>' +
+                        '<div class="formula" style="margin-top:12px;">' + info.formula + '</div>' +
+                        details('Rozwin wyjasnienie', [
+                            'Najczestszy blad to wybieranie wzoru po samych literach n i k. To za malo.',
+                            'Trzeba jeszcze wiedziec, czy wynik jest zbiorem, uporzadkowanym wyborem, ustawieniem wszystkich elementow albo kodem.'
+                        ]) +
+                    '</div>' +
+                    '<div>' +
+                        '<div class="box"><strong>Przyklad:</strong><br>' + info.example + '</div>' +
+                        '<div class="box" style="margin-top:14px;"><strong>Intuicja:</strong><div class="mini" style="margin-top:8px;">' + visual + '</div></div>' +
+                    '</div>' +
+                '</div>';
+        }
+
+        function currentValue() {
+            var key = state.model;
+            var p = state.params[key];
+            if (key === 'permutation') return fact(p.n);
+            if (key === 'circular') return fact(p.n - 1);
+            if (key === 'combination') return choose(p.n, p.k);
+            if (key === 'kpermutation') return fact(p.n) / fact(p.n - p.k);
+            if (key === 'repetition') return Math.pow(p.n, p.k);
+            return fact(p.n) / (fact(p.a) * fact(p.b) * fact(p.c));
+        }
+
+        function renderPlayControls() {
+            var key = state.model;
+            var p = state.params[key];
+            if (key === 'permutation') return '<label>n<input type="number" min="1" max="9" value="' + p.n + '" data-input-key="n"></label>';
+            if (key === 'circular') return '<label>n<input type="number" min="2" max="9" value="' + p.n + '" data-input-key="n"></label>';
+            if (key === 'combination' || key === 'kpermutation') return '<label>n<input type="number" min="1" max="12" value="' + p.n + '" data-input-key="n"></label><label>k<input type="number" min="0" max="' + p.n + '" value="' + p.k + '" data-input-key="k"></label>';
+            if (key === 'repetition') return '<label>liczba symboli n<input type="number" min="1" max="10" value="' + p.n + '" data-input-key="n"></label><label>dlugosc k<input type="number" min="1" max="10" value="' + p.k + '" data-input-key="k"></label>';
+            return '<label>liczba wszystkich elementow n<input type="number" min="1" max="12" value="' + p.n + '" data-input-key="n"></label><label>grupa A<input type="number" min="0" max="' + p.n + '" value="' + p.a + '" data-input-key="a"></label><label>grupa B<input type="number" min="0" max="' + p.n + '" value="' + p.b + '" data-input-key="b"></label><label>grupa C<input type="number" min="0" max="' + p.n + '" value="' + p.c + '" data-input-key="c"></label>';
+        }
+
+        function playExplanation() {
+            var key = state.model;
+            if (key === 'permutation') return 'Silnia rosnie bardzo szybko. Juz male zwiekszenie n daje ogromny skok liczby mozliwosci.';
+            if (key === 'circular') return 'Jedno miejsce mozna ustalic na stale, bo obroty nie tworza nowego ukladu.';
+            if (key === 'combination') return 'Zmiana kolejnosci nie tworzy nowej grupy, dlatego wynik jest mniejszy niz w k-permutacji.';
+            if (key === 'kpermutation') return 'Tutaj kazda zmiana miejsca daje nowy wynik, wiec wynik rosnie mocniej niz w kombinacjach.';
+            if (key === 'repetition') return 'Kazde miejsce ma ta sama liczbe mozliwosci, wiec naturalnie wychodzi mnozenie n razy przez siebie.';
+            return 'Zaczynasz od wszystkich ustawien, ale dzielisz przez zamiany identycznych elementow, bo one niczego nie zmieniaja.';
+        }
+
+        function renderPlay() {
+            var key = state.model;
+            var info = modelInfo[key];
+            var examplesNow = playExamples();
+            var cloud = '';
+            for (var i = 0; i < examplesNow.length; i += 1) {
+                cloud += '<div class="example-chip">' + examplesNow[i] + '</div>';
+            }
+            return '' +
+                '<div class="split">' +
+                    '<div>' +
+                        '<h2>Pobaw sie parametrami</h2>' +
+                        '<div class="note">' + info.label + ' — ' + info.idea + '</div>' +
+                        '<div class="control-list" id="play-controls" style="margin-top:12px;">' + renderPlayControls() + '</div>' +
+                        details('Co warto obserwowac?', [
+                            'Nie patrz tylko na liczbe. Patrz tez, jakie konkretnie wyniki sa dopuszczalne i dlaczego.',
+                            'Po zmianie parametrow porownuj nie tylko wynik koncowy, ale tez to, czy zmienia sie mechanika: kolejnosc, liczba miejsc, dopuszczenie powtorzen.'
+                        ]) +
+                    '</div>' +
+                    '<div>' +
+                        '<div class="result"><strong>Aktualny wynik</strong>' + math(info.formula) + '<br>' + currentValue() + '</div>' +
+                        '<div class="box" style="margin-top:14px;"><strong>Jak to rozumiec?</strong><div class="mini" style="margin-top:8px;">' + playExplanation() + '</div></div>' +
+                    '</div>' +
+                '</div>' +
+                '<div style="margin-top:16px;" class="split">' +
+                    '<div>' +
+                        '<h3>Mechanika tego modelu</h3>' +
+                        '<div class="note">' + mechanicsText() + '</div>' +
+                        '<div class="box" style="margin-top:14px;"><strong>Co sie zmienia, gdy klikam?</strong><div class="mini" style="margin-top:8px;">' +
+                            (key === 'permutation' ? 'Rosnie liczba wszystkich ustawien wszystkich elementow.' : '') +
+                            (key === 'circular' ? 'Rosnie liczba osob, ale obroty nadal nie sa traktowane jako nowe ustawienia.' : '') +
+                            (key === 'combination' ? 'Rosnie liczba mozliwych grup, ale kolejnosc dalej nie ma znaczenia.' : '') +
+                            (key === 'kpermutation' ? 'Rosnie liczba mozliwych uporzadkowanych wyborow: kto wystapi i na ktorym miejscu.' : '') +
+                            (key === 'repetition' ? 'Rosnie liczba dopuszczalnych ciagow, bo kazde miejsce moze byc wypelnione niezaleznie.' : '') +
+                            (key === 'repeated' ? 'Rosnie lub maleje liczba roznych ustawien w zaleznosci od tego, ile elementow jest identycznych.' : '') +
+                        '</div></div>' +
+                    '</div>' +
+                    '<div>' +
+                        '<h3>Przykladowe wyniki</h3>' +
+                        '<div class="mini">Pokazujemy male, konkretne przyklady wynikow, zeby bylo widac, <strong>co jest liczone</strong>, a nie tylko ile tego jest.</div>' +
+                        '<div class="example-cloud" style="margin-top:12px;">' + cloud + '</div>' +
+                    '</div>' +
+                '</div>';
+        }
+
+        function renderCompare() {
+            var comb = choose(6, 3);
+            var kp = fact(6) / fact(3);
+            var rep = Math.pow(6, 3);
+            return '' +
+                '<div class="split">' +
+                    '<div>' +
+                        '<h2>Ta sama historia, inne zasady</h2>' +
+                        '<div class="box-list">' +
+                            '<div class="box"><strong>Komisja:</strong> wybierasz 3 osoby z 6.<br>' + math('C(6,3) = ' + comb) + '</div>' +
+                            '<div class="box"><strong>Medale:</strong> wybierasz 3 osoby z 6 na miejsca 1,2,3.<br>' + math('P(6,3) = ' + kp) + '</div>' +
+                            '<div class="box"><strong>Kod:</strong> tworzysz 3-znakowy ciag z 6 symboli i wolno powtarzac.<br>' + math('6^3 = ' + rep) + '</div>' +
+                        '</div>' +
+                        details('Dlaczego wyniki sa rozne?', [
+                            'W komisji kolejnosc nie ma znaczenia.',
+                            'Przy medalach kolejnosc od razu tworzy nowe wyniki.',
+                            'W kodzie dodatkowo ten sam symbol moze pojawic sie kilka razy.'
+                        ]) +
+                    '</div>' +
+                    '<div>' +
+                        '<div class="note">Jedna zmiana zasady potrafi calkowicie zmienic model liczenia.</div>' +
+                        '<div class="box" style="margin-top:14px;"><strong>Najwazniejsza lekcja:</strong><div class="mini" style="margin-top:8px;">Zanim liczysz, zapytaj: co dokladnie jest wynikiem i czy kolejnosc albo powtorzenia tworza nowy przypadek?</div></div>' +
+                    '</div>' +
+                '</div>';
+        }
+
+        function renderContent() {
+            var html = '';
+            if (state.tab === 'recognize') html = renderRecognize();
+            if (state.tab === 'learn') html = renderLearn();
+            if (state.tab === 'play') html = renderPlay();
+            if (state.tab === 'compare') html = renderCompare();
+            document.getElementById('content').innerHTML = html;
+            bindChoices();
+            bindModelButtons();
+            bindPlayInputs();
+        }
+
+        function bindChoices() {
+            var nodes = document.querySelectorAll('[data-choice-name]');
+            for (var i = 0; i < nodes.length; i += 1) {
+                nodes[i].addEventListener('click', function () {
+                    var name = this.getAttribute('data-choice-name');
+                    var value = this.getAttribute('data-choice-value');
+                    state.selector[name] = value;
+                    render();
+                });
+            }
+        }
+
+        function bindModelButtons() {
+            var nodes = document.querySelectorAll('[data-model-button]');
+            for (var i = 0; i < nodes.length; i += 1) {
+                nodes[i].addEventListener('click', function () {
+                    state.model = this.getAttribute('data-model-button');
+                    render();
+                });
+            }
+        }
+
+        function normalizeParams() {
+            var p;
+            p = state.params.permutation;
+            p.n = Math.max(1, Math.min(9, Math.round(p.n)));
+            p = state.params.circular;
+            p.n = Math.max(2, Math.min(9, Math.round(p.n)));
+            p = state.params.combination;
+            p.n = Math.max(1, Math.min(12, Math.round(p.n)));
+            p.k = Math.max(0, Math.min(p.n, Math.round(p.k)));
+            p = state.params.kpermutation;
+            p.n = Math.max(1, Math.min(12, Math.round(p.n)));
+            p.k = Math.max(0, Math.min(p.n, Math.round(p.k)));
+            p = state.params.repetition;
+            p.n = Math.max(1, Math.min(10, Math.round(p.n)));
+            p.k = Math.max(1, Math.min(10, Math.round(p.k)));
+            p = state.params.repeated;
+            p.n = Math.max(1, Math.min(12, Math.round(p.n)));
+            p.a = Math.max(0, Math.min(p.n, Math.round(p.a)));
+            p.b = Math.max(0, Math.min(p.n, Math.round(p.b)));
+            p.c = Math.max(0, Math.min(p.n, Math.round(p.c)));
+            var sum = p.a + p.b + p.c;
+            if (sum !== p.n) {
+                p.c = Math.max(0, p.n - p.a - p.b);
+            }
+        }
+
+        function bindPlayInputs() {
+            var nodes = document.querySelectorAll('[data-input-key]');
+            for (var i = 0; i < nodes.length; i += 1) {
+                nodes[i].addEventListener('input', function () {
+                    var key = this.getAttribute('data-input-key');
+                    var value = Number(this.value);
+                    state.params[state.model][key] = value;
+                    normalizeParams();
+                    render();
+                });
+            }
+        }
+
+        function render() {
+            normalizeParams();
+            renderTabs();
+            renderExamples();
+            renderContent();
+        }
+
+        render();
+    </script>
+</body>
+</html>

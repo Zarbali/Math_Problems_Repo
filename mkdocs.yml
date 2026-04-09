@@ -108,6 +108,7 @@ plugins:
                     - '1. Events & Probability': '4_Metody_probabilistyczne/basic/01_events_and_probability.md'
                     - '2. Combinatorics': '4_Metody_probabilistyczne/basic/02_combinatorics.md'
                     - '3. Probability Distributions': '4_Metody_probabilistyczne/basic/03_probability_distributions.md'
+                    - '4. Discovering Formalism': '4_Metody_probabilistyczne/basic/04_discovery_formalism.md'
                 - Advanced:
                     - '1. Events & Probability': '4_Metody_probabilistyczne/advanced/01_events_and_probability.md'
                     - '2. Random Variables': '4_Metody_probabilistyczne/advanced/02_random_variables.md'

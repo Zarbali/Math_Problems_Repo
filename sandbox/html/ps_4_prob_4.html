@@ -1,0 +1,1241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Problem 4 - Building Complex Statements</title>
+    <style>
+        :root {
+            --ink: #1f2937;
+            --muted: #6b7280;
+            --panel: rgba(255, 254, 250, 0.9);
+            --line: #d6d3d1;
+            --navy: #1d3557;
+            --navy-soft: #dbeafe;
+            --amber: #d97706;
+            --amber-soft: #ffedd5;
+            --green: #15803d;
+            --green-soft: #dcfce7;
+            --rose: #be123c;
+            --rose-soft: #ffe4e6;
+            --purple: #7c3aed;
+            --purple-soft: #ede9fe;
+            --shadow: 0 20px 56px rgba(29, 53, 87, 0.14);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            color: var(--ink);
+            font-family: Georgia, "Times New Roman", serif;
+            background:
+                radial-gradient(circle at top left, rgba(29,53,87,0.12), transparent 22%),
+                radial-gradient(circle at bottom right, rgba(124,58,237,0.12), transparent 24%),
+                linear-gradient(180deg, #f8f5ef 0%, #eef4fb 100%);
+            min-height: 100vh;
+        }
+
+        .page {
+            max-width: 1120px;
+            margin: 0 auto;
+            padding: 26px 18px 46px;
+        }
+
+        .hero,
+        .layout,
+        .two-col {
+            display: grid;
+            gap: 22px;
+        }
+
+        .hero {
+            grid-template-columns: 1fr;
+            margin-bottom: 22px;
+        }
+
+        .layout {
+            grid-template-columns: 1fr;
+        }
+
+        .two-col {
+            grid-template-columns: 1fr;
+        }
+
+        .panel {
+            background: var(--panel);
+            border: 1px solid rgba(29, 53, 87, 0.12);
+            border-radius: 26px;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(10px);
+        }
+
+        .hero-main,
+        .hero-side,
+        .workspace {
+            padding: 24px;
+        }
+
+        .hero-side {
+            display: grid;
+            gap: 14px;
+            align-content: start;
+        }
+
+        .eyebrow {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: var(--navy-soft);
+            color: var(--navy);
+            font-size: 12px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        h1 {
+            margin: 14px 0 10px;
+            font-size: clamp(2.2rem, 5vw, 4rem);
+            line-height: 0.94;
+            letter-spacing: -0.04em;
+            color: var(--navy);
+        }
+
+        p,
+        .note,
+        .equation,
+        .mini-card p {
+            line-height: 1.58;
+        }
+
+        .mini-card {
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            padding: 14px 16px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.94), rgba(246,247,251,0.76));
+        }
+
+        .mini-card h2,
+        .mini-card h3,
+        .workspace h2 {
+            margin: 0 0 8px;
+            font-size: 1rem;
+            color: var(--navy);
+        }
+
+        .section-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: end;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .section-head h2 {
+            margin: 0;
+            font-size: 1.55rem;
+        }
+
+        .chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 14px 0 16px;
+        }
+
+        .statement-list {
+            display: grid;
+            gap: 10px;
+            margin: 14px 0 16px;
+        }
+
+        .compound-workspace {
+            display: grid;
+            grid-template-columns: 320px minmax(0, 1fr);
+            gap: 18px;
+            align-items: start;
+        }
+
+        .compound-sidebar {
+            display: grid;
+            gap: 14px;
+        }
+
+        .compound-main {
+            display: grid;
+            gap: 14px;
+        }
+
+        .statement-item {
+            width: 100%;
+            text-align: left;
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            background: rgba(255,255,255,0.9);
+            padding: 12px 14px;
+            cursor: pointer;
+            transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+        }
+
+        .statement-item strong {
+            display: block;
+            color: var(--navy);
+            margin-bottom: 4px;
+            font-size: 0.98rem;
+        }
+
+        .statement-item .formula-line {
+            display: block;
+            color: #5b21b6;
+            font-family: "Courier New", monospace;
+            font-size: 0.86rem;
+        }
+
+        .statement-item.active {
+            border-color: rgba(29, 53, 87, 0.35);
+            background: linear-gradient(180deg, #eef4ff, #ffffff);
+            box-shadow: 0 10px 24px rgba(37, 99, 235, 0.1);
+        }
+
+        .inline-steps {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 14px 0 16px;
+        }
+
+        .inline-step-btn {
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            background: white;
+            padding: 10px 12px;
+            cursor: pointer;
+            transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+        }
+
+        .inline-step-btn.active {
+            border-color: rgba(124, 58, 237, 0.35);
+            background: var(--purple-soft);
+            color: #5b21b6;
+            font-weight: 700;
+        }
+
+        .chip,
+        button,
+        select {
+            font: inherit;
+        }
+
+        .chip {
+            border: 1px solid var(--line);
+            background: white;
+            color: var(--ink);
+            border-radius: 999px;
+            padding: 9px 14px;
+            cursor: pointer;
+            transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+        }
+
+        .chip.active {
+            background: var(--navy);
+            color: white;
+            border-color: var(--navy);
+        }
+
+        .chip:hover,
+        button:hover,
+        select:hover {
+            transform: translateY(-1px);
+        }
+
+        .grid-shell {
+            border: 1px solid var(--line);
+            border-radius: 22px;
+            padding: 16px;
+            background: linear-gradient(180deg, #fff, #f8fafc);
+        }
+
+        .dice-grid {
+            display: grid;
+            grid-template-columns: 54px repeat(6, minmax(50px, 1fr));
+            gap: 8px;
+        }
+
+        .corner,
+        .axis,
+        .row-label,
+        .cell {
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .corner,
+        .axis,
+        .row-label {
+            min-height: 44px;
+            border: 1px solid var(--line);
+            background: #eef2f7;
+            color: var(--navy);
+            font-weight: 700;
+        }
+
+        .cell {
+            position: relative;
+            min-height: 64px;
+            border: 1px solid #dde4ec;
+            background: white;
+            overflow: hidden;
+            transition: transform 0.24s ease, border-color 0.24s ease, box-shadow 0.24s ease;
+        }
+
+        .cell:hover {
+            transform: translateY(-2px);
+        }
+
+        .fill {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            transform: scale(0.92);
+            transition: opacity 0.34s ease, transform 0.34s ease;
+            z-index: 1;
+        }
+
+        .fill.case { background: linear-gradient(135deg, rgba(190,24,93,0.95), rgba(251,113,133,0.88)); }
+        .fill.left { background: linear-gradient(135deg, rgba(29,53,87,0.95), rgba(59,130,246,0.88)); }
+        .fill.right { background: linear-gradient(135deg, rgba(217,119,6,0.94), rgba(251,191,36,0.88)); }
+        .fill.result { background: linear-gradient(135deg, rgba(21,128,61,0.96), rgba(74,222,128,0.86)); }
+        .fill.ghost { background: linear-gradient(135deg, rgba(124,58,237,0.55), rgba(196,181,253,0.35)); }
+
+        .cell.case-active .fill.case,
+        .cell.left-active .fill.left,
+        .cell.right-active .fill.right,
+        .cell.result-active .fill.result,
+        .cell.ghost-active .fill.ghost {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .cell.overlap::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: repeating-linear-gradient(
+                -45deg,
+                rgba(255,255,255,0.34),
+                rgba(255,255,255,0.34) 8px,
+                rgba(255,255,255,0.08) 8px,
+                rgba(255,255,255,0.08) 16px
+            );
+            z-index: 2;
+        }
+
+        .cell .coords,
+        .cell .sum {
+            position: relative;
+            z-index: 3;
+            font-family: "Courier New", monospace;
+        }
+
+        .cell .coords {
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .cell .sum {
+            position: absolute;
+            right: 7px;
+            bottom: 5px;
+            font-size: 0.66rem;
+            color: var(--muted);
+        }
+
+        .equation {
+            margin-top: 16px;
+            padding: 14px 16px;
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            background: white;
+        }
+
+        .equation strong {
+            color: var(--navy);
+        }
+
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 14px;
+            font-size: 0.94rem;
+            color: var(--muted);
+        }
+
+        .legend span {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+            background: rgba(255,255,255,0.92);
+        }
+
+        .swatch {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            flex: none;
+        }
+
+        .swatch.case { background: var(--rose); }
+        .swatch.left { background: var(--navy); }
+        .swatch.right { background: var(--amber); }
+        .swatch.result { background: var(--green); }
+        .swatch.ghost { background: var(--purple); }
+
+        .control-box {
+            display: grid;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .step-controls {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .mini-step-controls {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: grid;
+            gap: 6px;
+            color: #475569;
+            font-size: 0.92rem;
+        }
+
+        select,
+        button {
+            width: 100%;
+            padding: 11px 12px;
+            border-radius: 14px;
+            border: 1px solid var(--line);
+            background: white;
+            color: var(--ink);
+            transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+        }
+
+        button.primary {
+            background: linear-gradient(135deg, #1d3557, #2563eb);
+            color: white;
+            border-color: #1d3557;
+            box-shadow: 0 12px 24px rgba(29, 53, 87, 0.2);
+        }
+
+        button.secondary {
+            background: #f8fafc;
+        }
+
+        .step-trace {
+            display: grid;
+            gap: 8px;
+            margin-top: 14px;
+        }
+
+        .step {
+            border-left: 4px solid #cbd5e1;
+            padding: 8px 12px;
+            border-radius: 0 12px 12px 0;
+            background: rgba(255,255,255,0.74);
+            color: #475569;
+            transition: transform 0.22s ease, border-color 0.22s ease, background 0.22s ease;
+        }
+
+        .step.active {
+            border-left-color: var(--purple);
+            background: var(--purple-soft);
+            transform: translateX(4px);
+            color: #5b21b6;
+        }
+
+        .mapping {
+            display: grid;
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .mapping-item {
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            padding: 12px 14px;
+            background: rgba(255,255,255,0.9);
+        }
+
+        .stage-notes {
+            display: grid;
+            gap: 8px;
+            margin-top: 14px;
+        }
+
+        .stage-note {
+            border-left: 4px solid #cbd5e1;
+            border-radius: 0 12px 12px 0;
+            background: rgba(255,255,255,0.86);
+            padding: 10px 12px;
+            color: #475569;
+            transition: border-color 0.18s ease, background 0.18s ease, transform 0.18s ease;
+        }
+
+        .stage-note.active {
+            border-left-color: var(--purple);
+            background: var(--purple-soft);
+            color: #5b21b6;
+            transform: translateX(4px);
+        }
+
+        .stage-note strong {
+            display: block;
+            margin-bottom: 4px;
+            color: var(--navy);
+        }
+
+        .formula-list {
+            display: grid;
+            gap: 8px;
+            margin-top: 14px;
+        }
+
+        .formula-item {
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 10px 12px;
+            background: rgba(255,255,255,0.88);
+            font-family: "Courier New", monospace;
+            font-size: 0.92rem;
+        }
+
+        .foot {
+            margin-top: 22px;
+            padding: 16px 18px;
+            border-radius: 18px;
+            border: 1px dashed rgba(29,53,87,0.22);
+            background: rgba(255,255,255,0.68);
+            color: #475569;
+            line-height: 1.58;
+        }
+
+        @media (max-width: 760px) {
+            .page { padding: 16px 12px 34px; }
+            .hero-main, .hero-side, .workspace { padding: 16px; }
+            .compound-workspace { grid-template-columns: 1fr; }
+            .control-row, .step-controls, .mini-step-controls, .inline-steps { grid-template-columns: 1fr; }
+            .dice-grid {
+                grid-template-columns: 42px repeat(6, minmax(38px, 1fr));
+                gap: 6px;
+            }
+            .cell { min-height: 54px; }
+            .cell .coords { font-size: 0.64rem; }
+            .cell .sum { font-size: 0.56rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <section class="hero">
+            <div class="panel hero-main">
+                <div class="eyebrow">List 4 · Problem 4</div>
+                <h1>From Simple Statements to Complex Ones</h1>
+                <p>
+                    This problem is where logical language and set language really meet. We start with three basic events:
+                    <strong>A</strong> for “sum is 7”, <strong>B</strong> for “first die is greater than the second”,
+                    and <strong>C</strong> for “at least one die shows 6”. Then we build more complex statements by
+                    using union, intersection, complement, and negation.
+                </p>
+            </div>
+            <aside class="panel hero-side">
+                <div class="mini-card">
+                    <h2>How to read this page</h2>
+                    <p>Go from top to bottom: first inspect the basic events <strong>A</strong>, <strong>B</strong>, <strong>C</strong>, then choose a compound statement, and finally walk through its construction step by step with <strong>Previous Step</strong> and <strong>Next Step</strong>.</p>
+                </div>
+            </aside>
+        </section>
+
+        <section class="layout">
+            <div class="panel workspace">
+                <div class="section-head">
+                    <div>
+                        <h2>Part A · Basic Events A, B, C</h2>
+                        <p>Start by inspecting the three building blocks that all later statements use.</p>
+                    </div>
+                </div>
+
+                <div class="chips" id="basicButtons"></div>
+
+                <div class="grid-shell">
+                    <div class="dice-grid" id="basicGrid"></div>
+                    <div class="legend">
+                        <span><i class="swatch case"></i> selected base event</span>
+                    </div>
+                </div>
+
+                <div class="equation" id="basicExplanation"></div>
+
+                <div class="formula-list">
+                    <div class="formula-item">A = { (i,j) : i + j = 7 }</div>
+                    <div class="formula-item">B = { (i,j) : i &gt; j }</div>
+                    <div class="formula-item">C = { (i,j) : i = 6 or j = 6 }</div>
+                </div>
+            </div>
+
+            <div class="panel workspace">
+                <div class="section-head">
+                    <div>
+                        <h2>Part B · Compound Statements</h2>
+                        <p>First choose the statement. Then, in the workspace below, follow the stages beside the visualization.</p>
+                    </div>
+                </div>
+
+                <div class="statement-list" id="compoundButtons"></div>
+
+                <div class="compound-workspace">
+                    <div class="compound-sidebar">
+                        <label>
+                            Explanation mode
+                            <select id="viewMode">
+                                <option value="formula">show formula steps</option>
+                                <option value="logic">show logic meaning</option>
+                            </select>
+                        </label>
+
+                        <div class="mini-step-controls">
+                            <button class="secondary" id="compoundPrevBtn">Previous Step</button>
+                            <button class="secondary" id="compoundNextBtn">Next Step</button>
+                            <button class="secondary" id="compoundResetBtn">Reset to Step 1</button>
+                        </div>
+
+                        <div class="inline-steps">
+                            <button class="inline-step-btn" id="compoundStep1">Step 1</button>
+                            <button class="inline-step-btn" id="compoundStep2">Step 2</button>
+                            <button class="inline-step-btn" id="compoundStep3">Step 3</button>
+                        </div>
+
+                        <div class="equation" id="compoundExplanation"></div>
+
+                        <div class="stage-notes">
+                            <div class="stage-note" id="compoundNote1">
+                                <strong>Step 1</strong>
+                                Find the first ingredient of the statement and mark only that set.
+                            </div>
+                            <div class="stage-note" id="compoundNote2">
+                                <strong>Step 2</strong>
+                                Bring in the second ingredient and compare it with the first one. If there is a negation, replace the base set by its complement before combining.
+                            </div>
+                            <div class="stage-note" id="compoundNote3">
+                                <strong>Step 3</strong>
+                                Apply the main logical operation and keep only the outcomes that satisfy the whole statement.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="compound-main">
+                        <div class="grid-shell">
+                            <div class="dice-grid" id="compoundGrid"></div>
+                            <div class="legend">
+                                <span><i class="swatch left"></i> first ingredient</span>
+                                <span><i class="swatch right"></i> second ingredient</span>
+                                <span><i class="swatch ghost"></i> complemented ingredient</span>
+                                <span><i class="swatch result"></i> current stage result</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel workspace" style="display:none; margin-top: 22px;">
+            <div class="section-head">
+                <div>
+                    <h2>Step Builder · Watch the Formula Become a Set</h2>
+                    <p>Below the same chosen statement is built exactly in the order you would usually solve it on paper: first ingredient, second ingredient, then the final operation.</p>
+                </div>
+            </div>
+
+            <div class="control-box">
+                <label>
+                    Builder mode
+                    <select id="viewModeHidden">
+                        <option value="formula">show formula steps</option>
+                        <option value="logic">show logic meaning</option>
+                    </select>
+                </label>
+                <div class="step-controls">
+                    <button class="primary" id="loadBtn">Start Step Builder</button>
+                    <button class="secondary" id="prevStepBtn">Previous Step</button>
+                    <button class="secondary" id="nextStepBtn">Next Step</button>
+                    <button class="secondary" id="resetBtn">Reset View</button>
+                </div>
+            </div>
+
+            <div class="two-col">
+                <div class="grid-shell">
+                    <div class="dice-grid" id="opsGrid"></div>
+                    <div class="legend">
+                        <span><i class="swatch left"></i> left-side ingredient</span>
+                        <span><i class="swatch right"></i> right-side ingredient</span>
+                        <span><i class="swatch ghost"></i> complemented ingredient</span>
+                        <span><i class="swatch result"></i> current result</span>
+                    </div>
+                </div>
+                <div>
+                    <div class="equation" id="operationEquation">Choose a statement and inspect its construction step by step.</div>
+                    <div class="step-trace">
+                        <div class="step" id="step1">Step 1. Mark the first ingredient.</div>
+                        <div class="step" id="step2">Step 2. Mark the second ingredient or its complement.</div>
+                        <div class="step" id="step3">Step 3. Apply the main operation and keep the final set.</div>
+                    </div>
+                    <div class="mapping">
+                        <div class="mapping-item"><strong>but</strong> is handled like intersection with a negation, for example `A but not B` means `A ∩ B^c`.</div>
+                        <div class="mapping-item"><strong>it is not true that ...</strong> means we first build the inside event, then take its complement in the whole sample space.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="foot">
+            This is the formal heart of the list: logical composition of sentences is the same as composition of events inside one fixed sample space.
+        </div>
+    </div>
+
+    <script>
+        const outcomes = [];
+        for (let i = 1; i <= 6; i += 1) {
+            for (let j = 1; j <= 6; j += 1) {
+                outcomes.push({ key: `${i}-${j}`, i, j, sum: i + j });
+            }
+        }
+
+        const universe = outcomes.map((o) => o.key);
+
+        const baseEvents = {
+            A: {
+                label: "A",
+                title: "A: sum is 7",
+                explain: "A is the anti-diagonal where i + j = 7.",
+                set: outcomes.filter((o) => o.sum === 7).map((o) => o.key)
+            },
+            B: {
+                label: "B",
+                title: "B: first die > second die",
+                explain: "B is the strict lower triangle below the main diagonal.",
+                set: outcomes.filter((o) => o.i > o.j).map((o) => o.key)
+            },
+            C: {
+                label: "C",
+                title: "C: at least one die shows 6",
+                explain: "C is the union of the last row and the last column.",
+                set: outcomes.filter((o) => o.i === 6 || o.j === 6).map((o) => o.key)
+            }
+        };
+
+        function complement(set) {
+            const lookup = new Set(set);
+            return universe.filter((key) => !lookup.has(key));
+        }
+
+        function intersection(a, b) {
+            const B = new Set(b);
+            return a.filter((key) => B.has(key));
+        }
+
+        function union(a, b) {
+            const lookup = new Set([...a, ...b]);
+            return universe.filter((key) => lookup.has(key));
+        }
+
+        function difference(a, b) {
+            const B = new Set(b);
+            return a.filter((key) => !B.has(key));
+        }
+
+        const compoundStatements = [
+            {
+                id: "1",
+                title: "1. the sum is 7 or at least one die shows 6",
+                formula: "A ∪ C",
+                explain: "Keep every outcome that is in A or in C.",
+                leftLabel: "A",
+                rightLabel: "C",
+                leftSet: baseEvents.A.set,
+                rightSet: baseEvents.C.set,
+                rightIsComplement: false,
+                finalSet: union(baseEvents.A.set, baseEvents.C.set),
+                finalOp: "union"
+            },
+            {
+                id: "2",
+                title: "2. the sum is 7 and at least one die shows 6",
+                formula: "A ∩ C",
+                explain: "Keep only outcomes that satisfy both conditions at once.",
+                leftLabel: "A",
+                rightLabel: "C",
+                leftSet: baseEvents.A.set,
+                rightSet: baseEvents.C.set,
+                rightIsComplement: false,
+                finalSet: intersection(baseEvents.A.set, baseEvents.C.set),
+                finalOp: "intersection"
+            },
+            {
+                id: "3",
+                title: "3. first die > second die and at least one die shows 6",
+                formula: "B ∩ C",
+                explain: "Keep only outcomes that lie in both B and C.",
+                leftLabel: "B",
+                rightLabel: "C",
+                leftSet: baseEvents.B.set,
+                rightSet: baseEvents.C.set,
+                rightIsComplement: false,
+                finalSet: intersection(baseEvents.B.set, baseEvents.C.set),
+                finalOp: "intersection"
+            },
+            {
+                id: "4",
+                title: "4. the sum is 7, but the first die is not greater than the second",
+                formula: "A ∩ B^c",
+                explain: "“But” works like “and”, while “not greater” means the complement of B.",
+                leftLabel: "A",
+                rightLabel: "B^c",
+                leftSet: baseEvents.A.set,
+                rightSet: complement(baseEvents.B.set),
+                rightIsComplement: true,
+                complementOf: "B",
+                finalSet: intersection(baseEvents.A.set, complement(baseEvents.B.set)),
+                finalOp: "intersection"
+            },
+            {
+                id: "5",
+                title: "5. the sum is 7, and no die shows 6",
+                formula: "A ∩ C^c",
+                explain: "We keep A, then exclude all outcomes from C.",
+                leftLabel: "A",
+                rightLabel: "C^c",
+                leftSet: baseEvents.A.set,
+                rightSet: complement(baseEvents.C.set),
+                rightIsComplement: true,
+                complementOf: "C",
+                finalSet: intersection(baseEvents.A.set, complement(baseEvents.C.set)),
+                finalOp: "intersection"
+            },
+            {
+                id: "6",
+                title: "6. at least one die shows 6, but the sum is not 7",
+                formula: "C ∩ A^c",
+                explain: "Keep C, then remove the diagonal A.",
+                leftLabel: "C",
+                rightLabel: "A^c",
+                leftSet: baseEvents.C.set,
+                rightSet: complement(baseEvents.A.set),
+                rightIsComplement: true,
+                complementOf: "A",
+                finalSet: intersection(baseEvents.C.set, complement(baseEvents.A.set)),
+                finalOp: "intersection"
+            },
+            {
+                id: "7",
+                title: "7. the sum is not 7 and the first die is greater than the second",
+                formula: "A^c ∩ B",
+                explain: "We first negate A, then intersect with B.",
+                leftLabel: "A^c",
+                rightLabel: "B",
+                leftSet: complement(baseEvents.A.set),
+                rightSet: baseEvents.B.set,
+                leftIsComplement: true,
+                complementOfLeft: "A",
+                rightIsComplement: false,
+                finalSet: intersection(complement(baseEvents.A.set), baseEvents.B.set),
+                finalOp: "intersection"
+            },
+            {
+                id: "8",
+                title: "8. the first die is not greater than the second and at least one die shows 6",
+                formula: "B^c ∩ C",
+                explain: "Negate B, then keep only those outcomes that are also in C.",
+                leftLabel: "B^c",
+                rightLabel: "C",
+                leftSet: complement(baseEvents.B.set),
+                rightSet: baseEvents.C.set,
+                leftIsComplement: true,
+                complementOfLeft: "B",
+                rightIsComplement: false,
+                finalSet: intersection(complement(baseEvents.B.set), baseEvents.C.set),
+                finalOp: "intersection"
+            },
+            {
+                id: "9",
+                title: "9. it is not true that the sum is 7 or at least one die shows 6",
+                formula: "(A ∪ C)^c",
+                explain: "First build the union A ∪ C, then take the complement of the whole result.",
+                leftLabel: "A",
+                rightLabel: "C",
+                leftSet: baseEvents.A.set,
+                rightSet: baseEvents.C.set,
+                rightIsComplement: false,
+                innerSet: union(baseEvents.A.set, baseEvents.C.set),
+                finalSet: complement(union(baseEvents.A.set, baseEvents.C.set)),
+                finalOp: "outer-complement"
+            },
+            {
+                id: "10",
+                title: "10. it is not true that the sum is 7 and at least one die shows 6",
+                formula: "(A ∩ C)^c",
+                explain: "First build the intersection A ∩ C, then complement that set.",
+                leftLabel: "A",
+                rightLabel: "C",
+                leftSet: baseEvents.A.set,
+                rightSet: baseEvents.C.set,
+                rightIsComplement: false,
+                innerSet: intersection(baseEvents.A.set, baseEvents.C.set),
+                finalSet: complement(intersection(baseEvents.A.set, baseEvents.C.set)),
+                finalOp: "outer-complement"
+            }
+        ];
+
+        const grids = {};
+        let currentBasic = "A";
+        let currentCompound = "1";
+        let currentCompoundStep = 1;
+        let currentOperation = null;
+        let currentStepIndex = 0;
+
+        function buildGrid(targetId) {
+            const root = document.getElementById(targetId);
+            let html = '<div class="corner">2nd die</div>';
+            for (let j = 1; j <= 6; j += 1) html += `<div class="axis">${j}</div>`;
+            for (let i = 1; i <= 6; i += 1) {
+                html += `<div class="row-label">${i}</div>`;
+                for (let j = 1; j <= 6; j += 1) {
+                    html += `
+                        <div class="cell" data-key="${i}-${j}">
+                            <div class="fill case"></div>
+                            <div class="fill left"></div>
+                            <div class="fill right"></div>
+                            <div class="fill result"></div>
+                            <div class="fill ghost"></div>
+                            <div class="coords">(${i},${j})</div>
+                            <div class="sum">s=${i + j}</div>
+                        </div>
+                    `;
+                }
+            }
+            root.innerHTML = html;
+            grids[targetId] = root;
+        }
+
+        function clearGrid(targetId) {
+            grids[targetId].querySelectorAll(".cell").forEach((cell) => {
+                cell.classList.remove("case-active", "left-active", "right-active", "result-active", "ghost-active", "overlap");
+            });
+        }
+
+        function mark(targetId, set, className) {
+            const lookup = new Set(set);
+            grids[targetId].querySelectorAll(".cell").forEach((cell) => {
+                cell.classList.toggle(className, lookup.has(cell.dataset.key));
+            });
+        }
+
+        function statementById(id) {
+            return compoundStatements.find((item) => item.id === id);
+        }
+
+        function renderBasicButtons() {
+            const wrap = document.getElementById("basicButtons");
+            wrap.innerHTML = ["A", "B", "C"].map((id) => `
+                <button class="chip ${currentBasic === id ? "active" : ""}" data-id="${id}">
+                    ${baseEvents[id].label}: ${baseEvents[id].title.slice(3)}
+                </button>
+            `).join("");
+            wrap.querySelectorAll(".chip").forEach((button) => {
+                button.addEventListener("click", () => {
+                    currentBasic = button.dataset.id;
+                    renderBasicButtons();
+                    renderBasic();
+                });
+            });
+        }
+
+        function renderBasic() {
+            clearGrid("basicGrid");
+            const event = baseEvents[currentBasic];
+            mark("basicGrid", event.set, "case-active");
+            document.getElementById("basicExplanation").innerHTML = `
+                <strong>${event.title}</strong><br>
+                ${event.explain}
+            `;
+        }
+
+        function renderCompoundButtons() {
+            const wrap = document.getElementById("compoundButtons");
+            wrap.innerHTML = compoundStatements.map((item) => `
+                <button class="statement-item ${currentCompound === item.id ? "active" : ""}" data-id="${item.id}">
+                    <strong>${item.title}</strong>
+                    <span class="formula-line">${item.formula}</span>
+                </button>
+            `).join("");
+            wrap.querySelectorAll(".statement-item").forEach((button) => {
+                button.addEventListener("click", () => {
+                    currentCompound = button.dataset.id;
+                    currentCompoundStep = 1;
+                    renderCompoundButtons();
+                    renderCompound();
+                    stopOperation();
+                });
+            });
+        }
+
+        function renderCompound() {
+            clearGrid("compoundGrid");
+            const item = statementById(currentCompound);
+            updateCompoundStepButtons();
+            updateCompoundNotes(item);
+            if (currentCompoundStep === 1) {
+                mark("compoundGrid", item.leftSet, item.leftIsComplement ? "ghost-active" : "left-active");
+                document.getElementById("compoundExplanation").innerHTML = `
+                    <strong>${item.title}</strong><br>
+                    Step 1: start from <strong>${item.leftLabel}</strong>.<br>
+                    ${item.leftIsComplement
+                        ? `This ingredient is already complemented, so we view the set <strong>${item.leftLabel}</strong> rather than the raw base event.`
+                        : `We first mark the left-hand ingredient in the expression <strong>${item.formula}</strong>.`}
+                `;
+            } else if (currentCompoundStep === 2) {
+                mark("compoundGrid", item.leftSet, item.leftIsComplement ? "ghost-active" : "left-active");
+                if (item.finalOp === "outer-complement") {
+                    mark("compoundGrid", item.rightSet, "right-active");
+                    const overlap = intersection(item.leftSet, item.rightSet);
+                    grids.compoundGrid.querySelectorAll(".cell").forEach((cell) => {
+                        cell.classList.toggle("overlap", overlap.includes(cell.dataset.key));
+                    });
+                    document.getElementById("compoundExplanation").innerHTML = `
+                        <strong>${item.title}</strong><br>
+                        Step 2: first build the inside event <strong>${item.formula.replace("^c", "")}</strong>.<br>
+                        Only after this stage do we negate the whole set.
+                    `;
+                } else {
+                    mark("compoundGrid", item.rightSet, item.rightIsComplement ? "ghost-active" : "right-active");
+                    const overlap = intersection(item.leftSet, item.rightSet);
+                    grids.compoundGrid.querySelectorAll(".cell").forEach((cell) => {
+                        cell.classList.toggle("overlap", overlap.includes(cell.dataset.key));
+                    });
+                    document.getElementById("compoundExplanation").innerHTML = `
+                        <strong>${item.title}</strong><br>
+                        Step 2: add <strong>${item.rightLabel}</strong> and inspect how it interacts with the first ingredient.<br>
+                        ${item.rightIsComplement
+                            ? `Because the second ingredient is complemented, it is shown in violet.`
+                            : `Shared cells are striped so the overlap is visible before taking the final operation.`}
+                    `;
+                }
+            } else {
+                mark("compoundGrid", item.finalSet, "result-active");
+                document.getElementById("compoundExplanation").innerHTML = `
+                    <strong>${item.title}</strong><br>
+                    Step 3: keep the final event described by <strong>${item.formula}</strong>.<br>
+                    ${item.explain}
+                `;
+            }
+        }
+
+        function updateCompoundNotes(item) {
+            [1, 2, 3].forEach((n) => {
+                document.getElementById(`compoundNote${n}`).classList.toggle("active", n === currentCompoundStep);
+            });
+
+            const step1Text = item.leftIsComplement
+                ? `The first visible object is already a complemented set, namely <strong>${item.leftLabel}</strong>. So before doing anything else, we work with the negated version of the base event.`
+                : `The first ingredient is <strong>${item.leftLabel}</strong>. We isolate that part of the statement first, because every later operation starts from this set.`;
+
+            const step2Text = item.finalOp === "outer-complement"
+                ? `At this stage we still work inside the parentheses. We build the inner event first and do not negate the whole statement yet.`
+                : item.rightIsComplement
+                    ? `The second ingredient is <strong>${item.rightLabel}</strong>, so it is not the raw base set but its complement. Only after replacing it by the complemented set can we combine it with the first ingredient.`
+                    : `The second ingredient is <strong>${item.rightLabel}</strong>. Now we can compare both marked sets and inspect where they overlap or how they spread apart.`;
+
+            const step3Text = item.finalOp === "outer-complement"
+                ? `Now we finish the reasoning by negating the entire inside event. The final set contains exactly the outcomes lying outside the set built in Step 2.`
+                : `Now we apply the main operation from the full statement <strong>${item.formula}</strong> and keep exactly those outcomes that satisfy the whole sentence, not just one ingredient.`;
+
+            document.getElementById("compoundNote1").innerHTML = `<strong>Step 1</strong>${step1Text}`;
+            document.getElementById("compoundNote2").innerHTML = `<strong>Step 2</strong>${step2Text}`;
+            document.getElementById("compoundNote3").innerHTML = `<strong>Step 3</strong>${step3Text}`;
+        }
+
+        function updateCompoundStepButtons() {
+            [1, 2, 3].forEach((n) => {
+                document.getElementById(`compoundStep${n}`).classList.toggle("active", n === currentCompoundStep);
+            });
+            document.getElementById("compoundPrevBtn").disabled = currentCompoundStep <= 1;
+            document.getElementById("compoundNextBtn").disabled = currentCompoundStep >= 3;
+        }
+
+        function nextCompoundStep() {
+            if (currentCompoundStep >= 3) return;
+            currentCompoundStep += 1;
+            renderCompound();
+        }
+
+        function previousCompoundStep() {
+            if (currentCompoundStep <= 1) return;
+            currentCompoundStep -= 1;
+            renderCompound();
+        }
+
+        function setCompoundStep(step) {
+            currentCompoundStep = step;
+            renderCompound();
+        }
+
+        function setStep(active) {
+            [1, 2, 3].forEach((n) => {
+                document.getElementById(`step${n}`).classList.toggle("active", n === active);
+            });
+        }
+
+        function updateStepButtons() {
+            const prev = document.getElementById("prevStepBtn");
+            const next = document.getElementById("nextStepBtn");
+            const ready = Boolean(currentOperation);
+            prev.disabled = !ready || currentStepIndex <= 1;
+            next.disabled = !ready || currentStepIndex >= 3;
+        }
+
+        function stopOperation() {
+            clearGrid("opsGrid");
+            setStep(0);
+            currentOperation = null;
+            currentStepIndex = 0;
+            updateStepButtons();
+        }
+
+        function prepareOperation() {
+            const item = statementById(currentCompound);
+            currentOperation = item;
+            currentStepIndex = 1;
+            showOperationStep(1);
+        }
+
+        function showOperationStep(step) {
+            if (!currentOperation) return;
+            const item = currentOperation;
+            const mode = document.getElementById("viewMode").value;
+            clearGrid("opsGrid");
+            setStep(step);
+            currentStepIndex = step;
+
+            if (step === 1) {
+                mark("opsGrid", item.leftSet, item.leftIsComplement ? "ghost-active" : "left-active");
+                const leftMsg = item.leftIsComplement
+                    ? `Start from the complemented ingredient <strong>${item.leftLabel}</strong>.`
+                    : `Start from the ingredient <strong>${item.leftLabel}</strong>.`;
+                document.getElementById("operationEquation").innerHTML = `
+                    <strong>Step 1.</strong> ${leftMsg}<br>
+                    ${mode === "formula"
+                        ? `We first display the left-hand set in the formula <strong>${item.formula}</strong>.`
+                        : item.explain}
+                `;
+            } else if (step === 2) {
+                mark("opsGrid", item.leftSet, item.leftIsComplement ? "ghost-active" : "left-active");
+                if (item.finalOp === "outer-complement") {
+                    mark("opsGrid", item.rightSet, "right-active");
+                    const overlap = intersection(item.leftSet, item.rightSet);
+                    grids.opsGrid.querySelectorAll(".cell").forEach((cell) => {
+                        cell.classList.toggle("overlap", overlap.includes(cell.dataset.key));
+                    });
+                    document.getElementById("operationEquation").innerHTML = `
+                        <strong>Step 2.</strong> Build the inside expression first: <strong>${item.formula.replace("^c", "")}</strong>.
+                        We still have not applied the outside negation.
+                    `;
+                } else {
+                    mark("opsGrid", item.rightSet, item.rightIsComplement ? "ghost-active" : "right-active");
+                    const overlap = intersection(item.leftSet, item.rightSet);
+                    grids.opsGrid.querySelectorAll(".cell").forEach((cell) => {
+                        cell.classList.toggle("overlap", overlap.includes(cell.dataset.key));
+                    });
+                    document.getElementById("operationEquation").innerHTML = `
+                        <strong>Step 2.</strong> Add the second ingredient <strong>${item.rightLabel}</strong>.
+                        ${item.rightIsComplement ? "Because it is complemented, it is shown in violet." : "Shared cells are striped so the overlap is visible."}
+                    `;
+                }
+            } else if (step === 3) {
+                if (item.finalOp === "outer-complement") {
+                    mark("opsGrid", item.finalSet, "result-active");
+                    document.getElementById("operationEquation").innerHTML = `
+                        <strong>Step 3.</strong> Take the complement of the inside set and keep everything outside it.<br>
+                        Final formula: <strong>${item.formula}</strong><br>
+                        ${item.explain}
+                    `;
+                } else {
+                    mark("opsGrid", item.finalSet, "result-active");
+                    document.getElementById("operationEquation").innerHTML = `
+                        <strong>Step 3.</strong> Apply the main operation and keep the resulting event.<br>
+                        Final formula: <strong>${item.formula}</strong><br>
+                        ${item.explain}
+                    `;
+                }
+            }
+
+            updateStepButtons();
+        }
+
+        function nextOperationStep() {
+            if (!currentOperation || currentStepIndex >= 3) return;
+            showOperationStep(currentStepIndex + 1);
+        }
+
+        function previousOperationStep() {
+            if (!currentOperation || currentStepIndex <= 1) return;
+            showOperationStep(currentStepIndex - 1);
+        }
+
+        function init() {
+            buildGrid("basicGrid");
+            buildGrid("compoundGrid");
+            buildGrid("opsGrid");
+            renderBasicButtons();
+            renderBasic();
+            renderCompoundButtons();
+            renderCompound();
+
+            document.getElementById("loadBtn").addEventListener("click", () => {
+                stopOperation();
+                prepareOperation();
+            });
+            document.getElementById("compoundPrevBtn").addEventListener("click", previousCompoundStep);
+            document.getElementById("compoundNextBtn").addEventListener("click", nextCompoundStep);
+            document.getElementById("compoundResetBtn").addEventListener("click", () => setCompoundStep(1));
+            document.getElementById("compoundStep1").addEventListener("click", () => setCompoundStep(1));
+            document.getElementById("compoundStep2").addEventListener("click", () => setCompoundStep(2));
+            document.getElementById("compoundStep3").addEventListener("click", () => setCompoundStep(3));
+            document.getElementById("prevStepBtn").addEventListener("click", previousOperationStep);
+            document.getElementById("nextStepBtn").addEventListener("click", nextOperationStep);
+            document.getElementById("resetBtn").addEventListener("click", () => {
+                stopOperation();
+                document.getElementById("operationEquation").textContent = "Choose a statement and inspect its construction step by step.";
+            });
+            document.getElementById("viewMode").addEventListener("change", () => {
+                if (currentOperation) showOperationStep(currentStepIndex);
+            });
+            updateStepButtons();
+        }
+
+        init();
+    </script>
+</body>
+</html>

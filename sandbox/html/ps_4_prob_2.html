@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Problem 2 - Die x Die</title>
+    <style>
+        :root {
+            --bg-top: #f3efe7;
+            --bg-bottom: #e8f0f7;
+            --card: rgba(255, 253, 249, 0.88);
+            --line: #d6d3c9;
+            --ink: #1f2937;
+            --muted: #6b7280;
+            --deep: #1e3a5f;
+            --accent: #0f766e;
+            --accent-soft: #ccfbf1;
+            --left: #2563eb;
+            --right: #d97706;
+            --result: #15803d;
+            --case: #be123c;
+            --sum-soft: #dbeafe;
+            --even-soft: #fef3c7;
+            --shadow: 0 20px 50px rgba(30, 58, 95, 0.12);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            color: var(--ink);
+            font-family: "Palatino Linotype", "Book Antiqua", Georgia, serif;
+            background:
+                radial-gradient(circle at top right, rgba(37, 99, 235, 0.14), transparent 24%),
+                radial-gradient(circle at left bottom, rgba(15, 118, 110, 0.12), transparent 28%),
+                linear-gradient(180deg, var(--bg-top), var(--bg-bottom));
+            min-height: 100vh;
+        }
+
+        .page {
+            max-width: 1120px;
+            margin: 0 auto;
+            padding: 26px 18px 48px;
+        }
+
+        .hero {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 22px;
+            margin-bottom: 22px;
+        }
+
+        .panel {
+            background: var(--card);
+            border: 1px solid rgba(30, 58, 95, 0.12);
+            border-radius: 26px;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(9px);
+        }
+
+        .hero-main,
+        .hero-side,
+        .workspace {
+            padding: 24px;
+        }
+
+        .eyebrow {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: var(--accent-soft);
+            color: var(--accent);
+            font-size: 12px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        h1 {
+            margin: 14px 0 10px;
+            font-size: clamp(2.1rem, 5vw, 4rem);
+            line-height: 0.94;
+            letter-spacing: -0.04em;
+            color: var(--deep);
+        }
+
+        .hero-main p,
+        .workspace p,
+        .mini-card p,
+        .explain,
+        .note {
+            margin: 0;
+            line-height: 1.58;
+            color: #334155;
+        }
+
+        .hero-side {
+            display: grid;
+            gap: 14px;
+            align-content: start;
+        }
+
+        .mini-card {
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            padding: 14px 16px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(247,248,250,0.72));
+        }
+
+        .mini-card h2,
+        .mini-card h3,
+        .workspace h2 {
+            margin: 0 0 8px;
+            font-size: 1rem;
+            color: var(--deep);
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 22px;
+        }
+
+        .section-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: end;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .section-head h2 {
+            margin: 0;
+            font-size: 1.55rem;
+        }
+
+        .chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 14px 0 16px;
+        }
+
+        .chip {
+            border: 1px solid var(--line);
+            background: white;
+            color: var(--ink);
+            border-radius: 999px;
+            padding: 9px 14px;
+            font: inherit;
+            cursor: pointer;
+            transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+        }
+
+        .chip.active {
+            background: var(--deep);
+            color: white;
+            border-color: var(--deep);
+        }
+
+        .chip:hover,
+        button:hover,
+        select:hover {
+            transform: translateY(-1px);
+        }
+
+        .grid-shell {
+            background: linear-gradient(180deg, #fff, #f8fafc);
+            border: 1px solid var(--line);
+            border-radius: 22px;
+            padding: 16px;
+        }
+
+        .dice-grid {
+            display: grid;
+            grid-template-columns: 54px repeat(6, minmax(48px, 1fr));
+            gap: 8px;
+        }
+
+        .axis,
+        .corner,
+        .row-label,
+        .cell {
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .corner,
+        .axis,
+        .row-label {
+            min-height: 44px;
+            background: #eef2f7;
+            border: 1px solid var(--line);
+            font-weight: 700;
+            color: var(--deep);
+        }
+
+        .cell {
+            position: relative;
+            min-height: 62px;
+            background: white;
+            border: 1px solid #dbe2ea;
+            overflow: hidden;
+            transition: transform 0.24s ease, border-color 0.24s ease, box-shadow 0.24s ease;
+        }
+
+        .cell:hover {
+            transform: translateY(-2px);
+        }
+
+        .fill {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            transform: scale(0.92);
+            transition: opacity 0.36s ease, transform 0.36s ease;
+            z-index: 1;
+        }
+
+        .fill.left { background: linear-gradient(135deg, rgba(37,99,235,0.94), rgba(96,165,250,0.88)); }
+        .fill.right { background: linear-gradient(135deg, rgba(217,119,6,0.94), rgba(251,191,36,0.88)); }
+        .fill.result { background: linear-gradient(135deg, rgba(21,128,61,0.96), rgba(74,222,128,0.86)); }
+        .fill.case { background: linear-gradient(135deg, rgba(190,24,93,0.95), rgba(251,113,133,0.88)); }
+        .fill.ghost { background: linear-gradient(135deg, rgba(148,163,184,0.45), rgba(203,213,225,0.25)); }
+
+        .cell.left-active .fill.left,
+        .cell.right-active .fill.right,
+        .cell.result-active .fill.result,
+        .cell.case-active .fill.case,
+        .cell.ghost-active .fill.ghost {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .cell.overlap::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: repeating-linear-gradient(
+                -45deg,
+                rgba(255,255,255,0.34),
+                rgba(255,255,255,0.34) 8px,
+                rgba(255,255,255,0.08) 8px,
+                rgba(255,255,255,0.08) 16px
+            );
+            z-index: 2;
+        }
+
+        .cell .coords,
+        .cell .sum {
+            position: relative;
+            z-index: 3;
+            font-family: "Courier New", monospace;
+        }
+
+        .cell .coords {
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .cell .sum {
+            position: absolute;
+            right: 7px;
+            bottom: 5px;
+            font-size: 0.66rem;
+            color: var(--muted);
+        }
+
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 14px;
+            color: var(--muted);
+            font-size: 0.94rem;
+        }
+
+        .legend span {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.92);
+            border: 1px solid var(--line);
+        }
+
+        .swatch {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            flex: none;
+        }
+
+        .swatch.left { background: var(--left); }
+        .swatch.right { background: var(--right); }
+        .swatch.result { background: var(--result); }
+        .swatch.case { background: var(--case); }
+        .swatch.ghost { background: #94a3b8; }
+
+        .equation {
+            margin-top: 16px;
+            padding: 14px 16px;
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            background: white;
+            line-height: 1.55;
+        }
+
+        .equation strong {
+            color: var(--deep);
+        }
+
+        .control-box {
+            display: grid;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .control-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .step-controls {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        label {
+            display: grid;
+            gap: 6px;
+            color: #475569;
+            font-size: 0.92rem;
+        }
+
+        select,
+        button {
+            width: 100%;
+            padding: 11px 12px;
+            border-radius: 14px;
+            border: 1px solid var(--line);
+            background: white;
+            color: var(--ink);
+            font: inherit;
+            transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+        }
+
+        button.primary {
+            background: linear-gradient(135deg, #0f766e, #14b8a6);
+            color: white;
+            border-color: #0f766e;
+            box-shadow: 0 12px 24px rgba(15, 118, 110, 0.18);
+        }
+
+        button.secondary {
+            background: #f8fafc;
+        }
+
+        .step-trace {
+            display: grid;
+            gap: 8px;
+            margin-top: 14px;
+        }
+
+        .step {
+            border-left: 4px solid #cbd5e1;
+            padding: 8px 12px;
+            border-radius: 0 12px 12px 0;
+            background: rgba(255,255,255,0.74);
+            color: #475569;
+            transition: transform 0.22s ease, border-color 0.22s ease, background 0.22s ease;
+        }
+
+        .step.active {
+            border-left-color: var(--accent);
+            background: var(--accent-soft);
+            transform: translateX(4px);
+            color: #0f766e;
+        }
+
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 22px;
+        }
+
+        .foot {
+            margin-top: 22px;
+            padding: 16px 18px;
+            border-radius: 18px;
+            border: 1px dashed rgba(30,58,95,0.22);
+            background: rgba(255,255,255,0.66);
+            color: #475569;
+            line-height: 1.58;
+        }
+
+        @media (max-width: 680px) {
+            .page { padding: 16px 12px 34px; }
+            .hero-main, .hero-side, .workspace { padding: 16px; }
+            .control-row, .step-controls { grid-template-columns: 1fr; }
+            .dice-grid {
+                grid-template-columns: 42px repeat(6, minmax(38px, 1fr));
+                gap: 6px;
+            }
+            .cell { min-height: 52px; }
+            .cell .coords { font-size: 0.64rem; }
+            .cell .sum { font-size: 0.56rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <section class="hero">
+            <div class="panel hero-main">
+                <div class="eyebrow">List 4 · Problem 2</div>
+                <h1>Die x Die</h1>
+                <p>
+                    Here every outcome is one ordered pair <strong>(i, j)</strong>, where <strong>i</strong> is the first die
+                    and <strong>j</strong> is the second die. The point is not only to color cells, but to see
+                    why rows, columns, diagonals, and rectangular blocks encode different verbal statements.
+                </p>
+            </div>
+            <aside class="panel hero-side">
+                <div class="mini-card">
+                    <h2>How to read this page</h2>
+                    <p>Go line by line: first study one basic event, then inspect the prepared task cases, and only after that walk through an operation step by step.</p>
+                </div>
+            </aside>
+        </section>
+
+        <section class="layout">
+            <div class="panel workspace">
+                <div class="section-head">
+                    <div>
+                        <h2>Part A · Basic Events</h2>
+                        <p>Choose one statement and inspect the shape it creates inside the 6x6 sample space.</p>
+                    </div>
+                </div>
+
+                <div class="chips" id="eventButtons"></div>
+
+                <div class="grid-shell">
+                    <div class="dice-grid" id="eventGrid"></div>
+                    <div class="legend">
+                        <span><i class="swatch case"></i> selected event</span>
+                    </div>
+                </div>
+
+                <div class="equation" id="eventExplanation"></div>
+            </div>
+
+            <div class="panel workspace">
+                <div class="section-head">
+                    <div>
+                        <h2>Part B · Read the Marking</h2>
+                        <p>These are the two pre-drawn cases from the task. Display one and read the structure back into words.</p>
+                    </div>
+                </div>
+
+                <div class="chips">
+                    <button class="chip" id="case1Btn">Show Case 1</button>
+                    <button class="chip" id="case2Btn">Show Case 2</button>
+                    <button class="chip" id="caseClearBtn">Clear</button>
+                </div>
+
+                <div class="grid-shell">
+                    <div class="dice-grid" id="caseGrid"></div>
+                    <div class="legend">
+                        <span><i class="swatch case"></i> case from the task</span>
+                    </div>
+                </div>
+
+                <div class="equation" id="caseExplanation">
+                    Choose a case to display the marked event and its verbal interpretation.
+                </div>
+            </div>
+        </section>
+
+        <section class="panel workspace" style="margin-top: 22px;">
+            <div class="section-head">
+                <div>
+                    <h2>Operations Lab · Combining Events on the Same Grid</h2>
+                    <p>Now build the operation as in a written solution: first one set, then the other, then the final result.</p>
+                </div>
+            </div>
+
+            <div class="control-box">
+                <div class="control-row">
+                    <label>
+                        Left event
+                        <select id="leftSelect"></select>
+                    </label>
+                    <label>
+                        Operation
+                        <select id="opSelect">
+                            <option value="union">union A ∪ B</option>
+                            <option value="intersection">intersection A ∩ B</option>
+                            <option value="difference">difference A \ B</option>
+                            <option value="complement-left">complement A^c</option>
+                        </select>
+                    </label>
+                    <label>
+                        Right event
+                        <select id="rightSelect"></select>
+                    </label>
+                </div>
+                <div class="step-controls">
+                    <button class="primary" id="animateBtn">Load Steps</button>
+                    <button class="secondary" id="prevStepBtn">Previous Step</button>
+                    <button class="secondary" id="nextStepBtn">Next Step</button>
+                    <button class="secondary" id="exampleBtn">Example: sum 8 ∩ at least one 6</button>
+                    <button class="secondary" id="resetBtn">Reset View</button>
+                </div>
+            </div>
+
+            <div class="two-col">
+                <div class="grid-shell">
+                    <div class="dice-grid" id="opsGrid"></div>
+                    <div class="legend">
+                        <span><i class="swatch left"></i> left event</span>
+                        <span><i class="swatch right"></i> right event</span>
+                        <span><i class="swatch result"></i> result</span>
+                        <span><i class="swatch ghost"></i> complement view</span>
+                    </div>
+                </div>
+                <div>
+                    <div class="equation" id="operationEquation">Pick an operation and inspect it step by step.</div>
+                    <div class="step-trace">
+                        <div class="step" id="step1">Step 1. Mark the left event.</div>
+                        <div class="step" id="step2">Step 2. Add the right event or compare with the whole sample space.</div>
+                        <div class="step" id="step3">Step 3. Keep exactly the cells required by the operation.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="foot">
+            In this problem, geometry inside the table is already reasoning: diagonals, strict-triangle regions, checkerboard blocks, rows, and columns tell us what kind of condition we imposed.
+        </div>
+    </div>
+
+    <script>
+        const outcomes = [];
+        for (let i = 1; i <= 6; i += 1) {
+            for (let j = 1; j <= 6; j += 1) {
+                outcomes.push({ key: `${i}-${j}`, i, j, sum: i + j });
+            }
+        }
+
+        const events = [
+            {
+                id: "sum8",
+                short: "sum is 8",
+                formula: "A = {(2,6),(3,5),(4,4),(5,3),(6,2)}",
+                explain: "Fixing the sum at 8 gives one anti-diagonal. Every selected cell satisfies i + j = 8.",
+                set: outcomes.filter(o => o.sum === 8).map(o => o.key)
+            },
+            {
+                id: "first-greater",
+                short: "first die > second die",
+                formula: "B = {(i,j) : i > j}",
+                explain: "This is the strict lower triangular region below the main diagonal.",
+                set: outcomes.filter(o => o.i > o.j).map(o => o.key)
+            },
+            {
+                id: "both-even",
+                short: "both dice even",
+                formula: "C = {(i,j) : i and j are even}",
+                explain: "We keep rows 2,4,6 and columns 2,4,6, so the result is a 3x3 even-even block pattern.",
+                set: outcomes.filter(o => o.i % 2 === 0 && o.j % 2 === 0).map(o => o.key)
+            },
+            {
+                id: "at-least-one-6",
+                short: "at least one die is 6",
+                formula: "D = {(i,j) : i = 6 or j = 6}",
+                explain: "This is the union of the last row and the last column.",
+                set: outcomes.filter(o => o.i === 6 || o.j === 6).map(o => o.key)
+            },
+            {
+                id: "exactly-one-1",
+                short: "exactly one die is 1",
+                formula: "E = {(1,j), (i,1) with the corner (1,1) removed}",
+                explain: "Take the first row and first column, but exclude (1,1), because then both dice would be 1.",
+                set: outcomes.filter(o => (o.i === 1) !== (o.j === 1)).map(o => o.key)
+            }
+        ];
+
+        const cases = {
+            case1: {
+                set: outcomes.filter(o => o.i >= 3 && o.j >= 3).map(o => o.key),
+                explain: "Case 1 means: both dice are at least 3. The marked region is the 4x4 block in the top-right part of the table."
+            },
+            case2: {
+                set: outcomes.filter(o => o.i === o.j).map(o => o.key),
+                explain: "Case 2 means: both dice show the same number. That is exactly the main diagonal."
+            }
+        };
+
+        const grids = {};
+        let currentEvent = events[0].id;
+        let currentOperation = null;
+        let currentStepIndex = 0;
+
+        function buildGrid(targetId) {
+            const root = document.getElementById(targetId);
+            let html = '<div class="corner">2nd die</div>';
+            for (let j = 1; j <= 6; j += 1) html += `<div class="axis">${j}</div>`;
+            for (let i = 1; i <= 6; i += 1) {
+                html += `<div class="row-label">${i}</div>`;
+                for (let j = 1; j <= 6; j += 1) {
+                    html += `
+                        <div class="cell" data-key="${i}-${j}">
+                            <div class="fill left"></div>
+                            <div class="fill right"></div>
+                            <div class="fill result"></div>
+                            <div class="fill case"></div>
+                            <div class="fill ghost"></div>
+                            <div class="coords">(${i},${j})</div>
+                            <div class="sum">s=${i + j}</div>
+                        </div>
+                    `;
+                }
+            }
+            root.innerHTML = html;
+            grids[targetId] = root;
+        }
+
+        function clearGrid(targetId) {
+            grids[targetId].querySelectorAll(".cell").forEach((cell) => {
+                cell.classList.remove("left-active", "right-active", "result-active", "case-active", "ghost-active", "overlap");
+            });
+        }
+
+        function mark(targetId, set, className) {
+            const lookup = new Set(set);
+            grids[targetId].querySelectorAll(".cell").forEach((cell) => {
+                cell.classList.toggle(className, lookup.has(cell.dataset.key));
+            });
+        }
+
+        function setStep(active) {
+            [1, 2, 3].forEach((n) => {
+                document.getElementById(`step${n}`).classList.toggle("active", n === active);
+            });
+        }
+
+        function eventById(id) {
+            return events.find((event) => event.id === id);
+        }
+
+        function renderButtons() {
+            const wrap = document.getElementById("eventButtons");
+            wrap.innerHTML = events.map((event) => `
+                <button class="chip ${event.id === currentEvent ? "active" : ""}" data-id="${event.id}">${event.short}</button>
+            `).join("");
+
+            wrap.querySelectorAll(".chip").forEach((button) => {
+                button.addEventListener("click", () => {
+                    currentEvent = button.dataset.id;
+                    renderButtons();
+                    renderEvent();
+                });
+            });
+        }
+
+        function renderEvent() {
+            clearGrid("eventGrid");
+            const event = eventById(currentEvent);
+            mark("eventGrid", event.set, "case-active");
+            document.getElementById("eventExplanation").innerHTML = `
+                <strong>${event.short}</strong><br>
+                ${event.explain}<br>
+                <span class="note">${event.formula}</span>
+            `;
+        }
+
+        function renderCase(caseId) {
+            clearGrid("caseGrid");
+            mark("caseGrid", cases[caseId].set, "case-active");
+            document.getElementById("caseExplanation").innerHTML = `
+                <strong>${caseId === "case1" ? "Case 1" : "Case 2"}</strong><br>
+                ${cases[caseId].explain}
+            `;
+        }
+
+        function clearCase() {
+            clearGrid("caseGrid");
+            document.getElementById("caseExplanation").textContent = "Choose a case to display the marked event and its verbal interpretation.";
+        }
+
+        function initSelects() {
+            const options = events.map((event) => `<option value="${event.id}">${event.short}</option>`).join("");
+            document.getElementById("leftSelect").innerHTML = options;
+            document.getElementById("rightSelect").innerHTML = options;
+            document.getElementById("leftSelect").value = "sum8";
+            document.getElementById("rightSelect").value = "at-least-one-6";
+        }
+
+        function stopAnimation() {
+            clearGrid("opsGrid");
+            setStep(0);
+            currentOperation = null;
+            currentStepIndex = 0;
+            updateStepButtons();
+        }
+
+        function allKeys() {
+            return outcomes.map(o => o.key);
+        }
+
+        function compute(leftSet, rightSet, op) {
+            const left = new Set(leftSet);
+            const right = new Set(rightSet);
+            if (op === "union") return allKeys().filter(key => left.has(key) || right.has(key));
+            if (op === "intersection") return allKeys().filter(key => left.has(key) && right.has(key));
+            if (op === "difference") return allKeys().filter(key => left.has(key) && !right.has(key));
+            if (op === "complement-left") return allKeys().filter(key => !left.has(key));
+            return [];
+        }
+
+        function describeOperation(leftEvent, rightEvent, op, result) {
+            const count = result.length;
+            if (op === "union") {
+                return `
+                    <strong>${leftEvent.short} ∪ ${rightEvent.short}</strong><br>
+                    Keep every cell that belongs to at least one of the two events.<br>
+                    <span class="note">Result size: ${count} outcomes.</span>
+                `;
+            }
+            if (op === "intersection") {
+                return `
+                    <strong>${leftEvent.short} ∩ ${rightEvent.short}</strong><br>
+                    Keep only the cells shared by both events.<br>
+                    <span class="note">Result size: ${count} outcomes.</span>
+                `;
+            }
+            if (op === "difference") {
+                return `
+                    <strong>${leftEvent.short} \\ ${rightEvent.short}</strong><br>
+                    Keep cells that are in the left event, but remove every cell that also belongs to the right event.<br>
+                    <span class="note">Result size: ${count} outcomes.</span>
+                `;
+            }
+            return `
+                <strong>${leftEvent.short}<sup>c</sup></strong><br>
+                Keep every cell of the sample space except the cells already belonging to the chosen left event.<br>
+                <span class="note">Result size: ${count} outcomes.</span>
+            `;
+        }
+
+        function updateStepButtons() {
+            const prev = document.getElementById("prevStepBtn");
+            const next = document.getElementById("nextStepBtn");
+            const ready = Boolean(currentOperation);
+            prev.disabled = !ready || currentStepIndex <= 1;
+            next.disabled = !ready || currentStepIndex >= 3;
+        }
+
+        function prepareOperation() {
+            const leftEvent = eventById(document.getElementById("leftSelect").value);
+            const rightEvent = eventById(document.getElementById("rightSelect").value);
+            const op = document.getElementById("opSelect").value;
+            const result = compute(leftEvent.set, rightEvent.set, op);
+            const overlap = leftEvent.set.filter((key) => rightEvent.set.includes(key));
+            currentOperation = { leftEvent, rightEvent, op, result, overlap };
+            currentStepIndex = 1;
+            showOperationStep(1);
+        }
+
+        function showOperationStep(step) {
+            if (!currentOperation) return;
+            const { leftEvent, rightEvent, op, result, overlap } = currentOperation;
+            clearGrid("opsGrid");
+            setStep(step);
+            currentStepIndex = step;
+
+            if (step === 1) {
+                mark("opsGrid", leftEvent.set, "left-active");
+                document.getElementById("operationEquation").innerHTML = `
+                    <strong>Step 1.</strong> Left event: ${leftEvent.short}.<br>
+                    <span class="note">${leftEvent.formula}</span>
+                `;
+            } else if (step === 2) {
+                mark("opsGrid", leftEvent.set, "left-active");
+                if (op === "complement-left") {
+                    mark("opsGrid", result, "ghost-active");
+                    document.getElementById("operationEquation").innerHTML = `
+                        <strong>Step 2.</strong> For a complement, compare the marked event with the whole sample space Ω. Pale cells are outside the event and will remain in the complement.
+                    `;
+                } else {
+                    mark("opsGrid", rightEvent.set, "right-active");
+                    grids.opsGrid.querySelectorAll(".cell").forEach((cell) => {
+                        cell.classList.toggle("overlap", overlap.includes(cell.dataset.key));
+                    });
+                    document.getElementById("operationEquation").innerHTML = `
+                        <strong>Step 2.</strong> Add the right event: ${rightEvent.short}. Striped cells show the exact overlap of the two sets.
+                    `;
+                }
+            } else if (step === 3) {
+                mark("opsGrid", result, "result-active");
+                document.getElementById("operationEquation").innerHTML = describeOperation(leftEvent, rightEvent, op, result);
+            }
+
+            updateStepButtons();
+        }
+
+        function animateOperation() {
+            stopAnimation();
+            prepareOperation();
+        }
+
+        function nextOperationStep() {
+            if (!currentOperation || currentStepIndex >= 3) return;
+            showOperationStep(currentStepIndex + 1);
+        }
+
+        function previousOperationStep() {
+            if (!currentOperation || currentStepIndex <= 1) return;
+            showOperationStep(currentStepIndex - 1);
+        }
+
+        function loadExample() {
+            document.getElementById("leftSelect").value = "sum8";
+            document.getElementById("rightSelect").value = "at-least-one-6";
+            document.getElementById("opSelect").value = "intersection";
+            document.getElementById("rightSelect").disabled = false;
+            animateOperation();
+        }
+
+        function init() {
+            buildGrid("eventGrid");
+            buildGrid("caseGrid");
+            buildGrid("opsGrid");
+            renderButtons();
+            renderEvent();
+            clearCase();
+            initSelects();
+
+            document.getElementById("case1Btn").addEventListener("click", () => renderCase("case1"));
+            document.getElementById("case2Btn").addEventListener("click", () => renderCase("case2"));
+            document.getElementById("caseClearBtn").addEventListener("click", clearCase);
+            document.getElementById("animateBtn").addEventListener("click", animateOperation);
+            document.getElementById("prevStepBtn").addEventListener("click", previousOperationStep);
+            document.getElementById("nextStepBtn").addEventListener("click", nextOperationStep);
+            document.getElementById("exampleBtn").addEventListener("click", loadExample);
+            document.getElementById("resetBtn").addEventListener("click", () => {
+                stopAnimation();
+                document.getElementById("operationEquation").textContent = "Pick an operation and walk through the steps manually.";
+            });
+            document.getElementById("opSelect").addEventListener("change", (event) => {
+                const disable = event.target.value === "complement-left";
+                document.getElementById("rightSelect").disabled = disable;
+            });
+            updateStepButtons();
+        }
+
+        init();
+    </script>
+</body>
+</html>

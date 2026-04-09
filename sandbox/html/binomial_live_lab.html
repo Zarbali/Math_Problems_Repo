@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rozklad dwumianowy - live lab</title>
+    <style>
+        :root {
+            --ink: #1a2328;
+            --muted: #5f6b73;
+            --paper: rgba(255, 255, 255, 0.92);
+            --line: #d8dfdc;
+            --accent: #155e75;
+            --accent-soft: #d7eef5;
+            --theory: #c2410c;
+            --theory-soft: #ffedd5;
+            --success: #15803d;
+            --success-soft: #dcfce7;
+            --fail: #b91c1c;
+            --fail-soft: #fee2e2;
+            --shadow: 0 24px 60px rgba(26, 35, 40, 0.12);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            color: var(--ink);
+            font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+            background:
+                radial-gradient(circle at top left, rgba(21, 94, 117, 0.12), transparent 24%),
+                radial-gradient(circle at bottom right, rgba(194, 65, 12, 0.12), transparent 24%),
+                linear-gradient(180deg, #f4f7f5 0%, #ebf0ee 100%);
+            min-height: 100vh;
+        }
+
+        .page {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px 18px 48px;
+        }
+
+        .panel {
+            background: var(--paper);
+            border: 1px solid rgba(26, 35, 40, 0.08);
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(8px);
+        }
+
+        .hero,
+        .main-grid,
+        .charts-grid,
+        .controls-grid,
+        .stats-grid {
+            display: grid;
+            gap: 18px;
+        }
+
+        .hero,
+        .main-grid,
+        .charts-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .controls-grid {
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+        }
+
+        .hero-body,
+        .panel-body {
+            padding: 22px;
+        }
+
+        .eyebrow {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: var(--accent-soft);
+            color: var(--accent);
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            margin: 14px 0 8px;
+            font-size: clamp(2.2rem, 5vw, 4rem);
+            line-height: 0.95;
+            letter-spacing: -0.045em;
+        }
+
+        h2 {
+            margin: 0 0 10px;
+            font-size: 1.3rem;
+        }
+
+        h3 {
+            margin: 0 0 8px;
+            font-size: 1rem;
+        }
+
+        p, li, label, input, button, select {
+            font: inherit;
+        }
+
+        p, li {
+            line-height: 1.58;
+        }
+
+        .lede {
+            max-width: 78ch;
+            color: #29353b;
+            font-size: 1.04rem;
+        }
+
+        .formula-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .formula-chip {
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            padding: 10px 12px;
+            background: rgba(255,255,255,0.8);
+            font-family: Consolas, "SFMono-Regular", monospace;
+            font-size: 0.92rem;
+        }
+
+        .section-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: end;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .section-head p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 0.95rem;
+        }
+
+        .control-card,
+        .stat-card,
+        .note-card,
+        .sample-card,
+        .history-card {
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(246,249,248,0.84));
+            padding: 16px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.94rem;
+        }
+
+        input,
+        select {
+            width: 100%;
+            margin-top: 8px;
+            border: 1px solid #c7d1ce;
+            border-radius: 12px;
+            padding: 10px 12px;
+            background: white;
+        }
+
+        .button-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        button {
+            border: 1px solid transparent;
+            border-radius: 999px;
+            padding: 11px 16px;
+            cursor: pointer;
+            transition: transform 0.16s ease;
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+        }
+
+        .primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .secondary {
+            background: white;
+            color: var(--ink);
+            border-color: #c7d1ce;
+        }
+
+        .warn {
+            background: #fff4da;
+            color: #7a5100;
+            border-color: #ecd39b;
+        }
+
+        .stat-card strong {
+            display: block;
+            margin-top: 8px;
+            font-size: clamp(1.35rem, 2.8vw, 2rem);
+            line-height: 1;
+        }
+
+        .stat-card span {
+            color: var(--muted);
+            font-size: 0.92rem;
+        }
+
+        .canvas-shell {
+            border: 1px solid var(--line);
+            border-radius: 20px;
+            padding: 14px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(245,248,247,0.92));
+        }
+
+        canvas {
+            width: 100%;
+            display: block;
+            border-radius: 14px;
+            background: white;
+        }
+
+        .canvas-caption {
+            margin-top: 10px;
+            color: var(--muted);
+            font-size: 0.92rem;
+        }
+
+        .trial-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(26px, 1fr));
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .trial-box {
+            min-height: 34px;
+            border-radius: 10px;
+            display: grid;
+            place-items: center;
+            font-size: 0.9rem;
+            font-weight: 700;
+            border: 1px solid transparent;
+        }
+
+        .trial-box.success {
+            background: var(--success-soft);
+            color: var(--success);
+            border-color: #b7e4c6;
+        }
+
+        .trial-box.fail {
+            background: var(--fail-soft);
+            color: var(--fail);
+            border-color: #f3b5b5;
+        }
+
+        .sample-list {
+            display: grid;
+            gap: 8px;
+            margin-top: 12px;
+            max-height: 280px;
+            overflow: auto;
+        }
+
+        .sample-item {
+            display: grid;
+            grid-template-columns: 64px 1fr 88px;
+            gap: 10px;
+            align-items: center;
+            border: 1px solid #e3e8e6;
+            border-radius: 14px;
+            padding: 10px 12px;
+            background: rgba(255,255,255,0.86);
+            font-size: 0.92rem;
+        }
+
+        .sample-item code {
+            font-family: Consolas, "SFMono-Regular", monospace;
+        }
+
+        .status-line {
+            margin-top: 12px;
+            color: var(--muted);
+            font-size: 0.94rem;
+        }
+
+        .notes ul {
+            margin: 0;
+            padding-left: 18px;
+        }
+
+        @media (min-width: 980px) {
+            .main-grid {
+                grid-template-columns: minmax(0, 1.25fr) minmax(360px, 0.85fr);
+            }
+
+            .charts-grid {
+                grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.95fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <section class="hero">
+            <div class="panel hero-body">
+                <span class="eyebrow">Live Binomial Lab</span>
+                <h1>Rozklad dwumianowy budowany na zywo</h1>
+                <p class="lede">
+                    W jednej symulacji wykonujemy <strong>n prób Bernoulliego</strong>, każda kończy się sukcesem z prawdopodobieństwem
+                    <strong>p</strong>. Zliczamy liczbę sukcesów <strong>X</strong>. Gdy powtarzamy to doświadczenie wiele razy,
+                    histogram częstości empirycznych powinien zbliżać się do teoretycznego rozkładu dwumianowego.
+                </p>
+                <div class="formula-row">
+                    <div class="formula-chip">Model: <code>X ~ Bin(n, p)</code></div>
+                    <div class="formula-chip">Teoria: <code>P(X = k) = C(n,k) p^k (1-p)^(n-k)</code></div>
+                    <div class="formula-chip">Empiria: <code>f̂(k) = liczba trafien k / liczba symulacji</code></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="main-grid">
+            <div class="panel panel-body">
+                <div class="section-head">
+                    <div>
+                        <h2>Histogram empiryczny kontra teoria</h2>
+                        <p>Niebieskie słupki to częstości empiryczne, pomarańczowe znaczniki i linia to rozkład teoretyczny.</p>
+                    </div>
+                </div>
+                <div class="canvas-shell">
+                    <canvas id="histCanvas" width="920" height="460" aria-label="Histogram rozkładu dwumianowego"></canvas>
+                    <div class="canvas-caption">
+                        Każda nowa symulacja dopisuje jedną obserwację wartości $X$. Histogram buduje się na żywo,
+                        więc widać, jak z chaotycznego początku przechodzi w kształt zgodny z teorią.
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel panel-body">
+                <div class="section-head">
+                    <div>
+                        <h2>Sterowanie eksperymentem</h2>
+                        <p>Ty decydujesz o liczbie prób w pojedynczym doświadczeniu i o liczbie powtórzeń całej symulacji.</p>
+                    </div>
+                </div>
+
+                <div class="controls-grid">
+                    <div class="control-card">
+                        <label for="nInput">Liczba prób w doświadczeniu n
+                            <input id="nInput" type="number" min="1" max="50" step="1" value="10">
+                        </label>
+                    </div>
+                    <div class="control-card">
+                        <label for="pInput">Prawdopodobieństwo sukcesu p
+                            <input id="pInput" type="number" min="0.01" max="0.99" step="0.01" value="0.50">
+                        </label>
+                    </div>
+                    <div class="control-card">
+                        <label for="batchInput">Ile nowych symulacji wykonać w serii
+                            <input id="batchInput" type="number" min="1" max="100000" step="1" value="100">
+                        </label>
+                    </div>
+                    <div class="control-card">
+                        <label for="targetInput">Automatycznie zatrzymaj po tylu symulacjach
+                            <input id="targetInput" type="number" min="0" max="1000000" step="1" value="0">
+                        </label>
+                    </div>
+                    <div class="control-card">
+                        <label for="speedInput">Symulacji na sekundę
+                            <select id="speedInput">
+                                <option value="1">1</option>
+                                <option value="5">5</option>
+                                <option value="10" selected>10</option>
+                                <option value="25">25</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                            </select>
+                        </label>
+                    </div>
+                    <div class="control-card">
+                        <label for="historyInput">Ile ostatnich symulacji pokazać
+                            <select id="historyInput">
+                                <option value="8">8</option>
+                                <option value="12" selected>12</option>
+                                <option value="20">20</option>
+                                <option value="30">30</option>
+                            </select>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="button-row">
+                    <button class="primary" id="startBtn">Start</button>
+                    <button class="secondary" id="stepBtn">Jedna symulacja</button>
+                    <button class="secondary" id="batchBtn">Wykonaj serię</button>
+                    <button class="warn" id="resetBtn">Reset</button>
+                </div>
+
+                <div class="status-line" id="statusLine">
+                    Symulacja zatrzymana. Ustaw parametry i wybierz rozmiar serii.
+                </div>
+
+                <div class="sample-card" style="margin-top: 16px;">
+                    <h3>Ostatnia symulacja</h3>
+                    <p>Pokazujemy wszystkie <strong>n</strong> prób Bernoulliego z ostatniego doświadczenia. Zielone pole to sukces, czerwone to porażka.</p>
+                    <div style="margin-top: 10px; color: var(--muted);">
+                        Numer symulacji: <strong id="sampleIndex">0</strong> |
+                        Liczba sukcesów: <strong id="sampleSuccesses">-</strong> |
+                        Liczba porażek: <strong id="sampleFails">-</strong>
+                    </div>
+                    <div class="trial-grid" id="trialGrid"></div>
+                </div>
+
+                <div class="notes" style="margin-top: 16px;">
+                    <div class="note-card">
+                        <h3>Co warto obserwować</h3>
+                        <ul>
+                            <li>Dla małej liczby symulacji histogram bywa niestabilny i poszarpany.</li>
+                            <li>Gdy liczba symulacji rośnie, słupki empiryczne zwykle układają się coraz bliżej teorii.</li>
+                            <li>Zmiana <strong>n</strong> przesuwa i rozszerza rozkład, a zmiana <strong>p</strong> przesuwa środek i asymetrię.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="charts-grid" style="margin-top: 18px;">
+            <div class="panel panel-body">
+                <div class="section-head">
+                    <div>
+                        <h2>Błąd globalny w czasie</h2>
+                        <p>Śledzimy odległość między histogramem empirycznym a rozkładem teoretycznym po każdej kolejnej symulacji.</p>
+                    </div>
+                </div>
+                <div class="canvas-shell">
+                    <canvas id="errorCanvas" width="920" height="300" aria-label="Wykres błędu globalnego"></canvas>
+                    <div class="canvas-caption">
+                        Pokazujemy błąd typu
+                        <code>sum_k |f_hat(k) - P(X=k)|</code>.
+                        Nie musi maleć idealnie monotonicznie, ale w długim horyzoncie zwykle trend jest malejący.
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel panel-body">
+                <div class="section-head">
+                    <div>
+                        <h2>Statystyki i różnice</h2>
+                        <p>Tu widzisz liczby, a niżej rozpisane wartości empiryczne i teoretyczne dla poszczególnych k.</p>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span>Liczba symulacji</span>
+                        <strong id="totalSim">0</strong>
+                    </div>
+                    <div class="stat-card">
+                        <span>Średnia empiryczna</span>
+                        <strong id="empMean">0.000</strong>
+                    </div>
+                    <div class="stat-card">
+                        <span>Średnia teoretyczna</span>
+                        <strong id="theoryMean">0.000</strong>
+                    </div>
+                    <div class="stat-card">
+                        <span>Wariancja empiryczna</span>
+                        <strong id="empVar">0.000</strong>
+                    </div>
+                    <div class="stat-card">
+                        <span>Wariancja teoretyczna</span>
+                        <strong id="theoryVar">0.000</strong>
+                    </div>
+                    <div class="stat-card">
+                        <span>Błąd globalny</span>
+                        <strong id="globalError">0.000</strong>
+                    </div>
+                </div>
+
+                <div class="history-card" style="margin-top: 16px;">
+                    <h3>Ostatnie wartości X</h3>
+                    <div class="sample-list" id="historyList"></div>
+                </div>
+
+                <div class="history-card" style="margin-top: 16px;">
+                    <h3>Tabela różnic dla poszczególnych k</h3>
+                    <div class="sample-list" id="diffList"></div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        const histCanvas = document.getElementById("histCanvas");
+        const histCtx = histCanvas.getContext("2d");
+        const errorCanvas = document.getElementById("errorCanvas");
+        const errorCtx = errorCanvas.getContext("2d");
+
+        const el = {
+            nInput: document.getElementById("nInput"),
+            pInput: document.getElementById("pInput"),
+            batchInput: document.getElementById("batchInput"),
+            targetInput: document.getElementById("targetInput"),
+            speedInput: document.getElementById("speedInput"),
+            historyInput: document.getElementById("historyInput"),
+            startBtn: document.getElementById("startBtn"),
+            stepBtn: document.getElementById("stepBtn"),
+            batchBtn: document.getElementById("batchBtn"),
+            resetBtn: document.getElementById("resetBtn"),
+            statusLine: document.getElementById("statusLine"),
+            sampleIndex: document.getElementById("sampleIndex"),
+            sampleSuccesses: document.getElementById("sampleSuccesses"),
+            sampleFails: document.getElementById("sampleFails"),
+            trialGrid: document.getElementById("trialGrid"),
+            totalSim: document.getElementById("totalSim"),
+            empMean: document.getElementById("empMean"),
+            theoryMean: document.getElementById("theoryMean"),
+            empVar: document.getElementById("empVar"),
+            theoryVar: document.getElementById("theoryVar"),
+            globalError: document.getElementById("globalError"),
+            historyList: document.getElementById("historyList"),
+            diffList: document.getElementById("diffList")
+        };
+
+        const state = {
+            running: false,
+            lastTick: 0,
+            intervalMs: 100,
+            totalSimulations: 0,
+            counts: [],
+            theory: [],
+            errorSeries: [],
+            samples: [],
+            lastSample: null
+        };
+
+        function clampInputs() {
+            let n = Math.max(1, Math.min(50, Math.floor(Number(el.nInput.value) || 10)));
+            let p = Number(el.pInput.value);
+            if (!Number.isFinite(p)) p = 0.5;
+            p = Math.max(0.01, Math.min(0.99, p));
+            const batch = Math.max(1, Math.floor(Number(el.batchInput.value) || 100));
+            const target = Math.max(0, Math.floor(Number(el.targetInput.value) || 0));
+            const speed = Math.max(1, Number(el.speedInput.value) || 10);
+            const historyLimit = Math.max(1, Number(el.historyInput.value) || 12);
+
+            el.nInput.value = String(n);
+            el.pInput.value = p.toFixed(2);
+            el.batchInput.value = String(batch);
+            el.targetInput.value = String(target);
+            state.intervalMs = 1000 / speed;
+
+            return { n, p, batch, target, speed, historyLimit };
+        }
+
+        function choose(n, k) {
+            if (k < 0 || k > n) return 0;
+            k = Math.min(k, n - k);
+            let num = 1;
+            let den = 1;
+            for (let i = 1; i <= k; i += 1) {
+                num *= (n - k + i);
+                den *= i;
+            }
+            return num / den;
+        }
+
+        function binomialTheory(n, p) {
+            return Array.from({ length: n + 1 }, (_, k) => choose(n, k) * (p ** k) * ((1 - p) ** (n - k)));
+        }
+
+        function resetForParams() {
+            const { n, p } = clampInputs();
+            state.running = false;
+            state.lastTick = 0;
+            state.totalSimulations = 0;
+            state.counts = Array.from({ length: n + 1 }, () => 0);
+            state.theory = binomialTheory(n, p);
+            state.errorSeries = [];
+            state.samples = [];
+            state.lastSample = null;
+            el.startBtn.textContent = "Start";
+            el.statusLine.textContent = "Parametry ustawione. Możesz zacząć budować histogram od zera.";
+            updateAll();
+        }
+
+        function simulateOne() {
+            const { n, p, historyLimit } = clampInputs();
+            if (state.counts.length !== n + 1) {
+                resetForParams();
+            }
+
+            const trials = [];
+            let successes = 0;
+            for (let i = 0; i < n; i += 1) {
+                const success = Math.random() < p;
+                trials.push(success);
+                if (success) successes += 1;
+            }
+
+            state.totalSimulations += 1;
+            state.counts[successes] += 1;
+            state.lastSample = {
+                index: state.totalSimulations,
+                n,
+                successes,
+                failures: n - successes,
+                trials
+            };
+            state.samples.unshift(state.lastSample);
+            state.samples = state.samples.slice(0, historyLimit);
+            state.errorSeries.push(globalError());
+        }
+
+        function simulateBatch(count) {
+            for (let i = 0; i < count; i += 1) {
+                simulateOne();
+            }
+            el.statusLine.textContent = `Wykonano serię ${count} symulacji. Łączna liczba symulacji: ${state.totalSimulations}.`;
+            updateAll();
+        }
+
+        function empiricalFrequencies() {
+            if (state.totalSimulations === 0) {
+                return state.counts.map(() => 0);
+            }
+            return state.counts.map((count) => count / state.totalSimulations);
+        }
+
+        function empiricalMean() {
+            if (state.totalSimulations === 0) return 0;
+            let sum = 0;
+            for (let k = 0; k < state.counts.length; k += 1) {
+                sum += k * state.counts[k];
+            }
+            return sum / state.totalSimulations;
+        }
+
+        function empiricalVariance() {
+            if (state.totalSimulations === 0) return 0;
+            const mean = empiricalMean();
+            let sum = 0;
+            for (let k = 0; k < state.counts.length; k += 1) {
+                const diff = k - mean;
+                sum += diff * diff * state.counts[k];
+            }
+            return sum / state.totalSimulations;
+        }
+
+        function globalError() {
+            const emp = empiricalFrequencies();
+            let sum = 0;
+            for (let k = 0; k < emp.length; k += 1) {
+                sum += Math.abs(emp[k] - state.theory[k]);
+            }
+            return sum;
+        }
+
+        function drawHistogram() {
+            const { n } = clampInputs();
+            const w = histCanvas.width;
+            const h = histCanvas.height;
+            histCtx.clearRect(0, 0, w, h);
+
+            const margin = { left: 64, right: 24, top: 24, bottom: 52 };
+            const plotW = w - margin.left - margin.right;
+            const plotH = h - margin.top - margin.bottom;
+
+            const grad = histCtx.createLinearGradient(0, 0, 0, h);
+            grad.addColorStop(0, "#ffffff");
+            grad.addColorStop(1, "#f3f7f6");
+            histCtx.fillStyle = grad;
+            histCtx.fillRect(0, 0, w, h);
+
+            const emp = empiricalFrequencies();
+            const maxY = Math.max(0.05, ...state.theory, ...emp);
+
+            histCtx.strokeStyle = "rgba(21,94,117,0.08)";
+            histCtx.lineWidth = 1;
+            for (let i = 0; i <= 5; i += 1) {
+                const y = margin.top + (plotH * i) / 5;
+                histCtx.beginPath();
+                histCtx.moveTo(margin.left, y);
+                histCtx.lineTo(w - margin.right, y);
+                histCtx.stroke();
+            }
+
+            histCtx.strokeStyle = "#93a09c";
+            histCtx.lineWidth = 1.5;
+            histCtx.beginPath();
+            histCtx.moveTo(margin.left, margin.top);
+            histCtx.lineTo(margin.left, h - margin.bottom);
+            histCtx.lineTo(w - margin.right, h - margin.bottom);
+            histCtx.stroke();
+
+            const groupWidth = plotW / (n + 1);
+            const barWidth = groupWidth * 0.62;
+
+            histCtx.fillStyle = "#5f6b73";
+            histCtx.font = '13px Georgia, serif';
+            for (let i = 0; i <= 5; i += 1) {
+                const val = maxY * (1 - i / 5);
+                const y = margin.top + (plotH * i) / 5;
+                histCtx.fillText(val.toFixed(2), 16, y + 4);
+            }
+
+            for (let k = 0; k <= n; k += 1) {
+                const centerX = margin.left + groupWidth * (k + 0.5);
+                const empH = (emp[k] / maxY) * plotH;
+                const theoryY = margin.top + plotH - (state.theory[k] / maxY) * plotH;
+
+                histCtx.fillStyle = "rgba(21,94,117,0.82)";
+                histCtx.fillRect(centerX - barWidth / 2, margin.top + plotH - empH, barWidth, empH);
+
+                histCtx.strokeStyle = "rgba(194,65,12,0.95)";
+                histCtx.lineWidth = 2;
+                histCtx.beginPath();
+                histCtx.arc(centerX, theoryY, 4, 0, Math.PI * 2);
+                histCtx.stroke();
+
+                if (k < n) {
+                    const nextCenterX = margin.left + groupWidth * (k + 1.5);
+                    const nextTheoryY = margin.top + plotH - (state.theory[k + 1] / maxY) * plotH;
+                    histCtx.strokeStyle = "rgba(194,65,12,0.9)";
+                    histCtx.lineWidth = 2;
+                    histCtx.beginPath();
+                    histCtx.moveTo(centerX, theoryY);
+                    histCtx.lineTo(nextCenterX, nextTheoryY);
+                    histCtx.stroke();
+                }
+
+                histCtx.fillStyle = "#415058";
+                histCtx.fillText(String(k), centerX - 4, h - margin.bottom + 20);
+            }
+
+            histCtx.fillStyle = "rgba(21,94,117,0.9)";
+            histCtx.fillText("czestosc empiryczna", margin.left + 12, margin.top + 16);
+            histCtx.fillStyle = "rgba(194,65,12,0.95)";
+            histCtx.fillText("rozklad teoretyczny", margin.left + 180, margin.top + 16);
+            histCtx.fillStyle = "#5f6b73";
+            histCtx.fillText("k", w - margin.right - 10, h - 16);
+        }
+
+        function drawErrorChart() {
+            const w = errorCanvas.width;
+            const h = errorCanvas.height;
+            errorCtx.clearRect(0, 0, w, h);
+
+            const margin = { left: 64, right: 24, top: 24, bottom: 44 };
+            const plotW = w - margin.left - margin.right;
+            const plotH = h - margin.top - margin.bottom;
+
+            const grad = errorCtx.createLinearGradient(0, 0, 0, h);
+            grad.addColorStop(0, "#ffffff");
+            grad.addColorStop(1, "#faf5f1");
+            errorCtx.fillStyle = grad;
+            errorCtx.fillRect(0, 0, w, h);
+
+            errorCtx.strokeStyle = "rgba(194,65,12,0.08)";
+            errorCtx.lineWidth = 1;
+            for (let i = 0; i <= 4; i += 1) {
+                const y = margin.top + (plotH * i) / 4;
+                errorCtx.beginPath();
+                errorCtx.moveTo(margin.left, y);
+                errorCtx.lineTo(w - margin.right, y);
+                errorCtx.stroke();
+            }
+
+            errorCtx.strokeStyle = "#93a09c";
+            errorCtx.lineWidth = 1.5;
+            errorCtx.beginPath();
+            errorCtx.moveTo(margin.left, margin.top);
+            errorCtx.lineTo(margin.left, h - margin.bottom);
+            errorCtx.lineTo(w - margin.right, h - margin.bottom);
+            errorCtx.stroke();
+
+            if (state.errorSeries.length === 0) {
+                errorCtx.fillStyle = "#68757d";
+                errorCtx.font = '16px Georgia, serif';
+                errorCtx.fillText("Brak danych. Wykonaj pierwsze symulacje.", margin.left + 24, margin.top + 34);
+                return;
+            }
+
+            const maxY = Math.max(0.05, ...state.errorSeries);
+            errorCtx.fillStyle = "#5f6b73";
+            errorCtx.font = '13px Georgia, serif';
+            for (let i = 0; i <= 4; i += 1) {
+                const val = maxY * (1 - i / 4);
+                const y = margin.top + (plotH * i) / 4;
+                errorCtx.fillText(val.toFixed(3), 14, y + 4);
+            }
+
+            const maxPoints = 900;
+            const stride = Math.max(1, Math.ceil(state.errorSeries.length / maxPoints));
+            errorCtx.strokeStyle = "rgba(194,65,12,0.95)";
+            errorCtx.lineWidth = 2.3;
+            errorCtx.beginPath();
+            let started = false;
+            for (let i = 0; i < state.errorSeries.length; i += stride) {
+                const x = margin.left + (i / Math.max(1, state.errorSeries.length - 1)) * plotW;
+                const y = margin.top + plotH - (state.errorSeries[i] / maxY) * plotH;
+                if (!started) {
+                    errorCtx.moveTo(x, y);
+                    started = true;
+                } else {
+                    errorCtx.lineTo(x, y);
+                }
+            }
+
+            if ((state.errorSeries.length - 1) % stride !== 0) {
+                const lastIndex = state.errorSeries.length - 1;
+                const x = margin.left + (lastIndex / Math.max(1, state.errorSeries.length - 1)) * plotW;
+                const y = margin.top + plotH - (state.errorSeries[lastIndex] / maxY) * plotH;
+                errorCtx.lineTo(x, y);
+            }
+            errorCtx.stroke();
+
+            errorCtx.fillStyle = "rgba(194,65,12,0.95)";
+            errorCtx.fillText("blad globalny", margin.left + 12, margin.top + 16);
+            errorCtx.fillStyle = "#5f6b73";
+            errorCtx.fillText("liczba symulacji", w - 126, h - 14);
+        }
+
+        function renderLastSample() {
+            el.trialGrid.innerHTML = "";
+            if (!state.lastSample) {
+                el.sampleIndex.textContent = "0";
+                el.sampleSuccesses.textContent = "-";
+                el.sampleFails.textContent = "-";
+                return;
+            }
+
+            el.sampleIndex.textContent = String(state.lastSample.index);
+            el.sampleSuccesses.textContent = String(state.lastSample.successes);
+            el.sampleFails.textContent = String(state.lastSample.failures);
+
+            for (const success of state.lastSample.trials) {
+                const box = document.createElement("div");
+                box.className = `trial-box ${success ? "success" : "fail"}`;
+                box.textContent = success ? "1" : "0";
+                el.trialGrid.appendChild(box);
+            }
+        }
+
+        function renderHistory() {
+            el.historyList.innerHTML = "";
+            if (state.samples.length === 0) {
+                const empty = document.createElement("div");
+                empty.className = "sample-item";
+                empty.textContent = "Brak wykonanych symulacji.";
+                el.historyList.appendChild(empty);
+                return;
+            }
+
+            for (const sample of state.samples) {
+                const row = document.createElement("div");
+                row.className = "sample-item";
+                row.innerHTML = `
+                    <strong>#${sample.index}</strong>
+                    <div><code>X = ${sample.successes}</code>, <code>n = ${sample.n}</code></div>
+                    <div>${sample.successes} sukcesow</div>
+                `;
+                el.historyList.appendChild(row);
+            }
+        }
+
+        function renderDiffs() {
+            el.diffList.innerHTML = "";
+            const emp = empiricalFrequencies();
+            const total = state.totalSimulations;
+            for (let k = 0; k < state.theory.length; k += 1) {
+                const row = document.createElement("div");
+                row.className = "sample-item";
+                const diff = emp[k] - state.theory[k];
+                row.innerHTML = `
+                    <strong>k = ${k}</strong>
+                    <div><code>emp = ${emp[k].toFixed(4)}</code>, <code>teoria = ${state.theory[k].toFixed(4)}</code></div>
+                    <div><code>&Delta; = ${diff >= 0 ? "+" : ""}${diff.toFixed(4)}</code></div>
+                `;
+                if (total === 0) {
+                    row.innerHTML = `
+                        <strong>k = ${k}</strong>
+                        <div><code>emp = 0.0000</code>, <code>teoria = ${state.theory[k].toFixed(4)}</code></div>
+                        <div><code>&Delta; = ${(-state.theory[k]).toFixed(4)}</code></div>
+                    `;
+                }
+                el.diffList.appendChild(row);
+            }
+        }
+
+        function updateStats() {
+            const { n, p } = clampInputs();
+            const theoryMean = n * p;
+            const theoryVar = n * p * (1 - p);
+
+            el.totalSim.textContent = String(state.totalSimulations);
+            el.empMean.textContent = empiricalMean().toFixed(3);
+            el.theoryMean.textContent = theoryMean.toFixed(3);
+            el.empVar.textContent = empiricalVariance().toFixed(3);
+            el.theoryVar.textContent = theoryVar.toFixed(3);
+            el.globalError.textContent = globalError().toFixed(3);
+        }
+
+        function updateAll() {
+            updateStats();
+            drawHistogram();
+            drawErrorChart();
+            renderLastSample();
+            renderHistory();
+            renderDiffs();
+        }
+
+        function animationLoop(now) {
+            const { target } = clampInputs();
+            if (state.running && target > 0 && state.totalSimulations >= target) {
+                state.running = false;
+                el.startBtn.textContent = "Start";
+                el.statusLine.textContent = `Osiagnieto limit ${target} symulacji.`;
+            }
+
+            if (state.running && now - state.lastTick >= state.intervalMs) {
+                simulateOne();
+                state.lastTick = now;
+                el.statusLine.textContent = `Symulacja dziala. Liczba wykonanych symulacji: ${state.totalSimulations}.`;
+                updateAll();
+            }
+
+            requestAnimationFrame(animationLoop);
+        }
+
+        el.startBtn.addEventListener("click", () => {
+            state.running = !state.running;
+            el.startBtn.textContent = state.running ? "Pauza" : "Start";
+            el.statusLine.textContent = state.running
+                ? `Start ciaglej symulacji z szybkoscia ${el.speedInput.value} symulacji/s.`
+                : "Symulacja zatrzymana. Histogram pozostaje na ekranie.";
+        });
+
+        el.stepBtn.addEventListener("click", () => {
+            simulateOne();
+            updateAll();
+            el.statusLine.textContent = "Wykonano jedna nowa symulacje rozkladu dwumianowego.";
+        });
+
+        el.batchBtn.addEventListener("click", () => {
+            const { batch } = clampInputs();
+            simulateBatch(batch);
+        });
+
+        el.resetBtn.addEventListener("click", resetForParams);
+
+        [el.nInput, el.pInput].forEach((input) => {
+            input.addEventListener("change", resetForParams);
+        });
+
+        [el.speedInput, el.batchInput, el.targetInput, el.historyInput].forEach((input) => {
+            input.addEventListener("change", () => {
+                clampInputs();
+                if (input === el.historyInput) {
+                    state.samples = state.samples.slice(0, Number(el.historyInput.value));
+                    renderHistory();
+                }
+            });
+        });
+
+        resetForParams();
+        requestAnimationFrame(animationLoop);
+    </script>
+</body>
+</html>

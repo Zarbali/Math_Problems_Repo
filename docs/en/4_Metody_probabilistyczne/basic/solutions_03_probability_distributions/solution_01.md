@@ -1,3 +1,0 @@
-# Solution
-
-## Task 1

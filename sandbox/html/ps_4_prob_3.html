@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Problem 3 - Weather 7 x 3</title>
+    <style>
+        :root {
+            --ink: #1f2937;
+            --muted: #6b7280;
+            --panel: rgba(255, 255, 252, 0.88);
+            --line: #d8d7cf;
+            --blue: #2563eb;
+            --blue-soft: #dbeafe;
+            --sun: #d97706;
+            --sun-soft: #ffedd5;
+            --rain: #0f766e;
+            --rain-soft: #ccfbf1;
+            --cloud: #64748b;
+            --cloud-soft: #e2e8f0;
+            --rose: #be123c;
+            --rose-soft: #ffe4e6;
+            --result: #15803d;
+            --result-soft: #dcfce7;
+            --shadow: 0 20px 55px rgba(71, 85, 105, 0.14);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            color: var(--ink);
+            font-family: Cambria, Georgia, serif;
+            background:
+                radial-gradient(circle at top left, rgba(217, 119, 6, 0.14), transparent 24%),
+                radial-gradient(circle at top right, rgba(37, 99, 235, 0.13), transparent 26%),
+                linear-gradient(180deg, #f8f6f0 0%, #eef4f8 100%);
+            min-height: 100vh;
+        }
+
+        .page {
+            max-width: 1120px;
+            margin: 0 auto;
+            padding: 26px 18px 46px;
+        }
+
+        .hero,
+        .layout,
+        .two-col {
+            display: grid;
+            gap: 22px;
+        }
+
+        .hero {
+            grid-template-columns: 1fr;
+            margin-bottom: 22px;
+        }
+
+        .layout {
+            grid-template-columns: 1fr;
+        }
+
+        .two-col {
+            grid-template-columns: 1fr;
+        }
+
+        .panel {
+            background: var(--panel);
+            border: 1px solid rgba(100, 116, 139, 0.14);
+            border-radius: 26px;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(10px);
+        }
+
+        .hero-main,
+        .hero-side,
+        .workspace {
+            padding: 24px;
+        }
+
+        .hero-side {
+            display: grid;
+            gap: 14px;
+            align-content: start;
+        }
+
+        .eyebrow {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: var(--blue-soft);
+            color: var(--blue);
+            font-size: 12px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        h1 {
+            margin: 14px 0 10px;
+            font-size: clamp(2.1rem, 5vw, 4rem);
+            line-height: 0.94;
+            letter-spacing: -0.04em;
+        }
+
+        p,
+        .note,
+        .equation,
+        .mini-card p {
+            line-height: 1.58;
+        }
+
+        .mini-card {
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            padding: 14px 16px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(246,247,249,0.76));
+        }
+
+        .mini-card h2,
+        .mini-card h3,
+        .workspace h2 {
+            margin: 0 0 8px;
+            font-size: 1rem;
+        }
+
+        .section-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: end;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .section-head h2 {
+            margin: 0;
+            font-size: 1.55rem;
+        }
+
+        .chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 14px 0 16px;
+        }
+
+        .chip,
+        button,
+        select {
+            font: inherit;
+        }
+
+        .chip {
+            border: 1px solid var(--line);
+            background: white;
+            color: var(--ink);
+            border-radius: 999px;
+            padding: 9px 14px;
+            cursor: pointer;
+            transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+        }
+
+        .chip.active {
+            background: var(--rain);
+            color: white;
+            border-color: var(--rain);
+        }
+
+        .chip:hover,
+        button:hover,
+        select:hover {
+            transform: translateY(-1px);
+        }
+
+        .grid-shell {
+            border: 1px solid var(--line);
+            border-radius: 22px;
+            padding: 16px;
+            background: linear-gradient(180deg, #fff, #f8fafc);
+        }
+
+        .weather-grid {
+            display: grid;
+            grid-template-columns: 62px repeat(7, minmax(72px, 1fr));
+            gap: 8px;
+        }
+
+        .corner,
+        .axis,
+        .row-label,
+        .cell {
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .corner,
+        .axis,
+        .row-label {
+            min-height: 46px;
+            border: 1px solid var(--line);
+            background: #f2f5f7;
+            color: #334155;
+            font-weight: 700;
+        }
+
+        .axis {
+            font-size: 0.86rem;
+        }
+
+        .cell {
+            position: relative;
+            min-height: 76px;
+            border: 1px solid #dbe2ea;
+            background: white;
+            overflow: hidden;
+            transition: transform 0.24s ease, border-color 0.24s ease, box-shadow 0.24s ease;
+        }
+
+        .cell:hover {
+            transform: translateY(-2px);
+        }
+
+        .fill {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            transform: scale(0.92);
+            transition: opacity 0.34s ease, transform 0.34s ease;
+            z-index: 1;
+        }
+
+        .fill.case { background: linear-gradient(135deg, rgba(190,24,93,0.95), rgba(251,113,133,0.88)); }
+        .fill.left { background: linear-gradient(135deg, rgba(37,99,235,0.94), rgba(96,165,250,0.88)); }
+        .fill.right { background: linear-gradient(135deg, rgba(217,119,6,0.94), rgba(251,191,36,0.88)); }
+        .fill.result { background: linear-gradient(135deg, rgba(21,128,61,0.96), rgba(74,222,128,0.86)); }
+
+        .cell.case-active .fill.case,
+        .cell.left-active .fill.left,
+        .cell.right-active .fill.right,
+        .cell.result-active .fill.result {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .cell.overlap::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: repeating-linear-gradient(
+                -45deg,
+                rgba(255,255,255,0.34),
+                rgba(255,255,255,0.34) 8px,
+                rgba(255,255,255,0.08) 8px,
+                rgba(255,255,255,0.08) 16px
+            );
+            z-index: 2;
+        }
+
+        .cell .abbr,
+        .cell .day {
+            position: relative;
+            z-index: 3;
+        }
+
+        .cell .abbr {
+            font-size: 1.08rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+        }
+
+        .cell .day {
+            position: absolute;
+            left: 7px;
+            bottom: 6px;
+            font-size: 0.66rem;
+            color: var(--muted);
+        }
+
+        .equation {
+            margin-top: 16px;
+            padding: 14px 16px;
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            background: white;
+        }
+
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 14px;
+            font-size: 0.94rem;
+            color: var(--muted);
+        }
+
+        .legend span {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+            background: rgba(255,255,255,0.92);
+        }
+
+        .swatch {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            flex: none;
+        }
+
+        .swatch.case { background: var(--rose); }
+        .swatch.left { background: var(--blue); }
+        .swatch.right { background: var(--sun); }
+        .swatch.result { background: var(--result); }
+
+        .control-box {
+            display: grid;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .control-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .step-controls {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        label {
+            display: grid;
+            gap: 6px;
+            color: #475569;
+            font-size: 0.92rem;
+        }
+
+        select,
+        button {
+            width: 100%;
+            padding: 11px 12px;
+            border-radius: 14px;
+            border: 1px solid var(--line);
+            background: white;
+            color: var(--ink);
+            transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+        }
+
+        button.primary {
+            background: linear-gradient(135deg, #0f766e, #14b8a6);
+            color: white;
+            border-color: #0f766e;
+            box-shadow: 0 12px 24px rgba(15, 118, 110, 0.18);
+        }
+
+        button.secondary {
+            background: #f8fafc;
+        }
+
+        .step-trace {
+            display: grid;
+            gap: 8px;
+            margin-top: 14px;
+        }
+
+        .step {
+            border-left: 4px solid #cbd5e1;
+            padding: 8px 12px;
+            border-radius: 0 12px 12px 0;
+            background: rgba(255,255,255,0.74);
+            color: #475569;
+            transition: transform 0.22s ease, border-color 0.22s ease, background 0.22s ease;
+        }
+
+        .step.active {
+            border-left-color: var(--rain);
+            background: var(--rain-soft);
+            transform: translateX(4px);
+            color: #0f766e;
+        }
+
+        .mapping {
+            display: grid;
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .mapping-item {
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            padding: 12px 14px;
+            background: rgba(255,255,255,0.88);
+        }
+
+        .mapping-item strong {
+            display: inline-block;
+            min-width: 52px;
+        }
+
+        .foot {
+            margin-top: 22px;
+            padding: 16px 18px;
+            border-radius: 18px;
+            border: 1px dashed rgba(100,116,139,0.22);
+            background: rgba(255,255,255,0.68);
+            color: #475569;
+            line-height: 1.58;
+        }
+
+        @media (max-width: 760px) {
+            .page { padding: 16px 12px 34px; }
+            .hero-main, .hero-side, .workspace { padding: 16px; }
+            .control-row, .step-controls { grid-template-columns: 1fr; }
+            .weather-grid {
+                grid-template-columns: 48px repeat(7, minmax(44px, 1fr));
+                gap: 6px;
+            }
+            .cell { min-height: 58px; }
+            .axis { font-size: 0.68rem; }
+            .cell .abbr { font-size: 0.88rem; }
+            .cell .day { font-size: 0.54rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <section class="hero">
+            <div class="panel hero-main">
+                <div class="eyebrow">List 4 · Problem 3</div>
+                <h1>Weather 7 x 3</h1>
+                <p>
+                    This table is different from the dice tables. A marked cell does <strong>not</strong> mean one complete weekly weather sequence.
+                    It means that a certain weather state is allowed, selected, or required on a given day.
+                    So each event is a pattern of restrictions spread across the week.
+                </p>
+            </div>
+            <aside class="panel hero-side">
+                <div class="mini-card">
+                    <h2>How to read this page</h2>
+                    <p>Go from top to bottom: first one basic weather condition, then the prepared cases, and finally the step-by-step combination of two weekly constraints.</p>
+                </div>
+            </aside>
+        </section>
+
+        <section class="layout">
+            <div class="panel workspace">
+                <div class="section-head">
+                    <div>
+                        <h2>Part A · Marking Events</h2>
+                        <p>Choose a statement and inspect which day-state cells must be marked.</p>
+                    </div>
+                </div>
+
+                <div class="chips" id="eventButtons"></div>
+
+                <div class="grid-shell">
+                    <div class="weather-grid" id="eventGrid"></div>
+                    <div class="legend">
+                        <span><i class="swatch case"></i> selected event</span>
+                    </div>
+                </div>
+
+                <div class="equation" id="eventExplanation"></div>
+            </div>
+
+            <div class="panel workspace">
+                <div class="section-head">
+                    <div>
+                        <h2>Part B · Interpreting a Marking</h2>
+                        <p>These are the two patterns given in the task. Show one and read it back as a verbal constraint.</p>
+                    </div>
+                </div>
+
+                <div class="chips">
+                    <button class="chip" id="case1Btn">Show Case 1</button>
+                    <button class="chip" id="case2Btn">Show Case 2</button>
+                    <button class="chip" id="clearCaseBtn">Clear</button>
+                </div>
+
+                <div class="grid-shell">
+                    <div class="weather-grid" id="caseGrid"></div>
+                    <div class="legend">
+                        <span><i class="swatch case"></i> case from the task</span>
+                    </div>
+                </div>
+
+                <div class="equation" id="caseExplanation">
+                    Choose a case to see what kind of weekly condition it describes.
+                </div>
+            </div>
+        </section>
+
+        <section class="panel workspace" style="margin-top: 22px;">
+            <div class="section-head">
+                <div>
+                    <h2>Operations Lab · Combining Weekly Constraints</h2>
+                    <p>This last section is the actual building process: first one constraint, then the other, then the final set.</p>
+                </div>
+            </div>
+
+            <div class="control-box">
+                <div class="control-row">
+                    <label>
+                        Left statement
+                        <select id="leftSelect"></select>
+                    </label>
+                    <label>
+                        Operation
+                        <select id="opSelect">
+                            <option value="union">union A ∪ B</option>
+                            <option value="intersection">intersection A ∩ B</option>
+                            <option value="difference">difference A \ B</option>
+                        </select>
+                    </label>
+                    <label>
+                        Right statement
+                        <select id="rightSelect"></select>
+                    </label>
+                </div>
+                <div class="step-controls">
+                    <button class="primary" id="animateBtn">Load Steps</button>
+                    <button class="secondary" id="prevStepBtn">Previous Step</button>
+                    <button class="secondary" id="nextStepBtn">Next Step</button>
+                    <button class="secondary" id="exampleBtn">Example: Monday sunny ∩ no rainy day</button>
+                    <button class="secondary" id="resetBtn">Reset View</button>
+                </div>
+            </div>
+
+            <div class="two-col">
+                <div class="grid-shell">
+                    <div class="weather-grid" id="opsGrid"></div>
+                    <div class="legend">
+                        <span><i class="swatch left"></i> left event</span>
+                        <span><i class="swatch right"></i> right event</span>
+                        <span><i class="swatch result"></i> result</span>
+                    </div>
+                </div>
+                <div>
+                    <div class="equation" id="operationEquation">Pick two statements and inspect the operation step by step.</div>
+                    <div class="step-trace">
+                        <div class="step" id="step1">Step 1. Mark the first statement.</div>
+                        <div class="step" id="step2">Step 2. Add the second statement and inspect overlap.</div>
+                        <div class="step" id="step3">Step 3. Keep exactly the cells demanded by the set operation.</div>
+                    </div>
+                    <div class="mapping">
+                        <div class="mapping-item"><strong>Union</strong> keeps a cell if at least one statement allows or selects it.</div>
+                        <div class="mapping-item"><strong>Intersection</strong> keeps a cell only if both statements keep it.</div>
+                        <div class="mapping-item"><strong>Difference</strong> keeps cells from the first statement after removing those also present in the second.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="foot">
+            The conceptual shift here is important: we are no longer listing whole outcomes directly. We are organizing a family of day-by-day constraints, and the table makes those constraints visible.
+        </div>
+    </div>
+
+    <script>
+        const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+        const states = ["S", "C", "R"];
+        const allCells = [];
+        states.forEach((state) => {
+            days.forEach((day) => {
+                allCells.push(`${state}-${day}`);
+            });
+        });
+
+        const events = [
+            {
+                id: "mon-sunny",
+                short: "Monday is sunny",
+                explain: "Only one cell is marked: sunny on Monday. The condition concerns a single day and a single state.",
+                set: ["S-Mon"]
+            },
+            {
+                id: "weekend-rainy",
+                short: "weekend is rainy",
+                explain: "We mark rainy on Saturday and rainy on Sunday, because both weekend days are required to be rainy.",
+                set: ["R-Sat", "R-Sun"]
+            },
+            {
+                id: "wed-or-fri-rain",
+                short: "rain on Wednesday or Friday",
+                explain: "We mark rainy on Wednesday and rainy on Friday. The statement singles out two days in the rainy row.",
+                set: ["R-Wed", "R-Fri"]
+            },
+            {
+                id: "no-rain",
+                short: "no rainy day during the week",
+                explain: "The whole rainy row is excluded, so the allowed states are sunny or cloudy on every day.",
+                set: allCells.filter((key) => !key.startsWith("R-"))
+            },
+            {
+                id: "thu-not-sunny",
+                short: "Thursday is not sunny",
+                explain: "On Thursday we keep the non-sunny states, so only cloudy and rainy remain in that column.",
+                set: ["C-Thu", "R-Thu"]
+            }
+        ];
+
+        const cases = {
+            case1: {
+                set: ["S-Sat", "S-Sun"],
+                explain: "Case 1 means: Saturday and Sunday are sunny. The marking selects the sunny state on both weekend days."
+            },
+            case2: {
+                set: allCells.filter((key) => !key.startsWith("R-")),
+                explain: "Case 2 means: rainy is excluded on every day. So every day may be sunny or cloudy, but never rainy."
+            }
+        };
+
+        const grids = {};
+        let currentEvent = events[0].id;
+        let currentOperation = null;
+        let currentStepIndex = 0;
+
+        function buildGrid(targetId) {
+            const root = document.getElementById(targetId);
+            let html = '<div class="corner">state</div>';
+            days.forEach((day) => {
+                html += `<div class="axis">${day}</div>`;
+            });
+            states.forEach((state) => {
+                html += `<div class="row-label">${state}</div>`;
+                days.forEach((day) => {
+                    html += `
+                        <div class="cell" data-key="${state}-${day}">
+                            <div class="fill case"></div>
+                            <div class="fill left"></div>
+                            <div class="fill right"></div>
+                            <div class="fill result"></div>
+                            <div class="abbr">${state}</div>
+                            <div class="day">${day}</div>
+                        </div>
+                    `;
+                });
+            });
+            root.innerHTML = html;
+            grids[targetId] = root;
+        }
+
+        function clearGrid(targetId) {
+            grids[targetId].querySelectorAll(".cell").forEach((cell) => {
+                cell.classList.remove("case-active", "left-active", "right-active", "result-active", "overlap");
+            });
+        }
+
+        function mark(targetId, set, className) {
+            const lookup = new Set(set);
+            grids[targetId].querySelectorAll(".cell").forEach((cell) => {
+                cell.classList.toggle(className, lookup.has(cell.dataset.key));
+            });
+        }
+
+        function eventById(id) {
+            return events.find((event) => event.id === id);
+        }
+
+        function renderButtons() {
+            const wrap = document.getElementById("eventButtons");
+            wrap.innerHTML = events.map((event) => `
+                <button class="chip ${event.id === currentEvent ? "active" : ""}" data-id="${event.id}">${event.short}</button>
+            `).join("");
+
+            wrap.querySelectorAll(".chip").forEach((button) => {
+                button.addEventListener("click", () => {
+                    currentEvent = button.dataset.id;
+                    renderButtons();
+                    renderEvent();
+                });
+            });
+        }
+
+        function renderEvent() {
+            clearGrid("eventGrid");
+            const event = eventById(currentEvent);
+            mark("eventGrid", event.set, "case-active");
+            document.getElementById("eventExplanation").innerHTML = `
+                <strong>${event.short}</strong><br>
+                ${event.explain}
+            `;
+        }
+
+        function renderCase(caseId) {
+            clearGrid("caseGrid");
+            mark("caseGrid", cases[caseId].set, "case-active");
+            document.getElementById("caseExplanation").innerHTML = `
+                <strong>${caseId === "case1" ? "Case 1" : "Case 2"}</strong><br>
+                ${cases[caseId].explain}
+            `;
+        }
+
+        function clearCase() {
+            clearGrid("caseGrid");
+            document.getElementById("caseExplanation").textContent = "Choose a case to see what kind of weekly condition it describes.";
+        }
+
+        function initSelects() {
+            const options = events.map((event) => `<option value="${event.id}">${event.short}</option>`).join("");
+            document.getElementById("leftSelect").innerHTML = options;
+            document.getElementById("rightSelect").innerHTML = options;
+            document.getElementById("leftSelect").value = "mon-sunny";
+            document.getElementById("rightSelect").value = "no-rain";
+        }
+
+        function setStep(active) {
+            [1, 2, 3].forEach((n) => {
+                document.getElementById(`step${n}`).classList.toggle("active", n === active);
+            });
+        }
+
+        function stopAnimation() {
+            clearGrid("opsGrid");
+            setStep(0);
+            currentOperation = null;
+            currentStepIndex = 0;
+            updateStepButtons();
+        }
+
+        function compute(leftSet, rightSet, op) {
+            const left = new Set(leftSet);
+            const right = new Set(rightSet);
+            if (op === "union") return allCells.filter((key) => left.has(key) || right.has(key));
+            if (op === "intersection") return allCells.filter((key) => left.has(key) && right.has(key));
+            return allCells.filter((key) => left.has(key) && !right.has(key));
+        }
+
+        function operationText(leftEvent, rightEvent, op, result) {
+            if (op === "union") {
+                return `
+                    <strong>${leftEvent.short} ∪ ${rightEvent.short}</strong><br>
+                    Union keeps every marked cell from either statement. The result has ${result.length} cells.
+                `;
+            }
+            if (op === "intersection") {
+                return `
+                    <strong>${leftEvent.short} ∩ ${rightEvent.short}</strong><br>
+                    Intersection keeps only cells shared by both statements. The result has ${result.length} cells.
+                `;
+            }
+            return `
+                <strong>${leftEvent.short} \\ ${rightEvent.short}</strong><br>
+                Difference starts with the first statement and removes the cells also belonging to the second. The result has ${result.length} cells.
+            `;
+        }
+
+        function updateStepButtons() {
+            const prev = document.getElementById("prevStepBtn");
+            const next = document.getElementById("nextStepBtn");
+            const ready = Boolean(currentOperation);
+            prev.disabled = !ready || currentStepIndex <= 1;
+            next.disabled = !ready || currentStepIndex >= 3;
+        }
+
+        function prepareOperation() {
+            const leftEvent = eventById(document.getElementById("leftSelect").value);
+            const rightEvent = eventById(document.getElementById("rightSelect").value);
+            const op = document.getElementById("opSelect").value;
+            const result = compute(leftEvent.set, rightEvent.set, op);
+            const overlap = leftEvent.set.filter((key) => rightEvent.set.includes(key));
+            currentOperation = { leftEvent, rightEvent, op, result, overlap };
+            currentStepIndex = 1;
+            showOperationStep(1);
+        }
+
+        function showOperationStep(step) {
+            if (!currentOperation) return;
+            const { leftEvent, rightEvent, op, result, overlap } = currentOperation;
+            clearGrid("opsGrid");
+            setStep(step);
+            currentStepIndex = step;
+
+            if (step === 1) {
+                mark("opsGrid", leftEvent.set, "left-active");
+                document.getElementById("operationEquation").innerHTML = `
+                    <strong>Step 1.</strong> Start from: ${leftEvent.short}.<br>
+                    ${leftEvent.explain}
+                `;
+            } else if (step === 2) {
+                mark("opsGrid", leftEvent.set, "left-active");
+                mark("opsGrid", rightEvent.set, "right-active");
+                grids.opsGrid.querySelectorAll(".cell").forEach((cell) => {
+                    cell.classList.toggle("overlap", overlap.includes(cell.dataset.key));
+                });
+                document.getElementById("operationEquation").innerHTML = `
+                    <strong>Step 2.</strong> Add the second statement: ${rightEvent.short}. Striped cells show where the two weekly constraints agree.
+                `;
+            } else if (step === 3) {
+                mark("opsGrid", result, "result-active");
+                document.getElementById("operationEquation").innerHTML = operationText(leftEvent, rightEvent, op, result);
+            }
+
+            updateStepButtons();
+        }
+
+        function animateOperation() {
+            stopAnimation();
+            prepareOperation();
+        }
+
+        function nextOperationStep() {
+            if (!currentOperation || currentStepIndex >= 3) return;
+            showOperationStep(currentStepIndex + 1);
+        }
+
+        function previousOperationStep() {
+            if (!currentOperation || currentStepIndex <= 1) return;
+            showOperationStep(currentStepIndex - 1);
+        }
+
+        function loadExample() {
+            document.getElementById("leftSelect").value = "mon-sunny";
+            document.getElementById("rightSelect").value = "no-rain";
+            document.getElementById("opSelect").value = "intersection";
+            animateOperation();
+        }
+
+        function init() {
+            buildGrid("eventGrid");
+            buildGrid("caseGrid");
+            buildGrid("opsGrid");
+            renderButtons();
+            renderEvent();
+            clearCase();
+            initSelects();
+
+            document.getElementById("case1Btn").addEventListener("click", () => renderCase("case1"));
+            document.getElementById("case2Btn").addEventListener("click", () => renderCase("case2"));
+            document.getElementById("clearCaseBtn").addEventListener("click", clearCase);
+            document.getElementById("animateBtn").addEventListener("click", animateOperation);
+            document.getElementById("prevStepBtn").addEventListener("click", previousOperationStep);
+            document.getElementById("nextStepBtn").addEventListener("click", nextOperationStep);
+            document.getElementById("exampleBtn").addEventListener("click", loadExample);
+            document.getElementById("resetBtn").addEventListener("click", () => {
+                stopAnimation();
+                document.getElementById("operationEquation").textContent = "Pick two statements and inspect the operation step by step.";
+            });
+            updateStepButtons();
+        }
+
+        init();
+    </script>
+</body>
+</html>

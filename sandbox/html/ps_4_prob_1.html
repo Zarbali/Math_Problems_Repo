@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Problem 1 - Coin x Coin</title>
+    <style>
+        :root {
+            --bg: #f5efe6;
+            --paper: #fffdf8;
+            --ink: #1f2937;
+            --muted: #6b7280;
+            --line: #d6c8b3;
+            --accent: #9a3412;
+            --accent-soft: #ffedd5;
+            --blue: #1d4ed8;
+            --blue-soft: #dbeafe;
+            --gold: #a16207;
+            --gold-soft: #fef3c7;
+            --green: #166534;
+            --green-soft: #dcfce7;
+            --rose: #be123c;
+            --rose-soft: #ffe4e6;
+            --shadow: 0 18px 50px rgba(96, 52, 19, 0.12);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: Georgia, "Times New Roman", serif;
+            color: var(--ink);
+            background:
+                radial-gradient(circle at top left, rgba(245, 158, 11, 0.14), transparent 28%),
+                radial-gradient(circle at bottom right, rgba(29, 78, 216, 0.12), transparent 30%),
+                linear-gradient(180deg, #f9f5ef 0%, #f2e8da 100%);
+            min-height: 100vh;
+        }
+
+        .page {
+            max-width: 1120px;
+            margin: 0 auto;
+            padding: 28px 18px 54px;
+        }
+
+        .hero {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 22px;
+            margin-bottom: 22px;
+        }
+
+        .panel {
+            background: rgba(255, 253, 248, 0.88);
+            border: 1px solid rgba(154, 52, 18, 0.12);
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(8px);
+        }
+
+        .hero-main {
+            padding: 28px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-main::before {
+            content: "";
+            position: absolute;
+            width: 220px;
+            height: 220px;
+            background: radial-gradient(circle, rgba(154, 52, 18, 0.12), transparent 70%);
+            top: -80px;
+            right: -60px;
+        }
+
+        .eyebrow {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: var(--accent-soft);
+            color: var(--accent);
+            font-size: 12px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        h1 {
+            margin: 14px 0 10px;
+            font-size: clamp(2rem, 5vw, 3.7rem);
+            line-height: 0.95;
+            letter-spacing: -0.04em;
+        }
+
+        .hero-main p {
+            margin: 0;
+            max-width: 62ch;
+            color: #374151;
+            line-height: 1.6;
+            font-size: 1.03rem;
+        }
+
+        .hero-side {
+            padding: 22px;
+            display: grid;
+            gap: 14px;
+            align-content: start;
+        }
+
+        .mini-card {
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            padding: 14px 16px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(249,245,239,0.7));
+        }
+
+        .mini-card h2,
+        .mini-card h3,
+        .workspace h2 {
+            margin: 0 0 8px;
+            font-size: 1rem;
+        }
+
+        .mini-card p,
+        .workspace p,
+        .legend,
+        .note {
+            margin: 0;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+        .workspace-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 22px;
+        }
+
+        .workspace {
+            padding: 22px;
+        }
+
+        .section-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: end;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .section-head h2 {
+            font-size: 1.45rem;
+            margin: 0;
+        }
+
+        .chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 14px 0 16px;
+        }
+
+        .chip {
+            border: 1px solid var(--line);
+            background: white;
+            color: var(--ink);
+            border-radius: 999px;
+            padding: 9px 14px;
+            font: inherit;
+            cursor: pointer;
+            transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+        }
+
+        .chip:hover,
+        .chip:focus-visible,
+        button:hover,
+        select:hover {
+            transform: translateY(-1px);
+        }
+
+        .chip.active {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        .grid-wrap {
+            background: linear-gradient(180deg, #fff, #faf6ef);
+            border: 1px solid var(--line);
+            border-radius: 22px;
+            padding: 18px;
+        }
+
+        .prob-grid {
+            display: grid;
+            grid-template-columns: 72px repeat(2, minmax(92px, 1fr));
+            gap: 10px;
+            align-items: stretch;
+        }
+
+        .corner,
+        .axis,
+        .row-label,
+        .cell {
+            border-radius: 16px;
+            min-height: 88px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .corner,
+        .axis,
+        .row-label {
+            background: #f4ede2;
+            border: 1px solid var(--line);
+            font-weight: 700;
+            color: #6c4a27;
+        }
+
+        .corner {
+            min-height: 52px;
+            font-size: 0.8rem;
+            line-height: 1.2;
+        }
+
+        .axis {
+            min-height: 52px;
+            font-size: 1rem;
+        }
+
+        .row-label {
+            font-size: 1rem;
+        }
+
+        .cell {
+            position: relative;
+            background: white;
+            border: 1px solid #d9d1c5;
+            overflow: hidden;
+            transition: transform 0.28s ease, border-color 0.28s ease, box-shadow 0.28s ease, background 0.28s ease;
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.6);
+        }
+
+        .cell:hover {
+            transform: translateY(-2px);
+        }
+
+        .cell .outcome {
+            position: relative;
+            z-index: 3;
+            font-size: 1.35rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+        }
+
+        .cell .tuple {
+            position: absolute;
+            left: 10px;
+            bottom: 8px;
+            z-index: 3;
+            font-size: 0.74rem;
+            color: var(--muted);
+        }
+
+        .fill {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            transition: opacity 0.42s ease, transform 0.42s ease;
+            transform: scale(0.92);
+            z-index: 1;
+        }
+
+        .fill.left { background: linear-gradient(135deg, rgba(29,78,216,0.95), rgba(96,165,250,0.9)); }
+        .fill.right { background: linear-gradient(135deg, rgba(217,119,6,0.94), rgba(251,191,36,0.88)); }
+        .fill.result { background: linear-gradient(135deg, rgba(22,101,52,0.96), rgba(74,222,128,0.86)); }
+        .fill.case { background: linear-gradient(135deg, rgba(190,24,93,0.95), rgba(251,113,133,0.88)); }
+
+        .cell.left-active .fill.left,
+        .cell.right-active .fill.right,
+        .cell.result-active .fill.result,
+        .cell.case-active .fill.case {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .cell.result-active {
+            border-color: rgba(22,101,52,0.45);
+            box-shadow: 0 10px 22px rgba(34, 197, 94, 0.15);
+        }
+
+        .cell.case-active {
+            border-color: rgba(190,24,93,0.35);
+            box-shadow: 0 10px 22px rgba(244, 63, 94, 0.14);
+        }
+
+        .cell.overlap::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: repeating-linear-gradient(
+                -45deg,
+                rgba(255,255,255,0.35),
+                rgba(255,255,255,0.35) 9px,
+                rgba(255,255,255,0.08) 9px,
+                rgba(255,255,255,0.08) 18px
+            );
+            z-index: 2;
+            opacity: 0.95;
+        }
+
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 14px;
+            font-size: 0.94rem;
+        }
+
+        .legend span {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 10px;
+            background: rgba(255,255,255,0.9);
+            border: 1px solid var(--line);
+            border-radius: 999px;
+        }
+
+        .swatch {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            flex: none;
+        }
+
+        .swatch.left { background: var(--blue); }
+        .swatch.right { background: #d97706; }
+        .swatch.result { background: var(--green); }
+        .swatch.case { background: var(--rose); }
+
+        .equation {
+            margin-top: 16px;
+            padding: 14px 16px;
+            border-radius: 18px;
+            background: #fff;
+            border: 1px solid var(--line);
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        .equation strong {
+            color: var(--accent);
+        }
+
+        .control-box {
+            display: grid;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .control-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .step-controls {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        label {
+            display: grid;
+            gap: 6px;
+            font-size: 0.92rem;
+            color: #4b5563;
+        }
+
+        select,
+        button {
+            width: 100%;
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 11px 12px;
+            background: white;
+            color: var(--ink);
+            font: inherit;
+            transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+        }
+
+        button.primary {
+            background: linear-gradient(135deg, #9a3412, #c2410c);
+            color: white;
+            border-color: #9a3412;
+            box-shadow: 0 10px 24px rgba(154, 52, 18, 0.18);
+        }
+
+        button.secondary {
+            background: #f9f5ef;
+        }
+
+        button:focus-visible,
+        select:focus-visible,
+        .chip:focus-visible {
+            outline: 3px solid rgba(59, 130, 246, 0.28);
+            outline-offset: 2px;
+        }
+
+        .step-trace {
+            display: grid;
+            gap: 8px;
+            margin-top: 14px;
+        }
+
+        .step {
+            border-left: 4px solid #d6c8b3;
+            padding: 8px 12px;
+            background: rgba(255,255,255,0.72);
+            border-radius: 0 12px 12px 0;
+            color: #4b5563;
+            transition: border-color 0.25s ease, background 0.25s ease, transform 0.25s ease;
+        }
+
+        .step.active {
+            border-left-color: var(--accent);
+            background: var(--accent-soft);
+            transform: translateX(4px);
+            color: #7c2d12;
+        }
+
+        .case-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+
+        .note {
+            font-size: 0.95rem;
+        }
+
+        .foot {
+            margin-top: 24px;
+            padding: 16px 18px;
+            border-radius: 18px;
+            background: rgba(255,253,248,0.8);
+            border: 1px dashed rgba(154,52,18,0.26);
+            color: #5b4630;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 620px) {
+            .page { padding: 16px 12px 34px; }
+            .hero-main,
+            .hero-side,
+            .workspace { padding: 16px; }
+            .control-row,
+            .step-controls {
+                grid-template-columns: 1fr;
+            }
+            .prob-grid {
+                grid-template-columns: 56px repeat(2, minmax(88px, 1fr));
+                gap: 8px;
+            }
+            .cell, .row-label { min-height: 78px; }
+            .axis, .corner { min-height: 48px; }
+            .cell .outcome { font-size: 1.15rem; }
+            h1 { line-height: 1.02; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <section class="hero">
+            <div class="panel hero-main">
+                <div class="eyebrow">List 4 · Problem 1</div>
+                <h1>Coin x Coin</h1>
+                <p>
+                    This animation treats each outcome as one cell of the sample space:
+                    <strong>HH, HT, TH, TT</strong>. First you can inspect the basic events from Part A.
+                    Then, in the operations lab, you can see how unions, intersections, complements,
+                    and differences are built cell by cell.
+                </p>
+            </div>
+            <aside class="panel hero-side">
+                <div class="mini-card">
+                    <h2>How to read this page</h2>
+                    <p>Go from top to bottom: first inspect one basic event, then read the prepared cases, and finally build an operation step by step with <strong>Previous Step</strong> and <strong>Next Step</strong>.</p>
+                </div>
+            </aside>
+        </section>
+
+        <section class="workspace-grid">
+            <div class="panel workspace">
+                <div class="section-head">
+                    <div>
+                        <h2>Part A · Basic Events</h2>
+                        <p>Choose a statement and look at its marked set directly in the sample space.</p>
+                    </div>
+                </div>
+
+                <div class="chips" id="eventButtons"></div>
+
+                <div class="grid-wrap">
+                    <div class="prob-grid" id="eventGrid"></div>
+                    <div class="legend">
+                        <span><i class="swatch case"></i> selected event</span>
+                    </div>
+                </div>
+
+                <div class="equation" id="eventExplanation"></div>
+            </div>
+
+            <div class="panel workspace">
+                <div class="section-head">
+                    <div>
+                        <h2>Part B · Interpreting a Given Marking</h2>
+                        <p>Then read the prepared cases as if they were the next line of a written solution.</p>
+                    </div>
+                </div>
+
+                <div class="case-buttons">
+                    <button class="secondary" id="case1Btn">Show Case 1</button>
+                    <button class="secondary" id="case2Btn">Show Case 2</button>
+                    <button class="secondary" id="clearCaseBtn">Clear</button>
+                </div>
+
+                <div class="grid-wrap">
+                    <div class="prob-grid" id="caseGrid"></div>
+                    <div class="legend">
+                        <span><i class="swatch case"></i> case from the task</span>
+                    </div>
+                </div>
+
+                <div class="equation" id="caseExplanation">
+                    Choose one of the given cases to see what statement it represents.
+                </div>
+            </div>
+        </section>
+
+        <section class="panel workspace" style="margin-top: 22px;">
+            <div class="section-head">
+                <div>
+                    <h2>Operations Lab · From Statements to Set Operations</h2>
+                    <p>At the end, build the operation exactly in the order you would solve it on paper: first set, second set, then result.</p>
+                </div>
+            </div>
+
+            <div class="control-box">
+                <div class="control-row">
+                    <label>
+                        Left event
+                        <select id="leftSelect"></select>
+                    </label>
+                    <label>
+                        Operation
+                        <select id="opSelect">
+                            <option value="union">union A ∪ B</option>
+                            <option value="intersection">intersection A ∩ B</option>
+                            <option value="difference">difference A \ B</option>
+                            <option value="complement-left">complement A^c</option>
+                        </select>
+                    </label>
+                    <label>
+                        Right event
+                        <select id="rightSelect"></select>
+                    </label>
+                </div>
+                <div class="step-controls">
+                    <button class="primary" id="animateBtn">Load Steps</button>
+                    <button class="secondary" id="prevStepBtn">Previous Step</button>
+                    <button class="secondary" id="nextStepBtn">Next Step</button>
+                    <button class="secondary" id="exampleUnionBtn">Example: "same" ∪ "second toss is heads"</button>
+                    <button class="secondary" id="resetOperationBtn">Reset View</button>
+                </div>
+            </div>
+
+            <div class="workspace-grid">
+                <div class="grid-wrap">
+                    <div class="prob-grid" id="opsGrid"></div>
+                    <div class="legend">
+                        <span><i class="swatch left"></i> left event</span>
+                        <span><i class="swatch right"></i> right event</span>
+                        <span><i class="swatch result"></i> result</span>
+                    </div>
+                </div>
+                <div>
+                    <div class="equation" id="operationEquation">
+                        Pick an operation and inspect it step by step.
+                    </div>
+                    <div class="step-trace">
+                        <div class="step" id="step1">Step 1. Mark the left event.</div>
+                        <div class="step" id="step2">Step 2. Add the right event.</div>
+                        <div class="step" id="step3">Step 3. Keep only the cells required by the chosen operation.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="foot">
+            The key idea is simple but powerful: in a finite sample space, an event is literally a set of cells.
+            Logical language and set language say the same thing from two different angles.
+        </div>
+    </div>
+
+    <script>
+        const outcomes = [
+            { key: "HH", row: "H", col: "H", tuple: "(H,H)" },
+            { key: "HT", row: "H", col: "T", tuple: "(H,T)" },
+            { key: "TH", row: "T", col: "H", tuple: "(T,H)" },
+            { key: "TT", row: "T", col: "T", tuple: "(T,T)" }
+        ];
+
+        const basicEvents = [
+            {
+                id: "one-head",
+                short: "exactly one head",
+                text: "Exactly one toss shows heads.",
+                formula: "E = {HT, TH}",
+                set: ["HT", "TH"]
+            },
+            {
+                id: "same",
+                short: "both tosses are the same",
+                text: "Both tosses have the same result, so we keep HH and TT.",
+                formula: "E = {HH, TT}",
+                set: ["HH", "TT"]
+            },
+            {
+                id: "at-least-one-head",
+                short: "at least one head",
+                text: "We keep every outcome except TT, because TT has no head at all.",
+                formula: "E = {HH, HT, TH}",
+                set: ["HH", "HT", "TH"]
+            },
+            {
+                id: "first-tails",
+                short: "the first toss is tails",
+                text: "The whole row with first toss T belongs to the event.",
+                formula: "E = {TH, TT}",
+                set: ["TH", "TT"]
+            },
+            {
+                id: "second-heads",
+                short: "the second toss is heads",
+                text: "The whole column with second toss H belongs to the event.",
+                formula: "E = {HH, TH}",
+                set: ["HH", "TH"]
+            }
+        ];
+
+        const caseMap = {
+            case1: {
+                set: ["HH", "HT"],
+                text: "Case 1 means: the first toss is heads. We mark the whole row H."
+            },
+            case2: {
+                set: ["HT", "TH"],
+                text: "Case 2 means: exactly one head. The diagonal opposite pair is selected."
+            }
+        };
+
+        const grids = {};
+        let currentEventId = basicEvents[0].id;
+        let currentOperation = null;
+        let currentStepIndex = 0;
+
+        function buildGrid(targetId, mode) {
+            const root = document.getElementById(targetId);
+            root.innerHTML = `
+                <div class="corner">second<br>toss</div>
+                <div class="axis">H</div>
+                <div class="axis">T</div>
+                <div class="row-label">H</div>
+                ${createCellHTML("HH", mode)}
+                ${createCellHTML("HT", mode)}
+                <div class="row-label">T</div>
+                ${createCellHTML("TH", mode)}
+                ${createCellHTML("TT", mode)}
+            `;
+            grids[targetId] = root;
+        }
+
+        function createCellHTML(key, mode) {
+            const tuple = outcomes.find((item) => item.key === key).tuple;
+            return `
+                <div class="cell" data-key="${key}" data-mode="${mode}">
+                    <div class="fill left"></div>
+                    <div class="fill right"></div>
+                    <div class="fill result"></div>
+                    <div class="fill case"></div>
+                    <div class="outcome">${key}</div>
+                    <div class="tuple">${tuple}</div>
+                </div>
+            `;
+        }
+
+        function clearGrid(targetId) {
+            grids[targetId].querySelectorAll(".cell").forEach((cell) => {
+                cell.classList.remove("left-active", "right-active", "result-active", "case-active", "overlap");
+            });
+        }
+
+        function markCells(targetId, keys, className) {
+            grids[targetId].querySelectorAll(".cell").forEach((cell) => {
+                const on = keys.includes(cell.dataset.key);
+                cell.classList.toggle(className, on);
+            });
+        }
+
+        function setActiveStep(stepNumber) {
+            [1, 2, 3].forEach((n) => {
+                document.getElementById(`step${n}`).classList.toggle("active", n === stepNumber);
+            });
+        }
+
+        function eventById(id) {
+            return basicEvents.find((event) => event.id === id);
+        }
+
+        function renderEventButtons() {
+            const wrap = document.getElementById("eventButtons");
+            wrap.innerHTML = basicEvents.map((event) => `
+                <button class="chip ${event.id === currentEventId ? "active" : ""}" data-event="${event.id}">
+                    ${event.short}
+                </button>
+            `).join("");
+
+            wrap.querySelectorAll(".chip").forEach((button) => {
+                button.addEventListener("click", () => {
+                    currentEventId = button.dataset.event;
+                    renderEventButtons();
+                    renderBasicEvent();
+                });
+            });
+        }
+
+        function renderBasicEvent() {
+            clearGrid("eventGrid");
+            const event = eventById(currentEventId);
+            markCells("eventGrid", event.set, "case-active");
+            document.getElementById("eventExplanation").innerHTML = `
+                <strong>${event.short}</strong><br>
+                ${event.text}<br>
+                <span class="note">${event.formula}</span>
+            `;
+        }
+
+        function showCase(caseId) {
+            clearGrid("caseGrid");
+            const current = caseMap[caseId];
+            markCells("caseGrid", current.set, "case-active");
+            document.getElementById("caseExplanation").innerHTML = `<strong>${caseId === "case1" ? "Case 1" : "Case 2"}</strong><br>${current.text}`;
+        }
+
+        function clearCase() {
+            clearGrid("caseGrid");
+            document.getElementById("caseExplanation").textContent = "Choose one of the given cases to see what statement it represents.";
+        }
+
+        function fillSelects() {
+            const left = document.getElementById("leftSelect");
+            const right = document.getElementById("rightSelect");
+            const options = basicEvents.map((event) => `<option value="${event.id}">${event.short}</option>`).join("");
+            left.innerHTML = options;
+            right.innerHTML = options;
+            left.value = "same";
+            right.value = "second-heads";
+        }
+
+        function stopOperationAnimation() {
+            clearGrid("opsGrid");
+            setActiveStep(0);
+            currentOperation = null;
+            currentStepIndex = 0;
+            updateStepButtons();
+        }
+
+        function resultOfOperation(leftSet, rightSet, op) {
+            const left = new Set(leftSet);
+            const right = new Set(rightSet);
+
+            if (op === "union") {
+                return outcomes.map((o) => o.key).filter((key) => left.has(key) || right.has(key));
+            }
+            if (op === "intersection") {
+                return outcomes.map((o) => o.key).filter((key) => left.has(key) && right.has(key));
+            }
+            if (op === "difference") {
+                return outcomes.map((o) => o.key).filter((key) => left.has(key) && !right.has(key));
+            }
+            if (op === "complement-left") {
+                return outcomes.map((o) => o.key).filter((key) => !left.has(key));
+            }
+            return [];
+        }
+
+        function operationText(leftEvent, rightEvent, op, result) {
+            const resultText = `{${result.join(", ")}}`;
+            if (op === "union") {
+                return {
+                    title: `${leftEvent.short} ∪ ${rightEvent.short}`,
+                    body: `Union keeps every outcome that belongs to at least one of the two events.`,
+                    formula: `${leftEvent.formula} ∪ ${rightEvent.formula} = ${resultText}`
+                };
+            }
+            if (op === "intersection") {
+                return {
+                    title: `${leftEvent.short} ∩ ${rightEvent.short}`,
+                    body: `Intersection keeps only the outcomes that are simultaneously in both events.`,
+                    formula: `${resultText}`
+                };
+            }
+            if (op === "difference") {
+                return {
+                    title: `${leftEvent.short} \\ ${rightEvent.short}`,
+                    body: `Difference keeps outcomes that are in the left event, but not in the right event.`,
+                    formula: `${resultText}`
+                };
+            }
+            return {
+                title: `${leftEvent.short}^c`,
+                body: `Complement keeps every outcome from the sample space that is not in the chosen event.`,
+                formula: `Ω \\ ${leftEvent.formula} = ${resultText}`
+            };
+        }
+
+        function updateStepButtons() {
+            const prev = document.getElementById("prevStepBtn");
+            const next = document.getElementById("nextStepBtn");
+            const ready = Boolean(currentOperation);
+            prev.disabled = !ready || currentStepIndex <= 1;
+            next.disabled = !ready || currentStepIndex >= 3;
+        }
+
+        function prepareOperation() {
+            const leftEvent = eventById(document.getElementById("leftSelect").value);
+            const rightEvent = eventById(document.getElementById("rightSelect").value);
+            const op = document.getElementById("opSelect").value;
+            const result = resultOfOperation(leftEvent.set, rightEvent.set, op);
+            const cells = Array.from(grids.opsGrid.querySelectorAll(".cell"));
+
+            const overlap = cells
+                .filter((cell) => leftEvent.set.includes(cell.dataset.key) && rightEvent.set.includes(cell.dataset.key))
+                .map((cell) => cell.dataset.key);
+            currentOperation = { leftEvent, rightEvent, op, result, overlap };
+            currentStepIndex = 1;
+            showOperationStep(1);
+        }
+
+        function showOperationStep(step) {
+            if (!currentOperation) return;
+            const { leftEvent, rightEvent, op, result, overlap } = currentOperation;
+            clearGrid("opsGrid");
+            setActiveStep(step);
+            currentStepIndex = step;
+
+            if (step === 1) {
+                markCells("opsGrid", leftEvent.set, "left-active");
+                document.getElementById("operationEquation").innerHTML = `
+                    <strong>Step 1.</strong> Left event: <strong>${leftEvent.short}</strong><br>
+                    ${leftEvent.formula}
+                `;
+            } else if (step === 2) {
+                markCells("opsGrid", leftEvent.set, "left-active");
+                if (op !== "complement-left") {
+                    markCells("opsGrid", rightEvent.set, "right-active");
+                    grids.opsGrid.querySelectorAll(".cell").forEach((cell) => {
+                        cell.classList.toggle("overlap", overlap.includes(cell.dataset.key));
+                    });
+                    document.getElementById("operationEquation").innerHTML = `
+                        <strong>Step 2.</strong> Right event: <strong>${rightEvent.short}</strong><br>
+                        Shared cells are striped so you can inspect exactly where both events overlap.
+                    `;
+                } else {
+                    document.getElementById("operationEquation").innerHTML = `
+                        <strong>Step 2.</strong> For a complement we compare the left event with the whole sample space Ω and ask which cells stay outside it.
+                    `;
+                }
+            } else if (step === 3) {
+                markCells("opsGrid", result, "result-active");
+                const text = operationText(leftEvent, rightEvent, op, result);
+                document.getElementById("operationEquation").innerHTML = `
+                    <strong>${text.title}</strong><br>
+                    ${text.body}<br>
+                    <span class="note">${text.formula}</span>
+                `;
+            }
+
+            updateStepButtons();
+        }
+
+        function animateOperation() {
+            stopOperationAnimation();
+            prepareOperation();
+        }
+
+        function nextOperationStep() {
+            if (!currentOperation || currentStepIndex >= 3) return;
+            showOperationStep(currentStepIndex + 1);
+        }
+
+        function previousOperationStep() {
+            if (!currentOperation || currentStepIndex <= 1) return;
+            showOperationStep(currentStepIndex - 1);
+        }
+
+        function applyExampleUnion() {
+            document.getElementById("leftSelect").value = "same";
+            document.getElementById("rightSelect").value = "second-heads";
+            document.getElementById("opSelect").value = "union";
+            animateOperation();
+        }
+
+        function init() {
+            buildGrid("eventGrid", "event");
+            buildGrid("caseGrid", "case");
+            buildGrid("opsGrid", "ops");
+            renderEventButtons();
+            renderBasicEvent();
+            fillSelects();
+            clearCase();
+
+            document.getElementById("case1Btn").addEventListener("click", () => showCase("case1"));
+            document.getElementById("case2Btn").addEventListener("click", () => showCase("case2"));
+            document.getElementById("clearCaseBtn").addEventListener("click", clearCase);
+            document.getElementById("animateBtn").addEventListener("click", animateOperation);
+            document.getElementById("prevStepBtn").addEventListener("click", previousOperationStep);
+            document.getElementById("nextStepBtn").addEventListener("click", nextOperationStep);
+            document.getElementById("exampleUnionBtn").addEventListener("click", applyExampleUnion);
+            document.getElementById("resetOperationBtn").addEventListener("click", () => {
+                stopOperationAnimation();
+                document.getElementById("operationEquation").textContent = "Pick an operation and run the steps one by one.";
+            });
+
+            document.getElementById("opSelect").addEventListener("change", (event) => {
+                const disableRight = event.target.value === "complement-left";
+                document.getElementById("rightSelect").disabled = disableRight;
+            });
+            updateStepButtons();
+        }
+
+        init();
+    </script>
+</body>
+</html>

@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista 1 — Rozwiazania</title>
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: Georgia, "Times New Roman", serif;
+            color: #20303b;
+            background:
+                radial-gradient(circle at top left, rgba(29,77,122,0.08), transparent 22%),
+                linear-gradient(180deg, #f7f4ed 0%, #eef4f7 100%);
+        }
+
+        .page {
+            max-width: 1500px;
+            margin: 0 auto;
+            padding: 22px 18px 40px;
+        }
+
+        .hero {
+            border: 1px solid #d8d1c4;
+            border-radius: 28px;
+            background: rgba(255,255,255,0.95);
+            box-shadow: 0 18px 46px rgba(32,48,59,0.08);
+            padding: 24px;
+        }
+
+        .eyebrow {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: #dbeafe;
+            color: #1d4d7a;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        h1 {
+            margin: 14px 0 10px;
+            font-size: clamp(2.3rem, 4vw, 4rem);
+            line-height: 0.95;
+            letter-spacing: -0.04em;
+            color: #17324c;
+        }
+
+        h2, h3 {
+            margin: 0 0 10px;
+            color: #17324c;
+        }
+
+        p {
+            margin: 0;
+            line-height: 1.65;
+        }
+
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .intro-card {
+            border: 1px solid #d8d1c4;
+            border-radius: 18px;
+            background: #fffdfa;
+            padding: 14px 16px;
+        }
+
+        .intro-list {
+            display: grid;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .intro-item {
+            border: 1px solid #e7e1d8;
+            border-radius: 14px;
+            background: white;
+            padding: 10px 12px;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 290px minmax(0, 1fr);
+            gap: 18px;
+            align-items: start;
+            margin-top: 20px;
+        }
+
+        .toc {
+            position: sticky;
+            top: 12px;
+            border: 1px solid #d8d1c4;
+            border-radius: 22px;
+            background: rgba(255,255,255,0.95);
+            box-shadow: 0 14px 34px rgba(32,48,59,0.06);
+            padding: 16px;
+        }
+
+        .toc-links {
+            display: grid;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .toc a {
+            display: block;
+            text-decoration: none;
+            color: #20303b;
+            border: 1px solid #e7e1d8;
+            border-radius: 14px;
+            background: #fffdfa;
+            padding: 10px 12px;
+        }
+
+        .toc a:hover {
+            background: #eef6ff;
+            border-color: #1d4d7a;
+        }
+
+        .book {
+            display: grid;
+            gap: 18px;
+        }
+
+        .task {
+            border: 1px solid #d8d1c4;
+            border-radius: 24px;
+            background: rgba(255,255,255,0.96);
+            box-shadow: 0 14px 34px rgba(32,48,59,0.06);
+            padding: 20px;
+        }
+
+        .task-head {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 0.82rem;
+            border: 1px solid #d8d1c4;
+            background: #fbfaf7;
+            color: #46545f;
+        }
+
+        .nav-line {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .nav-line a {
+            text-decoration: none;
+            color: #1d4d7a;
+            border: 1px solid #bfd4ea;
+            background: #eef6ff;
+            border-radius: 12px;
+            padding: 8px 12px;
+            font-size: 0.92rem;
+        }
+
+        .split {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            align-items: start;
+        }
+
+        .note {
+            border-left: 4px solid #1d4d7a;
+            border-radius: 16px;
+            background: #eef6ff;
+            padding: 12px 14px;
+        }
+
+        .formula {
+            font-family: "Courier New", monospace;
+            background: #fbfaf7;
+            border: 1px solid #d8d1c4;
+            border-radius: 14px;
+            padding: 10px 12px;
+            line-height: 1.6;
+        }
+
+        .formula sup, .formula sub, .math sup, .math sub { line-height: 0; }
+
+        .math {
+            font-family: "Courier New", monospace;
+            white-space: nowrap;
+        }
+
+        .box-list, .chips, .paths, .grid-list, .lesson-list {
+            display: grid;
+            gap: 10px;
+        }
+
+        .box, .chip-box {
+            border: 1px solid #e7e1d8;
+            border-radius: 16px;
+            background: #fffdfa;
+            padding: 12px 14px;
+        }
+
+        .lesson {
+            border: 1px solid #bfd4ea;
+            border-radius: 16px;
+            background: #f7fbff;
+            padding: 12px 14px;
+        }
+
+        .lesson strong {
+            color: #17324c;
+        }
+
+        .chips {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .chip-box strong {
+            color: #17324c;
+        }
+
+        details.help {
+            border: 1px solid #d8d1c4;
+            border-radius: 16px;
+            background: #fffdfa;
+            overflow: hidden;
+        }
+
+        details.help summary {
+            cursor: pointer;
+            padding: 12px 14px;
+            font-weight: 700;
+            background: #eef6ff;
+            color: #17324c;
+        }
+
+        .help-body {
+            padding: 12px 14px 14px;
+            display: grid;
+            gap: 8px;
+            color: #5f6e79;
+            line-height: 1.6;
+        }
+
+        .mini {
+            color: #5f6e79;
+            line-height: 1.6;
+        }
+
+        .tree {
+            font-family: "Courier New", monospace;
+            white-space: pre;
+            font-size: 0.92rem;
+            background: #0f172a;
+            color: #e2e8f0;
+            border-radius: 18px;
+            padding: 14px;
+            overflow-x: auto;
+        }
+
+        .token-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .token {
+            min-width: 58px;
+            min-height: 58px;
+            border-radius: 16px;
+            display: grid;
+            place-items: center;
+            color: white;
+            font-weight: 700;
+            padding: 10px;
+        }
+
+        .b1 { background: #2563eb; }
+        .b2 { background: #d97706; }
+        .b3 { background: #0f766e; }
+        .b4 { background: #b4235c; }
+        .b5 { background: #6d28d9; }
+
+        .needle-stage {
+            border: 1px solid #d8d1c4;
+            border-radius: 18px;
+            background: #fffdfa;
+            padding: 14px;
+        }
+
+        svg {
+            display: block;
+            width: 100%;
+            height: auto;
+        }
+
+        @media (max-width: 1100px) {
+            .layout, .split, .hero-grid { grid-template-columns: 1fr; }
+            .toc { position: static; }
+        }
+
+        @media (max-width: 720px) {
+            .chips { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <section class="hero">
+            <div class="eyebrow">Sandbox · Lista 1</div>
+            <h1>Lista 1 — Notatki i Rozwiazania</h1>
+            <p>
+                To jest propozycja jednej, spokojnej strony HTML do calej listy 1:
+                ze <strong>spisem tresci</strong>, przechodzeniem miedzy zadaniami,
+                <strong>argumentacja</strong>, czytelnym zapisem przestrzeni zdarzen
+                i tylko takimi wizualizacjami, ktore rzeczywiscie pomagaja.
+            </p>
+            <div class="hero-grid">
+                <div class="intro-card">
+                    <h3>Jak czytac te rozwiazania?</h3>
+                    <div class="intro-list">
+                        <div class="intro-item">Najpierw jest <strong>pomysl na model</strong> i odpowiedz na pytanie: co jest wynikiem elementarnym?</div>
+                        <div class="intro-item">Potem jest <strong>tok rozumowania</strong>: dlaczego przestrzen wygląda właśnie tak.</div>
+                        <div class="intro-item">Dopiero dalej pojawia sie <strong>liczba wynikow</strong> oraz rachunek prawdopodobienstwa.</div>
+                        <div class="intro-item">Czyli to ma byc material do <strong>uczenia sie sposobu myslenia</strong>, nie sama tabela odpowiedzi.</div>
+                    </div>
+                </div>
+                <div class="intro-card">
+                    <h3>Po co te kolory i male wizualizacje?</h3>
+                    <div class="intro-list">
+                        <div class="intro-item">Kolor ma podkreslac role obiektu, a nie robic dekoracje.</div>
+                        <div class="intro-item">Drzewka i male schematy pomagaja zobaczyc, czym jest wynik elementarny.</div>
+                        <div class="intro-item">W trudniejszym przypadku ciaglym, czyli Buffonie, obrazek pomaga zrozumiec wspolrzedne.</div>
+                    </div>
+                </div>
+            </div>
+            <details class="help" style="margin-top:16px;">
+                <summary>Jak uczyc sie z tej strony?</summary>
+                <div class="help-body">
+                    <div>Najpierw przeczytaj tylko <strong>notę i tok myślenia</strong>, bez patrzenia na końcowe liczby.</div>
+                    <div>Spróbuj sam nazwać wynik elementarny i przewidzieć, jak będzie rosła przestrzeń zdarzeń.</div>
+                    <div>Dopiero potem porównaj swój pomysł z gotowym rozwiązaniem i argumentacją.</div>
+                </div>
+            </details>
+        </section>
+
+        <div class="layout">
+            <aside class="toc">
+                <h3>Spis tresci</h3>
+                <div class="toc-links">
+                    <a href="#task-1">1. Moneta</a>
+                    <a href="#task-2">2. Kostka</a>
+                    <a href="#task-3">3. Karty</a>
+                    <a href="#task-4">4. Pogoda</a>
+                    <a href="#task-5">5. Igla Buffona</a>
+                    <a href="#task-6">6. Zdarzenia dla monety</a>
+                    <a href="#task-7">7. Zdarzenia dla kostki</a>
+                    <a href="#task-8">8. Zdarzenia dla kart</a>
+                    <a href="#task-9">9. Zdarzenia dla pogody</a>
+                    <a href="#task-10">10. Zdarzenia dla Buffona</a>
+                </div>
+            </aside>
+
+            <main class="book">
+                <section class="task" id="task-1">
+                    <div class="task-head">
+                        <div>
+                            <span class="tag">Task 1</span>
+                            <h2>Coin Tossing</h2>
+                        </div>
+                        <div class="nav-line">
+                            <a href="#task-2">Nastepne zadanie</a>
+                        </div>
+                    </div>
+                    <div class="split">
+                        <div>
+                            <div class="note">Wynik elementarny to tutaj <strong>pelny uporzadkowany zapis wszystkich rzutow</strong>. Dlatego <span class="math">HT</span> i <span class="math">TH</span> sa roznymi wynikami.</div>
+                            <div class="lesson-list" style="margin-top:12px;">
+                                <div class="lesson"><strong>Co najpierw zauwazyc?</strong><br>Jedno losowanie daje dwa symbole: <span class="math">H</span> albo <span class="math">T</span>.</div>
+                                <div class="lesson"><strong>Co jest wynikiem elementarnym?</strong><br>Nie "liczba orlow", tylko caly uporzadkowany zapis kolejnych wynikow.</div>
+                                <div class="lesson"><strong>Jak rośnie przestrzen?</strong><br>Każdy nowy rzut podwaja liczbę możliwych zapisów, bo do każdego starego wyniku można dopisać <span class="math">H</span> albo <span class="math">T</span>.</div>
+                            </div>
+                            <div class="formula" style="margin-top:12px;">
+                                Ω<sub>1</sub> = {H, T}<br>
+                                Ω<sub>2</sub> = {HH, HT, TH, TT}<br>
+                                Ω<sub>3</sub> = {HHH, HHT, HTH, HTT, THH, THT, TTH, TTT}
+                            </div>
+                            <div class="chips" style="margin-top:12px;">
+                                <div class="chip-box"><strong>|Ω<sub>1</sub>|</strong><br>2</div>
+                                <div class="chip-box"><strong>|Ω<sub>2</sub>|</strong><br>4 = 2<sup>2</sup></div>
+                                <div class="chip-box"><strong>|Ω<sub>3</sub>|</strong><br>8 = 2<sup>3</sup></div>
+                                <div class="chip-box"><strong>Interpretacja</strong><br>kazdy kolejny rzut mnozy liczbe mozliwosci przez 2</div>
+                            </div>
+                            <details class="help" style="margin-top:12px;">
+                                <summary>Rozwin argumentacje</summary>
+                                <div class="help-body">
+                                    <div>Za kazdym razem mamy dwa mozliwe wyniki: <span class="math">H</span> albo <span class="math">T</span>.</div>
+                                    <div>Dla dwoch rzutow tworzymy wszystkie uporzadkowane pary tych symboli, a dla trzech rzutow wszystkie uporzadkowane trojki.</div>
+                                </div>
+                            </details>
+                        </div>
+                        <div>
+                            <div class="tree">START
+ │
+ ├── H
+ │    ├── H
+ │    │    ├── H
+ │    │    └── T
+ │    └── T
+ │         ├── H
+ │         └── T
+ └── T
+      ├── H
+      │    ├── H
+      │    └── T
+      └── T
+           ├── H
+           └── T</div>
+                            <div class="mini" style="margin-top:12px;">To drzewko pokazuje, ze wynik elementarny dla trzech rzutow to cala sciezka od startu do liscia.</div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="task" id="task-2">
+                    <div class="task-head">
+                        <div>
+                            <span class="tag">Task 2</span>
+                            <h2>Rolling a Die</h2>
+                        </div>
+                        <div class="nav-line">
+                            <a href="#task-1">Poprzednie</a>
+                            <a href="#task-3">Nastepne</a>
+                        </div>
+                    </div>
+                    <div class="split">
+                        <div>
+                            <div class="note">Tu wynik elementarny tez jest uporzadkowany. Dla dwoch rzutow <span class="math">(2,5)</span> i <span class="math">(5,2)</span> sa rozne.</div>
+                            <div class="lesson-list" style="margin-top:12px;">
+                                <div class="lesson"><strong>Gdzie jest analogia do monety?</strong><br>Tu też opisujemy doświadczenie krok po kroku, ale w jednym kroku są 6 możliwości zamiast 2.</div>
+                                <div class="lesson"><strong>Dlaczego mnożymy?</strong><br>Pierwszy rzut wybiera pierwszą współrzędną, drugi rzut drugą, trzeci rzut trzecią.</div>
+                            </div>
+                            <div class="formula" style="margin-top:12px;">
+                                Ω<sub>1</sub> = {1,2,3,4,5,6}<br>
+                                Ω<sub>2</sub> = {(i,j) : i,j ∈ {1,...,6}}<br>
+                                Ω<sub>3</sub> = {(i,j,k) : i,j,k ∈ {1,...,6}}
+                            </div>
+                            <div class="chips" style="margin-top:12px;">
+                                <div class="chip-box"><strong>|Ω<sub>1</sub>|</strong><br>6</div>
+                                <div class="chip-box"><strong>|Ω<sub>2</sub>|</strong><br>36 = 6<sup>2</sup></div>
+                                <div class="chip-box"><strong>|Ω<sub>3</sub>|</strong><br>216 = 6<sup>3</sup></div>
+                                <div class="chip-box"><strong>Wynik elementarny</strong><br>pelny zapis wszystkich kolejnych wyrzuconych oczek</div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="token-row">
+                                <div class="token b1">1</div>
+                                <div class="token b2">2</div>
+                                <div class="token b3">3</div>
+                                <div class="token b4">4</div>
+                                <div class="token b5">5</div>
+                                <div class="token b1">6</div>
+                            </div>
+                            <div class="box" style="margin-top:14px;">
+                                <strong>Argumentacja:</strong><br>
+                                Przy kazdym rzucie masz 6 mozliwosci, a kolejne rzuty sa niezaleznymi etapami opisu wyniku.
+                                Dlatego liczebnosc przestrzeni rosnie przez mnozenie przez 6.
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="task" id="task-3">
+                    <div class="task-head">
+                        <div>
+                            <span class="tag">Task 3</span>
+                            <h2>Drawing Cards</h2>
+                        </div>
+                        <div class="nav-line">
+                            <a href="#task-2">Poprzednie</a>
+                            <a href="#task-4">Nastepne</a>
+                        </div>
+                    </div>
+                    <div class="split">
+                        <div>
+                            <div class="note">Najwazniejsza roznica jest miedzy losowaniem <strong>ze zwracaniem</strong> i <strong>bez zwracania</strong>.</div>
+                            <div class="lesson-list" style="margin-top:12px;">
+                                <div class="lesson"><strong>Na czym tu najłatwiej się pomylić?</strong><br>Na automatycznym użyciu <span class="math">52·52</span> w sytuacji bez zwracania.</div>
+                                <div class="lesson"><strong>Pomysł dydaktyczny:</strong><br>Po pierwszej karcie zadaj sobie pytanie: „ile kart zostało możliwych na drugiej pozycji?”. To od razu ustawia poprawny model.</div>
+                            </div>
+                            <div class="formula" style="margin-top:12px;">
+                                Ω<sub>1</sub> = {wszystkie 52 pojedyncze karty}<br>
+                                Ω<sub>2</sub> = {(c<sub>1</sub>, c<sub>2</sub>) : c<sub>1</sub>, c<sub>2</sub> ∈ talia} &nbsp; ze zwracaniem<br>
+                                Ω'<sub>2</sub> = {(c<sub>1</sub>, c<sub>2</sub>) : c<sub>1</sub> ≠ c<sub>2</sub>} &nbsp; bez zwracania
+                            </div>
+                            <div class="chips" style="margin-top:12px;">
+                                <div class="chip-box"><strong>|Ω<sub>1</sub>|</strong><br>52</div>
+                                <div class="chip-box"><strong>|Ω<sub>2</sub>|</strong><br>52 · 52 = 2704</div>
+                                <div class="chip-box"><strong>|Ω'<sub>2</sub>|</strong><br>52 · 51 = 2652</div>
+                                <div class="chip-box"><strong>Wynik elementarny</strong><br>uporzadkowana sekwencja wylosowanych kart</div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="box-list">
+                                <div class="box"><strong>Ze zwracaniem</strong><br>po pierwszym losowaniu talia wraca do 52 kart, wiec druga pozycja ma znow 52 mozliwosci.</div>
+                                <div class="box"><strong>Bez zwracania</strong><br>po pierwszym losowaniu zostaje 51 kart, wiec druga pozycja ma juz mniej opcji.</div>
+                                <div class="box"><strong>Kolejnosc ma znaczenie</strong><br><span class="math">(A♠, K♥)</span> i <span class="math">(K♥, A♠)</span> to dwa rozne wyniki elementarne.</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="task" id="task-4">
+                    <div class="task-head">
+                        <div>
+                            <span class="tag">Task 4</span>
+                            <h2>Weekly Weather Observation</h2>
+                        </div>
+                        <div class="nav-line">
+                            <a href="#task-3">Poprzednie</a>
+                            <a href="#task-5">Nastepne</a>
+                        </div>
+                    </div>
+                    <div class="split">
+                        <div>
+                            <div class="note">Wynik elementarny tygodniowej obserwacji to <strong>pelny siedmiodniowy ciag stanow pogody</strong>.</div>
+                            <div class="lesson-list" style="margin-top:12px;">
+                                <div class="lesson"><strong>Co tu jest ważne?</strong><br>Tydzień nie jest zbiorem dni słonecznych i deszczowych. To uporządkowany opis: dzień 1, dzień 2, ..., dzień 7.</div>
+                                <div class="lesson"><strong>Skąd bierze się <span class="math">3<sup>7</sup></span>?</strong><br>Każdego dnia dokładamy jedną z trzech etykiet: <span class="math">S</span>, <span class="math">C</span>, <span class="math">R</span>.</div>
+                            </div>
+                            <div class="formula" style="margin-top:12px;">
+                                Ω<sub>1</sub> = {S, C, R}<br>
+                                Ω<sub>2</sub> = {(x<sub>1</sub>,x<sub>2</sub>) : x<sub>i</sub> ∈ {S,C,R}}<br>
+                                Ω<sub>7</sub> = {(x<sub>1</sub>,...,x<sub>7</sub>) : x<sub>i</sub> ∈ {S,C,R}}
+                            </div>
+                            <div class="chips" style="margin-top:12px;">
+                                <div class="chip-box"><strong>|Ω<sub>1</sub>|</strong><br>3</div>
+                                <div class="chip-box"><strong>|Ω<sub>2</sub>|</strong><br>9 = 3<sup>2</sup></div>
+                                <div class="chip-box"><strong>|Ω<sub>7</sub>|</strong><br>3<sup>7</sup> = 2187</div>
+                                <div class="chip-box"><strong>Interpretacja</strong><br>kazdy dzien doklada jedna z trzech etykiet: S, C albo R</div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="token-row">
+                                <div class="token b1">S</div>
+                                <div class="token b2">C</div>
+                                <div class="token b3">R</div>
+                            </div>
+                            <div class="box" style="margin-top:14px;">
+                                <strong>Przyklad wyniku elementarnego:</strong><br>
+                                <span class="math">(S,C,R,S,S,C,R)</span><br><br>
+                                To nie jest "zbior dni slonecznych", tylko uporzadkowany tygodniowy opis pogody.
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="task" id="task-5">
+                    <div class="task-head">
+                        <div>
+                            <span class="tag">Task 5</span>
+                            <h2>Buffon's Needle Experiment</h2>
+                        </div>
+                        <div class="nav-line">
+                            <a href="#task-4">Poprzednie</a>
+                            <a href="#task-6">Nastepne</a>
+                        </div>
+                    </div>
+                    <div class="split">
+                        <div>
+                            <div class="note">To jest pierwszy przypadek z tej listy, gdzie przestrzen zdarzen nie jest skonczeniem wielu punktow, tylko <strong>ciaglym obszarem</strong>.</div>
+                            <div class="lesson-list" style="margin-top:12px;">
+                                <div class="lesson"><strong>Dlaczego to zadanie jest inne?</strong><br>We wcześniejszych zadaniach wynik elementarny był napisem albo krotką. Tutaj wynik opisujemy przez punkt w obszarze geometrycznym.</div>
+                                <div class="lesson"><strong>Jak się tego uczyć?</strong><br>Nie myśl „jaka jest lista wyników?”, tylko „jakie współrzędne wystarczają, żeby opisać jeden rzut igły?”.</div>
+                            </div>
+                            <div class="formula" style="margin-top:12px;">
+                                x ∈ [0, d/2] &nbsp; — odleglosc srodka igly od najblizszej linii<br>
+                                θ ∈ [0, π/2] &nbsp; — kat igly wzgledem linii<br><br>
+                                Ω = [0, d/2] × [0, π/2]
+                            </div>
+                            <details class="help" style="margin-top:12px;">
+                                <summary>Rozwin argumentacje</summary>
+                                <div class="help-body">
+                                    <div>Jedno rzucenie igly nie daje numeru ani skonczonego napisu, tylko pare wspolrzednych <span class="math">(x, θ)</span>.</div>
+                                    <div>Poniewaz <span class="math">x</span> i <span class="math">θ</span> moga przyjmowac nieskonczenie wiele wartosci rzeczywistych, przestrzen jest ciagla.</div>
+                                </div>
+                            </details>
+                        </div>
+                        <div class="needle-stage">
+                            <svg viewBox="0 0 420 220" aria-label="Buffon">
+                                <line x1="60" y1="20" x2="60" y2="200" stroke="#94a3b8" stroke-width="3"/>
+                                <line x1="180" y1="20" x2="180" y2="200" stroke="#94a3b8" stroke-width="3"/>
+                                <line x1="300" y1="20" x2="300" y2="200" stroke="#94a3b8" stroke-width="3"/>
+                                <circle cx="225" cy="110" r="5" fill="#1d4d7a"/>
+                                <line x1="225" y1="110" x2="305" y2="60" stroke="#b4235c" stroke-width="5" stroke-linecap="round"/>
+                                <line x1="225" y1="110" x2="145" y2="160" stroke="#b4235c" stroke-width="5" stroke-linecap="round"/>
+                                <line x1="180" y1="110" x2="225" y2="110" stroke="#0f766e" stroke-width="4" stroke-dasharray="6 6"/>
+                                <path d="M250 110 A25 25 0 0 0 242 91" fill="none" stroke="#d97706" stroke-width="3"/>
+                                <text x="198" y="101" fill="#0f766e" font-size="16">x</text>
+                                <text x="248" y="96" fill="#d97706" font-size="16">θ</text>
+                            </svg>
+                            <div class="mini" style="margin-top:10px;">Obrazek pokazuje, jakie dwie wspolrzedne opisują wynik elementarny: odleglosc <span class="math">x</span> i kat <span class="math">θ</span>.</div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="task" id="task-6">
+                    <div class="task-head">
+                        <div>
+                            <span class="tag">Task 6</span>
+                            <h2>Events and Probabilities in Coin Tossing</h2>
+                        </div>
+                        <div class="nav-line">
+                            <a href="#task-5">Poprzednie</a>
+                            <a href="#task-7">Nastepne</a>
+                        </div>
+                    </div>
+                    <div class="split">
+                        <div>
+                            <div class="formula">
+                                P({ω}) = 1/2 dla Ω<sub>1</sub><br>
+                                P({ω}) = 1/4 dla Ω<sub>2</sub><br>
+                                P({ω}) = 1/8 dla Ω<sub>3</sub>
+                            </div>
+                            <div class="lesson-list" style="margin-top:12px;">
+                                <div class="lesson"><strong>Ogólny pomysł:</strong><br>Najpierw opisujemy zdarzenie jako podzbiór przestrzeni, a dopiero potem liczymy jego rozmiar.</div>
+                                <div class="lesson"><strong>Dlaczego to działa?</strong><br>Bo w doświadczeniu z uczciwą monetą wszystkie wyniki elementarne są równie prawdopodobne.</div>
+                            </div>
+                            <div class="box-list" style="margin-top:12px;">
+                                <div class="box"><strong>One toss:</strong><br>
+                                    A<sub>1</sub> = {H}, P(A<sub>1</sub>) = 1/2<br>
+                                    B<sub>1</sub> = {T}, P(B<sub>1</sub>) = 1/2<br>
+                                    C<sub>1</sub> = {H}, P(C<sub>1</sub>) = 1/2
+                                </div>
+                                <div class="box"><strong>Two tosses:</strong><br>
+                                    A<sub>2</sub> = {HT, TH}, P(A<sub>2</sub>) = 2/4 = 1/2<br>
+                                    B<sub>2</sub> = {HH, HT, TH}, P(B<sub>2</sub>) = 3/4<br>
+                                    C<sub>2</sub> = {HH, TT}, P(C<sub>2</sub>) = 2/4 = 1/2
+                                </div>
+                                <div class="box"><strong>Three tosses:</strong><br>
+                                    A<sub>3</sub> = {HHT, HTH, THH}, P(A<sub>3</sub>) = 3/8<br>
+                                    B<sub>3</sub> = Ω<sub>3</sub> \ {HHH}, P(B<sub>3</sub>) = 7/8<br>
+                                    C<sub>3</sub> = {HHH, TTT}, P(C<sub>3</sub>) = 2/8 = 1/4
+                                </div>
+                                <div class="box"><strong>Dodatkowe zdarzenie:</strong><br>
+                                    D<sub>3</sub> = "dokladnie jeden ogon"<br>
+                                    D<sub>3</sub> = {HHT, HTH, THH}, P(D<sub>3</sub>) = 3/8
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="note">Poniewaz moneta jest uczciwa, wszystkie wyniki elementarne maja takie samo prawdopodobienstwo. Liczenie zdarzenia sprowadza sie wiec do policzenia, ile punktow przestrzeni w nim lezy.</div>
+                            <details class="help" style="margin-top:12px;">
+                                <summary>Rozwin argumentacje</summary>
+                                <div class="help-body">
+                                    <div>Na Ω<sub>2</sub> kazdy wynik ma wage <span class="math">1/4</span>, bo sa 4 rownouprawdopodobnione sciezki.</div>
+                                    <div>Na Ω<sub>3</sub> kazdy wynik ma wage <span class="math">1/8</span>, bo sa 8 rownouprawdopodobnionych sciezek.</div>
+                                </div>
+                            </details>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="task" id="task-7">
+                    <div class="task-head">
+                        <div>
+                            <span class="tag">Task 7</span>
+                            <h2>Events and Probabilities in Die Rolling</h2>
+                        </div>
+                        <div class="nav-line">
+                            <a href="#task-6">Poprzednie</a>
+                            <a href="#task-8">Nastepne</a>
+                        </div>
+                    </div>
+                    <div class="split">
+                        <div>
+                            <div class="formula">
+                                P({ω}) = 1/6 na Ω<sub>1</sub><br>
+                                P({ω}) = 1/36 na Ω<sub>2</sub><br>
+                                P({ω}) = 1/216 na Ω<sub>3</sub>
+                            </div>
+                            <div class="lesson-list" style="margin-top:12px;">
+                                <div class="lesson"><strong>Na co patrzymy w zadaniach o kostce?</strong><br>Czasem na pojedynczą wartość, czasem na sumę, a czasem na strukturę powtórzeń. To są trzy różne typy zdarzeń.</div>
+                                <div class="lesson"><strong>Wniosek dydaktyczny:</strong><br>To samo Ω<sub>3</sub> może być przeglądane na wiele sposobów, zależnie od pytania.</div>
+                            </div>
+                            <div class="box-list" style="margin-top:12px;">
+                                <div class="box"><strong>One roll:</strong><br>
+                                    P(A<sub>1</sub>) = 3/6 = 1/2<br>
+                                    P(B<sub>1</sub>) = 2/6 = 1/3<br>
+                                    P(C<sub>1</sub>) = 3/6 = 1/2
+                                </div>
+                                <div class="box"><strong>Two rolls:</strong><br>
+                                    A<sub>2</sub>: suma 7 → 6 wynikow, P = 6/36 = 1/6<br>
+                                    B<sub>2</sub>: dublet → 6 wynikow, P = 1/6<br>
+                                    C<sub>2</sub>: suma ≥ 10 → 6 wynikow, P = 1/6
+                                </div>
+                                <div class="box"><strong>Three rolls:</strong><br>
+                                    A<sub>3</sub>: suma 10 → 27 wynikow, P = 27/216 = 1/8<br>
+                                    B<sub>3</sub>: dokladnie dwa takie same → 90 wynikow, P = 90/216 = 5/12<br>
+                                    C<sub>3</sub>: dwie dwojki i jedna trojka → 3 wyniki, P = 3/216 = 1/72
+                                </div>
+                                <div class="box"><strong>Dodatkowe zdarzenie:</strong><br>
+                                    D<sub>3</sub> = "wszystkie trzy wyniki sa parzyste"<br>
+                                    P(D<sub>3</sub>) = 3<sup>3</sup>/6<sup>3</sup> = 27/216 = 1/8
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <details class="help">
+                                <summary>Rozwin argumentacje dla sumy 10 przy trzech rzutach</summary>
+                                <div class="help-body">
+                                    <div>Szukamy trojek <span class="math">(a,b,c)</span> z zakresu 1-6, dla ktorych <span class="math">a+b+c=10</span>.</div>
+                                    <div>Liczba takich trojek wynosi 27, wiec prawdopodobienstwo to <span class="math">27/216 = 1/8</span>.</div>
+                                </div>
+                            </details>
+                            <details class="help" style="margin-top:12px;">
+                                <summary>Rozwin argumentacje dla "dokladnie dwa takie same"</summary>
+                                <div class="help-body">
+                                    <div>Wybieramy wartosc powtorzona: 6 mozliwosci.</div>
+                                    <div>Wybieramy wartosc pojedyncza: 5 mozliwosci.</div>
+                                    <div>Wybieramy pozycje pojedynczej wartosci: 3 mozliwosci.</div>
+                                    <div>Razem: <span class="math">6 · 5 · 3 = 90</span>.</div>
+                                </div>
+                            </details>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="task" id="task-8">
+                    <div class="task-head">
+                        <div>
+                            <span class="tag">Task 8</span>
+                            <h2>Events and Probabilities in Card Drawing</h2>
+                        </div>
+                        <div class="nav-line">
+                            <a href="#task-7">Poprzednie</a>
+                            <a href="#task-9">Nastepne</a>
+                        </div>
+                    </div>
+                    <div class="split">
+                        <div>
+                            <div class="formula">
+                                P({ω}) = 1/52 na Ω<sub>1</sub><br>
+                                P({ω}) = 1/52<sup>2</sup> na Ω<sub>2</sub><br>
+                                P({ω}) = 1/(52·51) na Ω'<sub>2</sub>
+                            </div>
+                            <div class="lesson-list" style="margin-top:12px;">
+                                <div class="lesson"><strong>Główna idea:</strong><br>Najpierw zdecyduj, czy losujesz ze zwracaniem czy bez. To nie jest detal techniczny, tylko centrum całego rachunku.</div>
+                                <div class="lesson"><strong>Jak dobrze się tego uczyć?</strong><br>Po pierwszym losowaniu zatrzymaj się i zapytaj: „czy talia wróciła do pełnych 52 kart?”.</div>
+                            </div>
+                            <div class="box-list" style="margin-top:12px;">
+                                <div class="box"><strong>One card:</strong><br>
+                                    P(A<sub>1</sub>) = 13/52 = 1/4<br>
+                                    P(B<sub>1</sub>) = 4/52 = 1/13<br>
+                                    P(C<sub>1</sub>) = 40/52 = 10/13
+                                </div>
+                                <div class="box"><strong>Two cards, with replacement:</strong><br>
+                                    P(A<sub>2</sub>) = (13/52)<sup>2</sup> = 1/16<br>
+                                    P(B<sub>2</sub>) = 1/13<br>
+                                    P(C<sub>2</sub>) = 1 - (48/52)<sup>2</sup> = 25/169
+                                </div>
+                                <div class="box"><strong>Two cards, without replacement:</strong><br>
+                                    P(A<sub>3</sub>) = (13·12)/(52·51) = 1/17<br>
+                                    P(B<sub>3</sub>) = (13·4·3)/(52·51) = 1/17<br>
+                                    P(C<sub>3</sub>) = (4·4·2)/(52·51) = 8/663
+                                </div>
+                                <div class="box"><strong>Dodatkowe zdarzenie:</strong><br>
+                                    D<sub>3</sub> = "obie karty sa czarne" bez zwracania<br>
+                                    P(D<sub>3</sub>) = (26·25)/(52·51) = 25/102
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="note">Przy kartach trzeba bardzo pilnowac, czy losowanie odbywa sie ze zwracaniem. To wlasnie zmienia mianownik i sposob liczenia.</div>
+                            <details class="help" style="margin-top:12px;">
+                                <summary>Rozwin argumentacje dla "ten sam rank"</summary>
+                                <div class="help-body">
+                                    <div>Ze zwracaniem: po pierwszej karcie druga ma prawdopodobienstwo <span class="math">4/52 = 1/13</span> trafienia w ten sam rank.</div>
+                                    <div>Bez zwracania: po pierwszej karcie zostaja juz tylko 3 karty tego samego rangu w 51 kartach, czyli <span class="math">3/51 = 1/17</span>.</div>
+                                </div>
+                            </details>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="task" id="task-9">
+                    <div class="task-head">
+                        <div>
+                            <span class="tag">Task 9</span>
+                            <h2>Events and Probabilities in Weekly Weather Observation</h2>
+                        </div>
+                        <div class="nav-line">
+                            <a href="#task-8">Poprzednie</a>
+                            <a href="#task-10">Nastepne</a>
+                        </div>
+                    </div>
+                    <div class="split">
+                        <div>
+                            <div class="note">Kazdy z 7 dni jest modelowany niezaleznie i ma trzy rowne mozliwosci, wiec prawdopodobienstwo kazdego konkretnego tygodniowego ciagu wynosi <span class="math">(1/3)<sup>7</sup></span>.</div>
+                            <div class="lesson-list" style="margin-top:12px;">
+                                <div class="lesson"><strong>Jak rozpoznawać typ zdarzenia?</strong><br>Niektóre zdarzenia dotyczą konkretnych dni tygodnia, a inne tylko liczby dni określonego typu.</div>
+                                <div class="lesson"><strong>To ważne, bo:</strong><br>Zdarzenia „środa, czwartek, piątek deszczowe” liczymy inaczej niż „dokładnie dwa dni słoneczne”.</div>
+                            </div>
+                            <div class="box-list" style="margin-top:12px;">
+                                <div class="box"><strong>A:</strong> weekend sloneczny<br>
+                                    P(A) = (1/3)<sup>2</sup> = 1/9
+                                </div>
+                                <div class="box"><strong>B:</strong> sroda, czwartek, piatek deszczowe<br>
+                                    P(B) = (1/3)<sup>3</sup> = 1/27
+                                </div>
+                                <div class="box"><strong>C:</strong> co najmniej jeden dzien sloneczny<br>
+                                    P(C) = 1 - (2/3)<sup>7</sup> = 2059/2187
+                                </div>
+                                <div class="box"><strong>D:</strong> brak dnia deszczowego<br>
+                                    P(D) = (2/3)<sup>7</sup> = 128/2187
+                                </div>
+                                <div class="box"><strong>E:</strong> dokladnie dwa dni sloneczne<br>
+                                    P(E) = C(7,2)(1/3)<sup>2</sup>(2/3)<sup>5</sup> = 224/729
+                                </div>
+                                <div class="box"><strong>Dodatkowe zdarzenie:</strong><br>
+                                    F = "dokladnie jeden dzien deszczowy"<br>
+                                    P(F) = C(7,1)(1/3)(2/3)<sup>6</sup> = 448/2187
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <details class="help">
+                                <summary>Rozwin argumentacje dla "co najmniej jeden dzien sloneczny"</summary>
+                                <div class="help-body">
+                                    <div>Najwygodniej liczyc przez dopelnienie.</div>
+                                    <div>Zdarzenie przeciwne to "ani jednego dnia slonecznego", czyli przez 7 dni mamy tylko <span class="math">C</span> albo <span class="math">R</span>.</div>
+                                    <div>To daje <span class="math">(2/3)<sup>7</sup></span>, wiec <span class="math">P(C)=1-(2/3)<sup>7</sup></span>.</div>
+                                </div>
+                            </details>
+                            <details class="help" style="margin-top:12px;">
+                                <summary>Rozwin argumentacje dla "dokladnie dwa dni sloneczne"</summary>
+                                <div class="help-body">
+                                    <div>Najpierw wybieramy, ktore 2 z 7 dni sa sloneczne: <span class="math">C(7,2)</span>.</div>
+                                    <div>Potem te dwa dni maja prawdopodobienstwo <span class="math">(1/3)<sup>2</sup></span>, a pozostale piec dni musi byc nieszlonecznych, czyli <span class="math">(2/3)<sup>5</sup></span>.</div>
+                                </div>
+                            </details>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="task" id="task-10">
+                    <div class="task-head">
+                        <div>
+                            <span class="tag">Task 10</span>
+                            <h2>Events and Probabilities in Buffon's Needle Experiment</h2>
+                        </div>
+                        <div class="nav-line">
+                            <a href="#task-9">Poprzednie</a>
+                            <a href="#top">Na gore</a>
+                        </div>
+                    </div>
+                    <div class="split">
+                        <div>
+                            <div class="formula">
+                                A = { (x,θ) : x ≤ (L/2) sin θ }<br>
+                                P(A) = 2L/(πd)<br><br>
+                                P(B) = 1 - 2L/(πd)<br>
+                                P(C) = (π/6)/(π/2) = 1/3<br>
+                                P(D) = (d/4)/(d/2) = 1/2<br>
+                                P(E) = √2 L/(πd)
+                            </div>
+                            <div class="lesson-list" style="margin-top:12px;">
+                                <div class="lesson"><strong>To nie jest już liczenie punktów.</strong><br>W modelu ciągłym prawdopodobieństwo dostajemy przez stosunek pól obszarów.</div>
+                                <div class="lesson"><strong>Najważniejszy krok rozumowania:</strong><br>Najpierw zapisać zdarzenie geometrycznie jako warunek na <span class="math">(x,θ)</span>, a dopiero potem liczyć pole odpowiedniego obszaru.</div>
+                            </div>
+                            <div class="box-list" style="margin-top:12px;">
+                                <div class="box"><strong>A:</strong> przeciecie linii<br>
+                                    warunek geometryczny: <span class="math">x ≤ (L/2) sin θ</span>
+                                </div>
+                                <div class="box"><strong>B:</strong> brak przeciecia<br>
+                                    <span class="math">P(B)=1-P(A)</span>
+                                </div>
+                                <div class="box"><strong>C:</strong> kat mniejszy od <span class="math">π/6</span><br>
+                                    jednostajny rozklad kata daje <span class="math">1/3</span>
+                                </div>
+                                <div class="box"><strong>D:</strong> srodek blizej niz <span class="math">d/4</span><br>
+                                    jednostajny rozklad odleglosci daje <span class="math">1/2</span>
+                                </div>
+                                <div class="box"><strong>E:</strong> przeciecie i kat > <span class="math">π/4</span><br>
+                                    <span class="math">P(E)=√2 L/(πd)</span>
+                                </div>
+                                <div class="box"><strong>Dodatkowe zdarzenie:</strong><br>
+                                    F = "przeciecie i kat < π/6"<br>
+                                    <span class="math">P(F)=L(2-√3)/(πd)</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <details class="help">
+                                <summary>Rozwin argumentacje dla przeciecia linii</summary>
+                                <div class="help-body">
+                                    <div>Igla przecina linie wtedy i tylko wtedy, gdy jej polowa "siega" do linii.</div>
+                                    <div>To daje warunek <span class="math">x ≤ (L/2) sin θ</span>.</div>
+                                    <div>Na prostokacie <span class="math">[0,d/2] × [0,π/2]</span> liczymy wiec pole obszaru pod wykresem tej funkcji i dzielimy przez pole calego prostokata.</div>
+                                </div>
+                            </details>
+                            <div class="needle-stage" style="margin-top:12px;">
+                                <svg viewBox="0 0 420 240" aria-label="Buffon region">
+                                    <rect x="40" y="25" width="330" height="170" fill="#fbfaf7" stroke="#cbd5e1" stroke-width="2"/>
+                                    <path d="M40 195 C140 180, 220 120, 370 25" fill="rgba(37,99,235,0.18)" stroke="#2563eb" stroke-width="3"/>
+                                    <text x="48" y="218" fill="#475569" font-size="15">θ = 0</text>
+                                    <text x="335" y="218" fill="#475569" font-size="15">θ = π/2</text>
+                                    <text x="8" y="35" fill="#475569" font-size="15">x = d/2</text>
+                                    <text x="16" y="198" fill="#475569" font-size="15">x = 0</text>
+                                    <text x="215" y="88" fill="#1d4d7a" font-size="16">x = (L/2) sin θ</text>
+                                    <text x="86" y="150" fill="#1d4d7a" font-size="16">obszar przeciecia</text>
+                                </svg>
+                                <div class="mini" style="margin-top:10px;">Niebieski obszar to te pary <span class="math">(x,θ)</span>, dla ktorych igla przecina linie.</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+</body>
+</html>

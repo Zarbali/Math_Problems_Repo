@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buffon Needle Lab</title>
+    <style>
+        :root {
+            --bg: #eef3f1;
+            --paper: rgba(255, 255, 255, 0.88);
+            --ink: #152127;
+            --muted: #5f6b73;
+            --line: #d8dfdc;
+            --accent: #0f5a5c;
+            --accent-soft: #d7f0ec;
+            --hit: #1c8c4d;
+            --hit-soft: #ddf7e5;
+            --miss: #c24134;
+            --miss-soft: #ffe3dd;
+            --warn: #9a6700;
+            --warn-soft: #fff1cb;
+            --shadow: 0 24px 60px rgba(21, 33, 39, 0.12);
+            --grid: rgba(15, 90, 92, 0.12);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            color: var(--ink);
+            font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+            background:
+                radial-gradient(circle at top left, rgba(15, 90, 92, 0.14), transparent 24%),
+                radial-gradient(circle at bottom right, rgba(194, 65, 52, 0.12), transparent 22%),
+                linear-gradient(180deg, #f4f7f4 0%, #e9f0ee 100%);
+            min-height: 100vh;
+        }
+
+        .page {
+            max-width: 1380px;
+            margin: 0 auto;
+            padding: 24px 18px 48px;
+        }
+
+        .hero,
+        .main-grid,
+        .analysis-grid,
+        .control-grid,
+        .stats-grid {
+            display: grid;
+            gap: 18px;
+        }
+
+        .hero,
+        .main-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .analysis-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .chart-stack {
+            display: grid;
+            gap: 16px;
+        }
+
+        .control-grid {
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        }
+
+        .panel {
+            background: var(--paper);
+            border: 1px solid rgba(21, 33, 39, 0.08);
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(10px);
+        }
+
+        .hero-panel,
+        .panel-body {
+            padding: 22px;
+        }
+
+        .eyebrow {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: var(--accent-soft);
+            color: var(--accent);
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            margin: 14px 0 8px;
+            font-size: clamp(2.3rem, 5vw, 4.2rem);
+            line-height: 0.95;
+            letter-spacing: -0.045em;
+        }
+
+        h2 {
+            margin: 0 0 10px;
+            font-size: 1.3rem;
+        }
+
+        h3 {
+            margin: 0 0 8px;
+            font-size: 1rem;
+        }
+
+        p, li, label, input, button, select {
+            font: inherit;
+        }
+
+        p, li {
+            line-height: 1.58;
+        }
+
+        .lede {
+            max-width: 74ch;
+            font-size: 1.05rem;
+            color: #26343a;
+        }
+
+        .formula-strip {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .formula-chip {
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            padding: 10px 12px;
+            background: rgba(255, 255, 255, 0.72);
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+            font-size: 0.94rem;
+        }
+
+        .section-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: end;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .section-head p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 0.96rem;
+        }
+
+        .control-card,
+        .stat-card,
+        .note-card,
+        .sample-card,
+        .history-card {
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(247,250,249,0.82));
+            padding: 16px;
+        }
+
+        .control-card label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+        }
+
+        .control-card input,
+        .control-card select {
+            width: 100%;
+            margin-top: 8px;
+            border: 1px solid #c8d1ce;
+            border-radius: 12px;
+            padding: 10px 12px;
+            background: white;
+        }
+
+        .button-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        button {
+            border: 1px solid transparent;
+            border-radius: 999px;
+            padding: 11px 16px;
+            cursor: pointer;
+            transition: transform 0.16s ease, opacity 0.16s ease, box-shadow 0.16s ease;
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+        }
+
+        button.primary {
+            background: var(--accent);
+            color: white;
+            box-shadow: 0 14px 28px rgba(15, 90, 92, 0.18);
+        }
+
+        button.secondary {
+            background: white;
+            color: var(--ink);
+            border-color: #c8d1ce;
+        }
+
+        button.warn {
+            background: var(--warn-soft);
+            color: #6d4a00;
+            border-color: #efd98f;
+        }
+
+        .stat-card strong {
+            display: block;
+            margin-top: 8px;
+            font-size: clamp(1.4rem, 3vw, 2.2rem);
+            line-height: 1;
+        }
+
+        .stat-card span {
+            color: var(--muted);
+            font-size: 0.92rem;
+        }
+
+        .hit-card strong { color: var(--hit); }
+        .miss-card strong { color: var(--miss); }
+        .accent-card strong { color: var(--accent); }
+
+        .canvas-shell {
+            border: 1px solid var(--line);
+            border-radius: 22px;
+            padding: 14px;
+            background:
+                linear-gradient(180deg, rgba(255,255,255,0.88), rgba(245,248,247,0.9));
+        }
+
+        canvas {
+            width: 100%;
+            display: block;
+            border-radius: 16px;
+            background: white;
+        }
+
+        .canvas-caption {
+            margin-top: 10px;
+            color: var(--muted);
+            font-size: 0.94rem;
+        }
+
+        .sample-grid {
+            display: grid;
+            gap: 12px;
+        }
+
+        .sample-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            border-bottom: 1px solid #e5ebea;
+            padding-bottom: 8px;
+        }
+
+        .sample-row:last-child {
+            border-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .sample-row code {
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+            font-size: 0.94rem;
+        }
+
+        .result-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            font-weight: 700;
+        }
+
+        .result-pill.hit {
+            color: var(--hit);
+            background: var(--hit-soft);
+        }
+
+        .result-pill.miss {
+            color: var(--miss);
+            background: var(--miss-soft);
+        }
+
+        .history-list {
+            display: grid;
+            gap: 8px;
+            max-height: 320px;
+            overflow: auto;
+            padding-right: 4px;
+        }
+
+        .history-item {
+            display: grid;
+            grid-template-columns: 74px 1fr 78px;
+            gap: 10px;
+            align-items: center;
+            border: 1px solid #e3e8e6;
+            border-radius: 14px;
+            padding: 10px 12px;
+            font-size: 0.92rem;
+            background: rgba(255,255,255,0.86);
+        }
+
+        .history-item code {
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+        }
+
+        .history-item.hit {
+            border-color: #b7e9c7;
+            background: linear-gradient(180deg, rgba(221,247,229,0.76), rgba(255,255,255,0.92));
+        }
+
+        .history-item.miss {
+            border-color: #f0c2ba;
+            background: linear-gradient(180deg, rgba(255,227,221,0.76), rgba(255,255,255,0.92));
+        }
+
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        .legend-swatch {
+            width: 12px;
+            height: 12px;
+            border-radius: 999px;
+        }
+
+        .notes {
+            display: grid;
+            gap: 12px;
+        }
+
+        .notes ul {
+            margin: 0;
+            padding-left: 18px;
+        }
+
+        .status-line {
+            margin-top: 12px;
+            color: var(--muted);
+            font-size: 0.94rem;
+        }
+
+        @media (min-width: 980px) {
+            .main-grid {
+                grid-template-columns: minmax(0, 1.35fr) minmax(340px, 0.8fr);
+            }
+
+            .analysis-grid {
+                grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.9fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <section class="hero">
+            <div class="panel hero-panel">
+                <span class="eyebrow">Monte Carlo Lab</span>
+                <h1>Eksperyment igły Buffona</h1>
+                <p class="lede">
+                    Ta symulacja pokazuje jednocześnie geometrię pojedynczego rzutu i zbieżność estymacji Monte Carlo.
+                    Najważniejszy warunek analityczny jest prosty: igła przecina linię wtedy i tylko wtedy, gdy
+                    odległość środka od najbliższej linii spełnia nierówność
+                    <strong><code>x &le; (L/2) sin(&theta;)</code></strong>.
+                </p>
+                <div class="formula-strip">
+                    <div class="formula-chip">Warunek trafienia: <code>x &le; (L/2) sin(&theta;)</code></div>
+                    <div class="formula-chip">Prawdopodobieństwo teoretyczne: <code>p = 2L / (&pi;d)</code> dla <code>L &le; d</code></div>
+                    <div class="formula-chip">Estymata Monte Carlo: <code>p̂<sub>n</sub> = liczba trafień / n</code></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="main-grid">
+            <div class="panel panel-body">
+                <div class="section-head">
+                    <div>
+                        <h2>Animacja rzutów</h2>
+                        <p>Widok podłogi z liniami równoległymi. Zielony oznacza przecięcie linii, czerwony brak przecięcia.</p>
+                    </div>
+                </div>
+                <div class="canvas-shell">
+                    <canvas id="floorCanvas" width="920" height="540" aria-label="Symulacja igły Buffona"></canvas>
+                    <div class="legend">
+                        <div class="legend-item"><span class="legend-swatch" style="background: var(--hit);"></span> trafienie</div>
+                        <div class="legend-item"><span class="legend-swatch" style="background: var(--miss);"></span> brak trafienia</div>
+                        <div class="legend-item"><span class="legend-swatch" style="background: #0f5a5c;"></span> aktualnie analizowana igła</div>
+                        <div class="legend-item"><span class="legend-swatch" style="background: #87939a;"></span> linie podłogi</div>
+                    </div>
+                    <div class="canvas-caption">
+                        Na rysunku widać ostatnie rzuty. Każdy nowy rzut ma losowane położenie środka i kąt,
+                        a po chwili trafia do historii próbek na planszy.
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel panel-body">
+                <div class="section-head">
+                    <div>
+                        <h2>Sterowanie i analiza pojedynczego rzutu</h2>
+                        <p>Parametry modelu, tempo animacji i pełna diagnostyka ostatniej próby.</p>
+                    </div>
+                </div>
+                <div class="control-grid">
+                    <div class="control-card">
+                        <label for="needleLength">Długość igły L
+                            <input id="needleLength" type="number" min="0.1" max="1.2" step="0.05" value="0.8">
+                        </label>
+                    </div>
+                    <div class="control-card">
+                        <label for="lineDistance">Odległość między liniami d
+                            <input id="lineDistance" type="number" min="0.2" max="1.2" step="0.05" value="1">
+                        </label>
+                    </div>
+                    <div class="control-card">
+                        <label for="speedSelect">Rzuty na sekundę
+                            <select id="speedSelect">
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="5" selected>5</option>
+                                <option value="10">10</option>
+                                <option value="25">25</option>
+                                <option value="50">50</option>
+                            </select>
+                        </label>
+                    </div>
+                    <div class="control-card">
+                        <label for="trailCount">Widoczne ostatnie igły
+                            <select id="trailCount">
+                                <option value="10">10</option>
+                                <option value="25" selected>25</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                            </select>
+                        </label>
+                    </div>
+                    <div class="control-card">
+                        <label for="batchCount">Ile rzutów wykonać w serii
+                            <input id="batchCount" type="number" min="1" max="100000" step="1" value="100">
+                        </label>
+                    </div>
+                    <div class="control-card">
+                        <label for="targetCount">Automatycznie zatrzymaj po
+                            <input id="targetCount" type="number" min="0" max="1000000" step="1" value="0">
+                        </label>
+                    </div>
+                </div>
+
+                <div class="button-row">
+                    <button class="primary" id="startBtn">Start</button>
+                    <button class="secondary" id="stepBtn">Jeden rzut</button>
+                    <button class="secondary" id="burstBtn">Wykonaj serię</button>
+                    <button class="warn" id="resetBtn">Reset</button>
+                </div>
+
+                <div class="status-line" id="statusLine">
+                    Symulacja zatrzymana. Ustaw parametry, wybierz liczność próby i uruchom rzuty.
+                </div>
+
+                <div class="sample-grid" style="margin-top: 16px;">
+                    <div class="sample-card">
+                        <h3>Ostatnia próba</h3>
+                        <div class="sample-row"><span>Numer rzutu</span><code id="sampleIndex">0</code></div>
+                        <div class="sample-row"><span>Losowane x</span><code id="sampleX">-</code></div>
+                        <div class="sample-row"><span>Losowane &theta;</span><code id="sampleTheta">-</code></div>
+                        <div class="sample-row"><span>Próg przecięcia</span><code id="sampleThreshold">-</code></div>
+                        <div class="sample-row"><span>Warunek</span><code id="sampleCondition">-</code></div>
+                        <div style="margin-top: 12px;">
+                            <span id="sampleResult" class="result-pill miss">Brak danych</span>
+                        </div>
+                    </div>
+
+                    <div class="notes">
+                        <div class="note-card">
+                            <h3>Jak czytać zmienne</h3>
+                            <ul>
+                                <li><strong>x</strong> to odległość środka igły od najbliższej linii.</li>
+                                <li><strong>&theta;</strong> to kąt między igłą a liniami podłogi.</li>
+                                <li>Przyjmujemy <strong>0 &le; x &le; d/2</strong> oraz <strong>0 &le; &theta; &le; &pi;/2</strong>.</li>
+                            </ul>
+                        </div>
+                        <div class="note-card">
+                            <h3>Co pokazuje symulacja Monte Carlo</h3>
+                            <ul>
+                                <li>Każdy rzut to jeden punkt losowany w prostokącie parametrów <code>(x, &theta;)</code>.</li>
+                                <li>Zliczamy trafienia i liczymy estymatę <code>p̂<sub>n</sub></code>.</li>
+                                <li>Wykres pokazuje, jak estymata zbliża się do wartości teoretycznej.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="analysis-grid" style="margin-top: 18px;">
+            <div class="panel panel-body">
+                <div class="section-head">
+                    <div>
+                        <h2>Zbieżność estymaty i błąd</h2>
+                        <p>Masz dwa wykresy: estymatę Monte Carlo oraz moduł błędu względem wartości teoretycznej.</p>
+                    </div>
+                </div>
+                <div class="chart-stack">
+                    <div class="canvas-shell">
+                        <canvas id="chartCanvas" width="920" height="380" aria-label="Wykres zbieżności estymaty"></canvas>
+                        <div class="canvas-caption">
+                            Gdy liczba rzutów rośnie, częstotliwość względna trafień zwykle stabilizuje się wokół
+                            wartości teoretycznej. Krótkie fluktuacje są naturalne i właśnie to widać na początku wykresu.
+                        </div>
+                    </div>
+                    <div class="canvas-shell">
+                        <canvas id="errorCanvas" width="920" height="250" aria-label="Wykres błędu estymacji"></canvas>
+                        <div class="canvas-caption">
+                            Ten wykres pokazuje błąd bezwzględny $| \hat p_n - p |$ po każdej kolejnej próbie.
+                            Dzięki temu łatwiej ocenić, czy większa próbka rzeczywiście poprawia jakość estymacji.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel panel-body">
+                <div class="section-head">
+                    <div>
+                        <h2>Statystyki symulacji</h2>
+                        <p>Najważniejsze liczby do porównania modelu teoretycznego i wyników empirycznych.</p>
+                    </div>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card accent-card">
+                        <span>Liczba rzutów</span>
+                        <strong id="totalCount">0</strong>
+                    </div>
+                    <div class="stat-card hit-card">
+                        <span>Trafienia</span>
+                        <strong id="hitCount">0</strong>
+                    </div>
+                    <div class="stat-card miss-card">
+                        <span>Brak trafienia</span>
+                        <strong id="missCount">0</strong>
+                    </div>
+                    <div class="stat-card accent-card">
+                        <span>Estymata p̂</span>
+                        <strong id="estimateValue">0.0000</strong>
+                    </div>
+                    <div class="stat-card accent-card">
+                        <span>Wartość teoretyczna</span>
+                        <strong id="theoryValue">0.0000</strong>
+                    </div>
+                    <div class="stat-card accent-card">
+                        <span>Błąd bezwzględny</span>
+                        <strong id="errorValue">0.0000</strong>
+                    </div>
+                </div>
+
+                <div class="history-card" style="margin-top: 16px;">
+                    <h3>Ostatnie wyniki</h3>
+                    <div class="history-list" id="historyList"></div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        const floorCanvas = document.getElementById("floorCanvas");
+        const floorCtx = floorCanvas.getContext("2d");
+        const chartCanvas = document.getElementById("chartCanvas");
+        const chartCtx = chartCanvas.getContext("2d");
+        const errorCanvas = document.getElementById("errorCanvas");
+        const errorCtx = errorCanvas.getContext("2d");
+
+        const elements = {
+            needleLength: document.getElementById("needleLength"),
+            lineDistance: document.getElementById("lineDistance"),
+            speedSelect: document.getElementById("speedSelect"),
+            trailCount: document.getElementById("trailCount"),
+            batchCount: document.getElementById("batchCount"),
+            targetCount: document.getElementById("targetCount"),
+            startBtn: document.getElementById("startBtn"),
+            stepBtn: document.getElementById("stepBtn"),
+            burstBtn: document.getElementById("burstBtn"),
+            resetBtn: document.getElementById("resetBtn"),
+            statusLine: document.getElementById("statusLine"),
+            sampleIndex: document.getElementById("sampleIndex"),
+            sampleX: document.getElementById("sampleX"),
+            sampleTheta: document.getElementById("sampleTheta"),
+            sampleThreshold: document.getElementById("sampleThreshold"),
+            sampleCondition: document.getElementById("sampleCondition"),
+            sampleResult: document.getElementById("sampleResult"),
+            totalCount: document.getElementById("totalCount"),
+            hitCount: document.getElementById("hitCount"),
+            missCount: document.getElementById("missCount"),
+            estimateValue: document.getElementById("estimateValue"),
+            theoryValue: document.getElementById("theoryValue"),
+            errorValue: document.getElementById("errorValue"),
+            historyList: document.getElementById("historyList")
+        };
+
+        const state = {
+            running: false,
+            lastTick: 0,
+            intervalMs: 200,
+            total: 0,
+            hits: 0,
+            misses: 0,
+            estimates: [],
+            errors: [],
+            throws: [],
+            history: [],
+            currentThrow: null,
+            activeThrow: null,
+            activeStartedAt: 0
+        };
+
+        function clampNeedleLength() {
+            let L = Number(elements.needleLength.value);
+            let d = Number(elements.lineDistance.value);
+            if (!Number.isFinite(L) || L <= 0) L = 0.8;
+            if (!Number.isFinite(d) || d <= 0) d = 1;
+            if (L > d) {
+                L = d;
+                elements.needleLength.value = L.toFixed(2).replace(/\.00$/, "");
+            }
+            return { L, d };
+        }
+
+        function getConfig() {
+            const { L, d } = clampNeedleLength();
+            const speed = Number(elements.speedSelect.value);
+            const trailLimit = Number(elements.trailCount.value);
+            const batchCount = Math.max(1, Math.floor(Number(elements.batchCount.value) || 100));
+            const targetCount = Math.max(0, Math.floor(Number(elements.targetCount.value) || 0));
+            state.intervalMs = 1000 / speed;
+            return { L, d, speed, trailLimit, batchCount, targetCount };
+        }
+
+        function format4(value) {
+            return Number(value).toFixed(4);
+        }
+
+        function formatAngle(theta) {
+            const deg = theta * 180 / Math.PI;
+            return `${theta.toFixed(4)} rad = ${deg.toFixed(2)}°`;
+        }
+
+        function sampleThrow() {
+            const { L, d } = getConfig();
+            const x = Math.random() * (d / 2);
+            const theta = Math.random() * (Math.PI / 2);
+            const threshold = (L / 2) * Math.sin(theta);
+            const hit = x <= threshold;
+            const centerYModel = Math.random() * 4 * d;
+            return {
+                index: state.total + 1,
+                L,
+                d,
+                x,
+                theta,
+                threshold,
+                hit,
+                centerXModel: Math.random() * 5 * d,
+                centerYModel
+            };
+        }
+
+        function registerThrow(sample, animate = true) {
+            state.total += 1;
+            if (sample.hit) {
+                state.hits += 1;
+            } else {
+                state.misses += 1;
+            }
+
+            const estimate = state.hits / state.total;
+            const theory = theoryProbability();
+            state.estimates.push(estimate);
+            state.errors.push(Math.abs(estimate - theory));
+            state.currentThrow = sample;
+            state.history.unshift(sample);
+            state.history = state.history.slice(0, 12);
+
+            const trailLimit = Number(elements.trailCount.value);
+            state.throws.unshift({
+                ...sample,
+                alpha: 1,
+                bornAt: performance.now()
+            });
+            state.throws = state.throws.slice(0, trailLimit);
+
+            if (animate) {
+                state.activeThrow = sample;
+                state.activeStartedAt = performance.now();
+            }
+
+            updateStats();
+            drawFloor();
+            drawChart();
+            drawErrorChart();
+            renderHistory();
+        }
+
+        function runSingleThrow(animate = true) {
+            const sample = sampleThrow();
+            registerThrow(sample, animate);
+        }
+
+        function runBurst(count) {
+            for (let i = 0; i < count; i += 1) {
+                runSingleThrow(false);
+            }
+            elements.statusLine.textContent = `Wykonano serię ${count} rzutów. Aktualna liczność próby to ${state.total}.`;
+            drawFloor();
+            drawChart();
+            drawErrorChart();
+        }
+
+        function theoryProbability() {
+            const { L, d } = getConfig();
+            return (2 * L) / (Math.PI * d);
+        }
+
+        function updateStats() {
+            const theory = theoryProbability();
+            const estimate = state.total > 0 ? state.hits / state.total : 0;
+            const error = Math.abs(estimate - theory);
+
+            elements.totalCount.textContent = String(state.total);
+            elements.hitCount.textContent = String(state.hits);
+            elements.missCount.textContent = String(state.misses);
+            elements.estimateValue.textContent = format4(estimate);
+            elements.theoryValue.textContent = format4(theory);
+            elements.errorValue.textContent = format4(error);
+
+            if (!state.currentThrow) {
+                elements.sampleIndex.textContent = "0";
+                elements.sampleX.textContent = "-";
+                elements.sampleTheta.textContent = "-";
+                elements.sampleThreshold.textContent = "-";
+                elements.sampleCondition.textContent = "-";
+                elements.sampleResult.textContent = "Brak danych";
+                elements.sampleResult.className = "result-pill miss";
+                return;
+            }
+
+            const sample = state.currentThrow;
+            elements.sampleIndex.textContent = String(sample.index);
+            elements.sampleX.textContent = `${sample.x.toFixed(4)} (przedział [0, d/2])`;
+            elements.sampleTheta.textContent = formatAngle(sample.theta);
+            elements.sampleThreshold.textContent = `${sample.threshold.toFixed(4)} = (L/2) sin(θ)`;
+            elements.sampleCondition.textContent = `${sample.x.toFixed(4)} ${sample.hit ? "≤" : ">"} ${sample.threshold.toFixed(4)}`;
+            elements.sampleResult.textContent = sample.hit ? "Trafienie: igła przecina linię" : "Brak trafienia: igła nie przecina linii";
+            elements.sampleResult.className = `result-pill ${sample.hit ? "hit" : "miss"}`;
+        }
+
+        function renderHistory() {
+            elements.historyList.innerHTML = "";
+            if (state.history.length === 0) {
+                const empty = document.createElement("div");
+                empty.className = "history-item";
+                empty.textContent = "Brak wykonanych rzutów.";
+                elements.historyList.appendChild(empty);
+                return;
+            }
+
+            for (const item of state.history) {
+                const row = document.createElement("div");
+                row.className = `history-item ${item.hit ? "hit" : "miss"}`;
+                row.innerHTML = `
+                    <strong>#${item.index}</strong>
+                    <div><code>x=${item.x.toFixed(3)}</code>, <code>θ=${item.theta.toFixed(3)}</code></div>
+                    <div>${item.hit ? "trafienie" : "brak"}</div>
+                `;
+                elements.historyList.appendChild(row);
+            }
+        }
+
+        function drawFloor(now = performance.now()) {
+            const { L, d } = getConfig();
+            const w = floorCanvas.width;
+            const h = floorCanvas.height;
+            floorCtx.clearRect(0, 0, w, h);
+
+            const marginX = 42;
+            const marginY = 32;
+            const usableW = w - marginX * 2;
+            const usableH = h - marginY * 2;
+            const lineCount = 5;
+            const lineSpacingPx = usableH / (lineCount - 1);
+            const pxPerUnit = lineSpacingPx / d;
+
+            const grad = floorCtx.createLinearGradient(0, 0, 0, h);
+            grad.addColorStop(0, "#ffffff");
+            grad.addColorStop(1, "#f0f4f3");
+            floorCtx.fillStyle = grad;
+            floorCtx.fillRect(0, 0, w, h);
+
+            floorCtx.strokeStyle = "rgba(15,90,92,0.08)";
+            floorCtx.lineWidth = 1;
+            for (let x = marginX; x <= w - marginX; x += 40) {
+                floorCtx.beginPath();
+                floorCtx.moveTo(x, marginY);
+                floorCtx.lineTo(x, h - marginY);
+                floorCtx.stroke();
+            }
+
+            floorCtx.strokeStyle = "#87939a";
+            floorCtx.lineWidth = 2;
+            for (let i = 0; i < lineCount; i += 1) {
+                const y = marginY + i * lineSpacingPx;
+                floorCtx.beginPath();
+                floorCtx.moveTo(marginX, y);
+                floorCtx.lineTo(w - marginX, y);
+                floorCtx.stroke();
+            }
+
+            floorCtx.fillStyle = "#5f6b73";
+            floorCtx.font = '14px Georgia, serif';
+            floorCtx.fillText(`d = ${d.toFixed(2)}`, marginX + 8, marginY + 18);
+            floorCtx.fillText(`L = ${L.toFixed(2)}`, marginX + 92, marginY + 18);
+
+            const trailLimit = Number(elements.trailCount.value);
+            state.throws = state.throws.slice(0, trailLimit);
+
+            for (let i = state.throws.length - 1; i >= 0; i -= 1) {
+                const item = state.throws[i];
+                const age = (now - item.bornAt) / 4500;
+                const alpha = Math.max(0.18, 1 - age);
+                drawNeedle(item, alpha, false, pxPerUnit, marginX, marginY, usableW, usableH, lineSpacingPx);
+            }
+
+            if (state.activeThrow) {
+                const age = now - state.activeStartedAt;
+                const progress = Math.min(age / 520, 1);
+                drawNeedle(state.activeThrow, 1, true, pxPerUnit, marginX, marginY, usableW, usableH, lineSpacingPx, progress);
+                if (progress >= 1) {
+                    state.activeThrow = null;
+                }
+            }
+        }
+
+        function drawNeedle(item, alpha, highlight, pxPerUnit, marginX, marginY, usableW, usableH, lineSpacingPx, progress = 1) {
+            const color = item.hit ? `rgba(28,140,77,${alpha})` : `rgba(194,65,52,${alpha})`;
+            const centerX = marginX + ((item.centerXModel % (5 * item.d)) / (5 * item.d)) * usableW;
+            const baseY = marginY + ((item.centerYModel % (4 * item.d)) / (4 * item.d)) * usableH;
+
+            const lineIndex = Math.round((baseY - marginY) / lineSpacingPx);
+            const nearestLineY = marginY + lineIndex * lineSpacingPx;
+            const direction = baseY >= nearestLineY ? 1 : -1;
+            const centerY = nearestLineY + direction * item.x * pxPerUnit;
+
+            const halfLengthPx = (item.L * pxPerUnit) / 2;
+            const dx = halfLengthPx * Math.cos(item.theta) * progress;
+            const dy = halfLengthPx * Math.sin(item.theta) * progress;
+
+            floorCtx.save();
+            floorCtx.lineCap = "round";
+            floorCtx.lineWidth = highlight ? 7 : 5;
+            floorCtx.strokeStyle = highlight ? "#0f5a5c" : color;
+            floorCtx.beginPath();
+            floorCtx.moveTo(centerX - dx, centerY - dy);
+            floorCtx.lineTo(centerX + dx, centerY + dy);
+            floorCtx.stroke();
+
+            floorCtx.fillStyle = highlight ? "rgba(15,90,92,0.95)" : color;
+            floorCtx.beginPath();
+            floorCtx.arc(centerX, centerY, highlight ? 5 : 4, 0, Math.PI * 2);
+            floorCtx.fill();
+
+            if (highlight) {
+                floorCtx.strokeStyle = item.hit ? "rgba(28,140,77,0.4)" : "rgba(194,65,52,0.36)";
+                floorCtx.lineWidth = 2;
+                floorCtx.beginPath();
+                floorCtx.moveTo(centerX, centerY);
+                floorCtx.lineTo(centerX, nearestLineY);
+                floorCtx.stroke();
+            }
+
+            floorCtx.restore();
+        }
+
+        function drawChart() {
+            const w = chartCanvas.width;
+            const h = chartCanvas.height;
+            chartCtx.clearRect(0, 0, w, h);
+
+            const grad = chartCtx.createLinearGradient(0, 0, 0, h);
+            grad.addColorStop(0, "#ffffff");
+            grad.addColorStop(1, "#f4f7f6");
+            chartCtx.fillStyle = grad;
+            chartCtx.fillRect(0, 0, w, h);
+
+            const margin = { left: 56, right: 24, top: 24, bottom: 42 };
+            const plotW = w - margin.left - margin.right;
+            const plotH = h - margin.top - margin.bottom;
+
+            chartCtx.strokeStyle = "rgba(15,90,92,0.08)";
+            chartCtx.lineWidth = 1;
+            for (let i = 0; i <= 5; i += 1) {
+                const y = margin.top + (plotH * i) / 5;
+                chartCtx.beginPath();
+                chartCtx.moveTo(margin.left, y);
+                chartCtx.lineTo(w - margin.right, y);
+                chartCtx.stroke();
+            }
+
+            chartCtx.strokeStyle = "#93a09c";
+            chartCtx.lineWidth = 1.5;
+            chartCtx.beginPath();
+            chartCtx.moveTo(margin.left, margin.top);
+            chartCtx.lineTo(margin.left, h - margin.bottom);
+            chartCtx.lineTo(w - margin.right, h - margin.bottom);
+            chartCtx.stroke();
+
+            chartCtx.fillStyle = "#5f6b73";
+            chartCtx.font = '13px Georgia, serif';
+            for (let i = 0; i <= 5; i += 1) {
+                const yVal = 1 - i / 5;
+                const y = margin.top + (plotH * i) / 5;
+                chartCtx.fillText(yVal.toFixed(1), 16, y + 4);
+            }
+
+            if (state.total === 0) {
+                chartCtx.fillStyle = "#68757d";
+                chartCtx.font = '16px Georgia, serif';
+                chartCtx.fillText("Brak danych. Wykonaj pierwsze rzuty.", margin.left + 20, margin.top + 30);
+                return;
+            }
+
+            const theory = theoryProbability();
+            const theoryY = margin.top + (1 - theory) * plotH;
+            chartCtx.strokeStyle = "rgba(194,65,52,0.95)";
+            chartCtx.lineWidth = 2;
+            chartCtx.setLineDash([8, 6]);
+            chartCtx.beginPath();
+            chartCtx.moveTo(margin.left, theoryY);
+            chartCtx.lineTo(w - margin.right, theoryY);
+            chartCtx.stroke();
+            chartCtx.setLineDash([]);
+
+            const data = state.estimates;
+            const maxPoints = 900;
+            const stride = Math.max(1, Math.ceil(data.length / maxPoints));
+            chartCtx.strokeStyle = "#0f5a5c";
+            chartCtx.lineWidth = 2.4;
+            chartCtx.beginPath();
+            let started = false;
+
+            for (let i = 0; i < data.length; i += stride) {
+                const x = margin.left + (i / Math.max(1, data.length - 1)) * plotW;
+                const y = margin.top + (1 - data[i]) * plotH;
+                if (!started) {
+                    chartCtx.moveTo(x, y);
+                    started = true;
+                } else {
+                    chartCtx.lineTo(x, y);
+                }
+            }
+
+            if ((data.length - 1) % stride !== 0) {
+                const lastIndex = data.length - 1;
+                const x = margin.left + (lastIndex / Math.max(1, data.length - 1)) * plotW;
+                const y = margin.top + (1 - data[lastIndex]) * plotH;
+                chartCtx.lineTo(x, y);
+            }
+
+            chartCtx.stroke();
+
+            chartCtx.fillStyle = "#0f5a5c";
+            chartCtx.font = '13px Georgia, serif';
+            chartCtx.fillText("estymata Monte Carlo", margin.left + 12, margin.top + 16);
+            chartCtx.fillStyle = "rgba(194,65,52,0.95)";
+            chartCtx.fillText(`teoria = ${theory.toFixed(4)}`, margin.left + 190, margin.top + 16);
+
+            chartCtx.fillStyle = "#5f6b73";
+            chartCtx.fillText("n", w - margin.right - 10, h - 14);
+            chartCtx.fillText("p", 20, margin.top - 6);
+            chartCtx.fillText(`1`, margin.left - 14, margin.top + 4);
+            chartCtx.fillText(`0`, margin.left - 14, h - margin.bottom + 4);
+            chartCtx.fillText(String(state.total), w - margin.right - 18, h - margin.bottom + 20);
+        }
+
+        function drawErrorChart() {
+            const w = errorCanvas.width;
+            const h = errorCanvas.height;
+            errorCtx.clearRect(0, 0, w, h);
+
+            const grad = errorCtx.createLinearGradient(0, 0, 0, h);
+            grad.addColorStop(0, "#ffffff");
+            grad.addColorStop(1, "#f7f4f2");
+            errorCtx.fillStyle = grad;
+            errorCtx.fillRect(0, 0, w, h);
+
+            const margin = { left: 56, right: 24, top: 20, bottom: 38 };
+            const plotW = w - margin.left - margin.right;
+            const plotH = h - margin.top - margin.bottom;
+
+            errorCtx.strokeStyle = "rgba(194,65,52,0.08)";
+            errorCtx.lineWidth = 1;
+            for (let i = 0; i <= 4; i += 1) {
+                const y = margin.top + (plotH * i) / 4;
+                errorCtx.beginPath();
+                errorCtx.moveTo(margin.left, y);
+                errorCtx.lineTo(w - margin.right, y);
+                errorCtx.stroke();
+            }
+
+            errorCtx.strokeStyle = "#93a09c";
+            errorCtx.lineWidth = 1.5;
+            errorCtx.beginPath();
+            errorCtx.moveTo(margin.left, margin.top);
+            errorCtx.lineTo(margin.left, h - margin.bottom);
+            errorCtx.lineTo(w - margin.right, h - margin.bottom);
+            errorCtx.stroke();
+
+            if (state.total === 0) {
+                errorCtx.fillStyle = "#68757d";
+                errorCtx.font = '16px Georgia, serif';
+                errorCtx.fillText("Brak danych do wykresu błędu.", margin.left + 20, margin.top + 30);
+                return;
+            }
+
+            const data = state.errors;
+            const maxError = Math.max(...data, 0.001);
+            const maxPoints = 900;
+            const stride = Math.max(1, Math.ceil(data.length / maxPoints));
+
+            errorCtx.fillStyle = "#5f6b73";
+            errorCtx.font = '13px Georgia, serif';
+            for (let i = 0; i <= 4; i += 1) {
+                const value = maxError * (1 - i / 4);
+                const y = margin.top + (plotH * i) / 4;
+                errorCtx.fillText(value.toFixed(3), 10, y + 4);
+            }
+
+            errorCtx.strokeStyle = "rgba(194,65,52,0.95)";
+            errorCtx.lineWidth = 2.3;
+            errorCtx.beginPath();
+            let started = false;
+
+            for (let i = 0; i < data.length; i += stride) {
+                const x = margin.left + (i / Math.max(1, data.length - 1)) * plotW;
+                const y = margin.top + (1 - data[i] / maxError) * plotH;
+                if (!started) {
+                    errorCtx.moveTo(x, y);
+                    started = true;
+                } else {
+                    errorCtx.lineTo(x, y);
+                }
+            }
+
+            if ((data.length - 1) % stride !== 0) {
+                const lastIndex = data.length - 1;
+                const x = margin.left + (lastIndex / Math.max(1, data.length - 1)) * plotW;
+                const y = margin.top + (1 - data[lastIndex] / maxError) * plotH;
+                errorCtx.lineTo(x, y);
+            }
+
+            errorCtx.stroke();
+            errorCtx.fillStyle = "rgba(194,65,52,0.95)";
+            errorCtx.fillText("|p̂ - p|", margin.left + 12, margin.top + 16);
+            errorCtx.fillStyle = "#5f6b73";
+            errorCtx.fillText("n", w - margin.right - 10, h - 12);
+            errorCtx.fillText(String(state.total), w - margin.right - 18, h - margin.bottom + 18);
+        }
+
+        function animationLoop(now) {
+            const { targetCount } = getConfig();
+            if (state.running && targetCount > 0 && state.total >= targetCount) {
+                state.running = false;
+                elements.startBtn.textContent = "Start";
+                elements.statusLine.textContent = `Osiągnięto zadany limit ${targetCount} rzutów. Symulacja została zatrzymana.`;
+            }
+
+            if (state.running && now - state.lastTick >= state.intervalMs) {
+                runSingleThrow(true);
+                state.lastTick = now;
+                elements.statusLine.textContent = `Symulacja działa z szybkością ${elements.speedSelect.value} rzutów/s. Próbka ma teraz ${state.total} rzutów.`;
+            }
+
+            if (state.activeThrow || state.throws.length > 0) {
+                drawFloor(now);
+            }
+
+            requestAnimationFrame(animationLoop);
+        }
+
+        function resetSimulation() {
+            state.running = false;
+            state.lastTick = 0;
+            state.total = 0;
+            state.hits = 0;
+            state.misses = 0;
+            state.estimates = [];
+            state.errors = [];
+            state.throws = [];
+            state.history = [];
+            state.currentThrow = null;
+            state.activeThrow = null;
+            elements.startBtn.textContent = "Start";
+            elements.statusLine.textContent = "Symulacja wyzerowana. Możesz ustawić parametry i wystartować od nowa.";
+            updateStats();
+            renderHistory();
+            drawFloor();
+            drawChart();
+            drawErrorChart();
+        }
+
+        elements.startBtn.addEventListener("click", () => {
+            state.running = !state.running;
+            elements.startBtn.textContent = state.running ? "Pauza" : "Start";
+            elements.statusLine.textContent = state.running
+                ? `Symulacja działa z szybkością ${elements.speedSelect.value} rzutów/s. Cel automatyczny: ${Number(elements.targetCount.value) || 0}.`
+                : "Symulacja zatrzymana. Dane pozostają na planszy i wykresie.";
+        });
+
+        elements.stepBtn.addEventListener("click", () => {
+            runSingleThrow(true);
+            elements.statusLine.textContent = "Wykonano jeden rzut. Sprawdź warunek x ≤ (L/2) sin(θ) dla ostatniej próby.";
+        });
+
+        elements.burstBtn.addEventListener("click", () => {
+            const { batchCount } = getConfig();
+            runBurst(batchCount);
+        });
+
+        elements.resetBtn.addEventListener("click", resetSimulation);
+
+        elements.speedSelect.addEventListener("change", () => {
+            getConfig();
+            if (state.running) {
+                elements.statusLine.textContent = `Zmieniono tempo na ${elements.speedSelect.value} rzutów/s.`;
+            }
+        });
+
+        elements.needleLength.addEventListener("change", () => {
+            clampNeedleLength();
+            updateStats();
+            drawFloor();
+            drawChart();
+            drawErrorChart();
+        });
+
+        elements.lineDistance.addEventListener("change", () => {
+            clampNeedleLength();
+            updateStats();
+            drawFloor();
+            drawChart();
+            drawErrorChart();
+        });
+
+        elements.trailCount.addEventListener("change", () => {
+            state.throws = state.throws.slice(0, Number(elements.trailCount.value));
+            drawFloor();
+        });
+
+        updateStats();
+        renderHistory();
+        drawFloor();
+        drawChart();
+        drawErrorChart();
+        requestAnimationFrame(animationLoop);
+    </script>
+</body>
+</html>

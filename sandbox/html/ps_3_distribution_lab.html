@@ -1,0 +1,1514 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista 3 — Laboratorium Schematow Losowan</title>
+    <style>
+        :root {
+            --bg: #f6f3ec;
+            --paper: rgba(255, 255, 255, 0.94);
+            --ink: #22303c;
+            --muted: #5f6b75;
+            --line: #d8d1c6;
+            --blue: #235789;
+            --blue-soft: #dbeafe;
+            --teal: #0f766e;
+            --teal-soft: #ccfbf1;
+            --amber: #c77d1c;
+            --amber-soft: #ffedd5;
+            --rose: #b4235c;
+            --rose-soft: #fde2ee;
+            --violet: #6d28d9;
+            --violet-soft: #ede9fe;
+            --green: #1f7a3e;
+            --green-soft: #dcfce7;
+            --shadow: 0 20px 54px rgba(34, 48, 60, 0.12);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: Georgia, "Times New Roman", serif;
+            color: var(--ink);
+            background:
+                radial-gradient(circle at top left, rgba(35, 87, 137, 0.10), transparent 24%),
+                radial-gradient(circle at bottom right, rgba(15, 118, 110, 0.10), transparent 24%),
+                linear-gradient(180deg, #faf8f2 0%, #eef4f8 100%);
+            min-height: 100vh;
+        }
+
+        .page {
+            max-width: 1360px;
+            margin: 0 auto;
+            padding: 24px 18px 42px;
+        }
+
+        .panel {
+            background: var(--paper);
+            border: 1px solid rgba(34, 48, 60, 0.10);
+            border-radius: 28px;
+            box-shadow: var(--shadow);
+        }
+
+        .hero {
+            padding: 24px 24px 20px;
+        }
+
+        .eyebrow {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: var(--blue-soft);
+            color: var(--blue);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        h1 {
+            margin: 14px 0 10px;
+            font-size: clamp(2.1rem, 4vw, 3.7rem);
+            line-height: 0.96;
+            letter-spacing: -0.04em;
+            color: #183049;
+        }
+
+        h2, h3 {
+            margin: 0 0 10px;
+            color: #183049;
+        }
+
+        p {
+            margin: 0;
+            line-height: 1.6;
+        }
+
+        .top-tabs {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 10px;
+            margin-top: 18px;
+        }
+
+        button, input, select {
+            font: inherit;
+        }
+
+        .model-tab, .step-tab, button, input, select {
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            background: white;
+            color: var(--ink);
+        }
+
+        .model-tab {
+            padding: 12px 10px;
+            cursor: pointer;
+            transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+        }
+
+        .model-tab.active {
+            color: white;
+            border-color: transparent;
+            background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 75%, white));
+        }
+
+        .model-tab small {
+            display: block;
+            opacity: 0.88;
+            margin-top: 4px;
+            font-size: 0.76rem;
+        }
+
+        .workspace {
+            margin-top: 20px;
+            padding: 20px;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 320px minmax(0, 1fr);
+            gap: 18px;
+            align-items: start;
+        }
+
+        .sidebar {
+            position: sticky;
+            top: 12px;
+            display: grid;
+            gap: 14px;
+        }
+
+        .card {
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.92);
+            border: 1px solid var(--line);
+            border-radius: 20px;
+        }
+
+        .controls, .event-controls {
+            display: grid;
+            gap: 10px;
+        }
+
+        label {
+            display: grid;
+            gap: 6px;
+            color: #46545f;
+            font-size: 0.95rem;
+        }
+
+        input, select, button {
+            width: 100%;
+            padding: 10px 12px;
+        }
+
+        input[type="range"] {
+            padding: 0;
+        }
+
+        button {
+            cursor: pointer;
+            transition: transform 0.18s ease, border-color 0.18s ease;
+        }
+
+        button:hover, .model-tab:hover, .step-tab:hover {
+            transform: translateY(-1px);
+        }
+
+        .primary {
+            color: white;
+            border-color: transparent;
+            background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 72%, white));
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .summary-item {
+            padding: 10px 12px;
+            border-radius: 16px;
+            border: 1px solid var(--line);
+            background: #fffdf9;
+        }
+
+        .summary-item strong {
+            display: block;
+            margin-bottom: 4px;
+            color: #183049;
+        }
+
+        .main {
+            display: grid;
+            gap: 16px;
+        }
+
+        .step-tabs {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .step-tab {
+            padding: 12px 10px;
+            text-align: left;
+            cursor: pointer;
+            background: #fffdfa;
+        }
+
+        .step-tab.active {
+            border-color: var(--accent);
+            background: color-mix(in srgb, var(--accent-soft) 78%, white);
+            box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 35%, white);
+        }
+
+        .step-tab span {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--muted);
+            margin-top: 3px;
+        }
+
+        .content-card {
+            padding: 18px;
+            border-radius: 22px;
+            border: 1px solid var(--line);
+            background: white;
+        }
+
+        .split {
+            display: grid;
+            grid-template-columns: 1.05fr 0.95fr;
+            gap: 16px;
+            align-items: start;
+        }
+
+        .note {
+            padding: 12px 14px;
+            border-radius: 16px;
+            background: color-mix(in srgb, var(--accent-soft) 68%, white);
+            border-left: 4px solid var(--accent);
+        }
+
+        .formula {
+            font-family: "Courier New", monospace;
+            padding: 10px 12px;
+            background: #fbfaf7;
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            line-height: 1.5;
+        }
+
+        .formula sup,
+        .formula sub,
+        .note sup,
+        .note sub,
+        .bullet sup,
+        .bullet sub,
+        .mini sup,
+        .mini sub,
+        .result sup,
+        .result sub {
+            line-height: 0;
+        }
+
+        .math {
+            font-family: "Courier New", monospace;
+            white-space: nowrap;
+        }
+
+        .bullets {
+            display: grid;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .bullet {
+            padding: 10px 12px;
+            border-radius: 14px;
+            border: 1px solid var(--line);
+            background: #fffdfa;
+        }
+
+        .scheme-strip, .support-strip, .tuple-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .token, .tuple {
+            padding: 10px 12px;
+            border-radius: 14px;
+            border: 1px solid var(--line);
+            background: #fffdfa;
+        }
+
+        .token strong, .tuple strong {
+            color: #183049;
+        }
+
+        .chart-frame {
+            width: 100%;
+            overflow-x: auto;
+            padding-bottom: 2px;
+        }
+
+        .chart-svg {
+            width: 100%;
+            min-width: 520px;
+            height: auto;
+            display: block;
+        }
+
+        .chart-caption {
+            margin-top: 10px;
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.93rem;
+        }
+
+        .table th, .table td {
+            border-bottom: 1px solid #ece7df;
+            padding: 8px 6px;
+            text-align: right;
+        }
+
+        .table th:first-child, .table td:first-child {
+            text-align: left;
+            font-family: "Courier New", monospace;
+        }
+
+        .mini {
+            color: var(--muted);
+            font-size: 0.92rem;
+            line-height: 1.55;
+        }
+
+        .result {
+            padding: 14px 16px;
+            border-radius: 18px;
+            background: color-mix(in srgb, var(--accent-soft) 78%, white);
+            border-left: 4px solid var(--accent);
+        }
+
+        .result strong {
+            display: block;
+            margin-bottom: 4px;
+            color: #183049;
+        }
+
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .legend span {
+            padding: 6px 10px;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+            background: #fffdfa;
+            font-size: 0.86rem;
+        }
+
+        .explain {
+            margin-top: 12px;
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            background: #fffdfa;
+            overflow: hidden;
+        }
+
+        .explain summary {
+            cursor: pointer;
+            padding: 12px 14px;
+            font-weight: 700;
+            color: #183049;
+            background: color-mix(in srgb, var(--accent-soft) 42%, white);
+        }
+
+        .explain-body {
+            padding: 12px 14px 14px;
+            display: grid;
+            gap: 8px;
+        }
+
+        @media (max-width: 1080px) {
+            .layout, .split { grid-template-columns: 1fr; }
+            .sidebar { position: static; }
+            .top-tabs, .step-tabs { grid-template-columns: 1fr; }
+            .summary-grid { grid-template-columns: 1fr 1fr; }
+        }
+
+        @media (max-width: 720px) {
+            .summary-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <section class="panel hero">
+            <div class="eyebrow">Sandbox · Lista 3</div>
+            <h1>Laboratorium Rozkladow i Schematow Losowan</h1>
+            <p>
+                Jedna aplikacja do pieciu klasycznych modeli z listy 3:
+                <strong>dwumianowego</strong>, <strong>hipergeometrycznego</strong>,
+                <strong>geometrycznego</strong>, <strong>Poissona</strong> i <strong>wielomianowego</strong>.
+                W kazdym modelu przechodzisz przez te same etapy: <strong>schemat</strong>,
+                <strong>zmienna losowa</strong>, <strong>rozklad</strong>, <strong>dystrybuanta</strong>
+                i <strong>pytania o zdarzenia</strong>.
+            </p>
+            <div class="top-tabs" id="modelTabs"></div>
+        </section>
+
+        <section class="panel workspace">
+            <div class="layout">
+                <aside class="sidebar">
+                    <div class="card">
+                        <h3>Parametry</h3>
+                        <div class="controls" id="controlsPanel"></div>
+                    </div>
+                    <div class="card">
+                        <h3>Co sledzimy</h3>
+                        <div id="summaryPanel"></div>
+                    </div>
+                    <div class="card">
+                        <h3>Scenariusz z listy</h3>
+                        <div id="taskPanel" class="mini"></div>
+                    </div>
+                </aside>
+
+                <main class="main">
+                    <div class="step-tabs" id="stepTabs"></div>
+                    <div class="content-card" id="contentPanel"></div>
+                </main>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        const state = {
+            model: "binomial",
+            step: "scheme",
+            params: {
+                binomial: { n: 10, p: 0.25, focusK: 2, threshold: 4, eventType: "eq", a: 2, b: 5 },
+                hypergeo: { N: 20, K: 5, n: 4, focusK: 1, threshold: 2, eventType: "eq", a: 1, b: 2 },
+                geometric: { p: 0.2, maxK: 12, focusK: 4, threshold: 4, eventType: "eq", a: 2, b: 5 },
+                poisson: { lambda: 3, maxK: 12, focusK: 3, threshold: 4, eventType: "eq", a: 2, b: 5 },
+                multinomial: { n: 5, p1: 1/3, p2: 1/3, p3: 1/3, focusIndex: 0, threshold: 2, marginal: "x1", eventType: "exact", x1: 3, x2: 1, x3: 1, a: 2, b: 4 }
+            }
+        };
+
+        const steps = [
+            { key: "scheme", label: "1. Schemat", small: "Jak wyglada doswiadczenie" },
+            { key: "variable", label: "2. Zmienna", small: "Co liczymy" },
+            { key: "pmf", label: "3. Rozklad", small: "Skad bierze sie P" },
+            { key: "cdf", label: "4. Dystrybuanta", small: "Jak sie kumuluje" },
+            { key: "events", label: "5. Zdarzenia", small: "Klasyczne pytania" }
+        ];
+
+        const meta = {
+            binomial: {
+                label: "Dwumianowy",
+                small: "n prob, 2 wyniki",
+                accent: "#235789",
+                accentSoft: "#dbeafe",
+                variable: "X = liczba sukcesow w n probach",
+                task: "Kontrolujemy kolejne elementy. Kazda proba daje sukces albo porazke, proby sa niezalezne, a p nie zmienia sie.",
+                scenario: "Lista 3: wadliwe sruby, 3 kontrole lub ogolniej n kontroli."
+            },
+            hypergeo: {
+                label: "Hipergeometryczny",
+                small: "bez zwracania",
+                accent: "#c77d1c",
+                accentSoft: "#ffedd5",
+                variable: "X = liczba sukcesow w probce bez zwracania",
+                task: "Losujemy elementy ze skonczonej populacji bez zwracania, wiec kazde losowanie zmienia sklad pozostalych elementow.",
+                scenario: "Lista 3: komponenty dobre i wadliwe, losowanie kilku sztuk z partii."
+            },
+            geometric: {
+                label: "Geometryczny",
+                small: "czekamy na 1 sukces",
+                accent: "#b4235c",
+                accentSoft: "#fde2ee",
+                variable: "X = numer proby, na ktorej pojawi sie pierwszy sukces",
+                task: "Powtarzamy niezalezne proby Bernoulliego az do chwili, gdy sukces pojawi sie po raz pierwszy.",
+                scenario: "Lista 3: kolejne strony / kompilacje az do pierwszego bledu."
+            },
+            poisson: {
+                label: "Poissona",
+                small: "liczba zdarzen",
+                accent: "#1f7a3e",
+                accentSoft: "#dcfce7",
+                variable: "X = liczba zdarzen w ustalonym przedziale",
+                task: "Nie sledzimy pojedynczych prob, tylko zliczamy ile razy zdarzenie zajdzie w czasie lub przestrzeni.",
+                scenario: "Lista 3: liczba zgloszen lub prosb w ciagu godziny."
+            },
+            multinomial: {
+                label: "Wielomianowy",
+                small: "kilka kategorii",
+                accent: "#6d28d9",
+                accentSoft: "#ede9fe",
+                variable: "X = (X<sub>1</sub>, X<sub>2</sub>, X<sub>3</sub>), czyli liczby trafien w kategoriach",
+                task: "Kazda proba konczy sie jedna z kilku kategorii. Interesuje nas jednoczesnie liczebnosc w kazdej z nich.",
+                scenario: "Lista 3: 5 rzutow kostka, kategorie male / srednie / duze."
+            }
+        };
+
+        function setAccent() {
+            const root = document.documentElement;
+            root.style.setProperty("--accent", meta[state.model].accent);
+            root.style.setProperty("--accent-soft", meta[state.model].accentSoft);
+        }
+
+        function factorial(n) {
+            if (n < 0) return NaN;
+            let out = 1;
+            for (let i = 2; i <= n; i += 1) out *= i;
+            return out;
+        }
+
+        function choose(n, k) {
+            if (k < 0 || k > n) return 0;
+            k = Math.min(k, n - k);
+            let num = 1;
+            let den = 1;
+            for (let i = 1; i <= k; i += 1) {
+                num *= (n - k + i);
+                den *= i;
+            }
+            return num / den;
+        }
+
+        function round(value, digits = 6) {
+            return Number(value.toFixed(digits));
+        }
+
+        function math(text) {
+            return `<span class="math">${text}</span>`;
+        }
+
+        function clamp(value, min, max) {
+            return Math.max(min, Math.min(max, value));
+        }
+
+        function binomialDist(n, p) {
+            const out = [];
+            for (let k = 0; k <= n; k += 1) {
+                out.push({ x: k, p: choose(n, k) * (p ** k) * ((1 - p) ** (n - k)) });
+            }
+            return withCdf(out);
+        }
+
+        function hypergeoDist(N, K, n) {
+            const out = [];
+            const min = Math.max(0, n - (N - K));
+            const max = Math.min(n, K);
+            for (let k = min; k <= max; k += 1) {
+                out.push({ x: k, p: choose(K, k) * choose(N - K, n - k) / choose(N, n) });
+            }
+            return withCdf(out);
+        }
+
+        function geometricDist(p, maxK) {
+            const out = [];
+            for (let k = 1; k <= maxK; k += 1) {
+                out.push({ x: k, p: ((1 - p) ** (k - 1)) * p });
+            }
+            return withCdf(out);
+        }
+
+        function poissonDist(lambda, maxK) {
+            const out = [];
+            for (let k = 0; k <= maxK; k += 1) {
+                out.push({ x: k, p: Math.exp(-lambda) * (lambda ** k) / factorial(k) });
+            }
+            return withCdf(out);
+        }
+
+        function multinomialJoint(n, p1, p2, p3) {
+            const out = [];
+            for (let x1 = 0; x1 <= n; x1 += 1) {
+                for (let x2 = 0; x2 <= n - x1; x2 += 1) {
+                    const x3 = n - x1 - x2;
+                    const prob = factorial(n) / (factorial(x1) * factorial(x2) * factorial(x3))
+                        * (p1 ** x1) * (p2 ** x2) * (p3 ** x3);
+                    out.push({ x1, x2, x3, key: `(${x1},${x2},${x3})`, p: prob });
+                }
+            }
+            out.sort((a, b) => b.p - a.p);
+            return out;
+        }
+
+        function marginalFromJoint(joint, key, n) {
+            const map = Array.from({ length: n + 1 }, (_, x) => ({ x, p: 0 }));
+            joint.forEach((item) => {
+                map[item[key]].p += item.p;
+            });
+            return withCdf(map);
+        }
+
+        function withCdf(arr) {
+            let cum = 0;
+            return arr.map((item) => {
+                cum += item.p;
+                return { ...item, cdf: cum };
+            });
+        }
+
+        function getData() {
+            const p = state.params[state.model];
+            if (state.model === "binomial") {
+                const dist = binomialDist(p.n, p.p);
+                return { dist, support: dist.map(d => d.x), type: "one" };
+            }
+            if (state.model === "hypergeo") {
+                const dist = hypergeoDist(p.N, p.K, p.n);
+                return { dist, support: dist.map(d => d.x), type: "one" };
+            }
+            if (state.model === "geometric") {
+                const dist = geometricDist(p.p, p.maxK);
+                return { dist, support: dist.map(d => d.x), type: "one" };
+            }
+            if (state.model === "poisson") {
+                const dist = poissonDist(p.lambda, p.maxK);
+                return { dist, support: dist.map(d => d.x), type: "one" };
+            }
+
+            const joint = multinomialJoint(p.n, p.p1, p.p2, p.p3);
+            const marginal = marginalFromJoint(joint, p.marginal, p.n);
+            return { joint, marginal, support: joint.map(d => d.key), type: "multi" };
+        }
+
+        function detailsBox(title, paragraphs) {
+            return `
+                <details class="explain">
+                    <summary>${title}</summary>
+                    <div class="explain-body">
+                        ${paragraphs.map((text) => `<div class="mini">${text}</div>`).join("")}
+                    </div>
+                </details>
+            `;
+        }
+
+        function parameterHelp() {
+            if (state.model === "binomial") {
+                return detailsBox("Co oznaczaja parametry i co tu klikam?", [
+                    `${math("n")} to liczba prob. Zmieniajac ${math("n")}, pytasz: ile razy wykonujemy doswiadczenie?`,
+                    `${math("p")} to szansa sukcesu w jednej probie. W tym modelu sukces i porazka sa jedynymi dwiema mozliwosciami.`,
+                    `Pole "wyroznione k" sluzy do wybrania jednej konkretnej wartosci ${math("X")}, ktora chcesz obejrzec na wykresie albo policzyc jako ${math("P(X=k)")}.`
+                ]);
+            }
+            if (state.model === "hypergeo") {
+                return detailsBox("Jak czytac N, K i n?", [
+                    `${math("N")} to cala populacja, czyli wszystko co mamy do dyspozycji przed losowaniem.`,
+                    `${math("K")} to liczba sukcesow w tej populacji. Jesli sukces oznacza element wadliwy, to ${math("K")} jest liczba wadliwych sztuk.`,
+                    `${math("n")} to wielkosc probki. Klikajac te pola, zmieniasz sklad partii i rozmiar pobieranej probki.`
+                ]);
+            }
+            if (state.model === "geometric") {
+                return detailsBox("Co tu wlasciwie liczymy?", [
+                    `Nie liczymy liczby sukcesow, tylko numer proby, na ktorej sukces pojawia sie po raz pierwszy.`,
+                    `${math("p")} to szansa sukcesu w kazdej pojedynczej probie.`,
+                    `Pole "pokaz do k" nie zmienia samego modelu, tylko to, jak daleko pokazujemy wykres. Model geometryczny ma wsparcie nieskonczone.`
+                ]);
+            }
+            if (state.model === "poisson") {
+                return detailsBox("Jak rozumiec parametr lambda?", [
+                    `${math("&lambda;")} to srednia liczba zdarzen w wybranym oknie czasu lub przestrzeni.`,
+                    `Jesli ${math("&lambda;=3")}, to nie znaczy "zawsze 3". To znaczy "srednio 3", a prawdopodobne pozostaja tez 0, 1, 2, 4 i inne wartosci.`,
+                    `Pole "pokaz do k" znow sluzy tylko do wygodnego obejrzenia wykresu dla poczatkowych wartosci.`
+                ]);
+            }
+            return detailsBox("Jak rozumiec model wielomianowy?", [
+                `Kazda proba moze wpasc do jednej z trzech kategorii, wiec zamiast jednej liczby sukcesow sledzimy trzy liczebnosci naraz.`,
+                `${math("p1, p2, p3")} to prawdopodobienstwa trafienia do kategorii 1, 2 i 3. Razem powinny dawac 1.`,
+                `Wybor marginesu oznacza: "ktora z tych trzech skladowych ma byc teraz pokazana osobno na wykresie".`
+            ]);
+        }
+
+        function stepHelp(stepKey) {
+            const common = {
+                scheme: [
+                    `Na tym etapie nie liczymy jeszcze prawdopodobienstw. Najpierw ustalamy, jak wyglada doswiadczenie i co jest pojedyncza proba.`,
+                    `To jest moment na zrozumienie, czy losujemy ze zwracaniem, bez zwracania, do pierwszego sukcesu, czy po prostu zliczamy zdarzenia w czasie.`
+                ],
+                variable: [
+                    `Teraz zamieniamy opis sytuacji na zmienna losowa ${math("X")}.`,
+                    `To bardzo wazny krok: rozklad zawsze budujemy dla konkretnej zmiennej, a nie "dla calego zadania naraz".`
+                ],
+                pmf: [
+                    `Rozklad odpowiada na pytanie: jakie prawdopodobienstwo ma kazda pojedyncza wartosc zmiennej?`,
+                    `Jesli klikniesz inne parametry, zmieni sie ksztalt wykresu i od razu zobaczysz, jak model reaguje.`
+                ],
+                cdf: [
+                    `Dystrybuanta nie liczy jednej wartosci, tylko sumuje wszystko do ustalonego progu.`,
+                    `To dlatego jest idealna do pytan typu "co najwyzej", "nie wiecej niz", "do tego miejsca".`
+                ],
+                events: [
+                    `Tutaj laczysz wszystko razem: wybierasz typ zdarzenia i obserwujesz, ktore skladniki rozkladu sa sumowane.`,
+                    `Najlepiej uczy porownywanie pytan: zmien "dokladnie" na "co najwyzej" i zobacz, jak zmienia sie zaznaczenie na wykresie.`
+                ]
+            };
+            return detailsBox("Rozwin wyjasnienie tego etapu", common[stepKey]);
+        }
+
+        function renderModelTabs() {
+            const panel = document.getElementById("modelTabs");
+            panel.innerHTML = Object.entries(meta).map(([key, item]) => `
+                <button class="model-tab ${state.model === key ? "active" : ""}" data-model="${key}">
+                    ${item.label}
+                    <small>${item.small}</small>
+                </button>
+            `).join("");
+            panel.querySelectorAll(".model-tab").forEach((button) => {
+                button.addEventListener("click", () => {
+                    state.model = button.dataset.model;
+                    state.step = "scheme";
+                    render();
+                });
+            });
+        }
+
+        function renderStepTabs() {
+            const panel = document.getElementById("stepTabs");
+            panel.innerHTML = steps.map((step) => `
+                <button class="step-tab ${state.step === step.key ? "active" : ""}" data-step="${step.key}">
+                    ${step.label}
+                    <span>${step.small}</span>
+                </button>
+            `).join("");
+            panel.querySelectorAll(".step-tab").forEach((button) => {
+                button.addEventListener("click", () => {
+                    state.step = button.dataset.step;
+                    renderStepTabs();
+                    renderContent();
+                });
+            });
+        }
+
+        function numberInput(label, key, min, max, step = 1, valueOverride) {
+            const p = state.params[state.model];
+            const value = valueOverride ?? p[key];
+            return `
+                <label>
+                    ${label}
+                    <input type="number" data-key="${key}" min="${min}" max="${max}" step="${step}" value="${value}">
+                </label>
+            `;
+        }
+
+        function rangeInput(label, key, min, max, step = 0.01) {
+            const p = state.params[state.model];
+            return `
+                <label>
+                    ${label}: <strong>${Number(p[key]).toFixed(2)}</strong>
+                    <input type="range" data-key="${key}" min="${min}" max="${max}" step="${step}" value="${p[key]}">
+                </label>
+            `;
+        }
+
+        function renderControls() {
+            const p = state.params[state.model];
+            let html = "";
+            if (state.model === "binomial") {
+                html += numberInput("Liczba prob n", "n", 1, 25);
+                html += rangeInput("Szansa sukcesu p", "p", 0.01, 0.99);
+                html += numberInput("Wyroznione k", "focusK", 0, p.n);
+                html += numberInput("Prog do dystrybuanty", "threshold", 0, p.n);
+            } else if (state.model === "hypergeo") {
+                html += numberInput("Populacja N", "N", 2, 60);
+                html += numberInput("Sukcesy w populacji K", "K", 0, p.N);
+                html += numberInput("Losowania n", "n", 1, p.N);
+                html += numberInput("Wyroznione k", "focusK", 0, p.n);
+                html += numberInput("Prog do dystrybuanty", "threshold", 0, p.n);
+            } else if (state.model === "geometric") {
+                html += rangeInput("Szansa sukcesu p", "p", 0.01, 0.99);
+                html += numberInput("Pokaz do k =", "maxK", 4, 30);
+                html += numberInput("Wyroznione k", "focusK", 1, p.maxK);
+                html += numberInput("Prog do dystrybuanty", "threshold", 1, p.maxK);
+            } else if (state.model === "poisson") {
+                html += rangeInput("Srednia lambda", "lambda", 0.2, 12, 0.1);
+                html += numberInput("Pokaz do k =", "maxK", 4, 30);
+                html += numberInput("Wyroznione k", "focusK", 0, p.maxK);
+                html += numberInput("Prog do dystrybuanty", "threshold", 0, p.maxK);
+            } else {
+                html += numberInput("Liczba prob n", "n", 1, 8);
+                html += rangeInput("p1 — male", "p1", 0.05, 0.90, 0.01);
+                html += rangeInput("p2 — srednie", "p2", 0.05, 0.90, 0.01);
+                html += rangeInput("p3 — duze", "p3", 0.05, 0.90, 0.01);
+                html += `
+                    <label>
+                        Ktora skladowa marginesu
+                        <select data-key="marginal">
+                            <option value="x1" ${p.marginal === "x1" ? "selected" : ""}>X1 — male</option>
+                            <option value="x2" ${p.marginal === "x2" ? "selected" : ""}>X2 — srednie</option>
+                            <option value="x3" ${p.marginal === "x3" ? "selected" : ""}>X3 — duze</option>
+                        </select>
+                    </label>
+                `;
+                html += numberInput("Prog do dystrybuanty", "threshold", 0, p.n);
+                html += `<button class="primary" id="normalizeBtn">Wyrownaj p1+p2+p3 do 1</button>`;
+            }
+
+            document.getElementById("controlsPanel").innerHTML = html;
+            const panel = document.getElementById("controlsPanel");
+            panel.querySelectorAll("input, select").forEach((el) => {
+                el.addEventListener("input", (event) => {
+                    const key = event.target.dataset.key;
+                    if (!key) return;
+                    const value = event.target.tagName === "SELECT" ? event.target.value : Number(event.target.value);
+                    state.params[state.model][key] = value;
+                    normalizeModelParams();
+                    render();
+                });
+            });
+
+            if (state.model === "multinomial") {
+                document.getElementById("normalizeBtn").addEventListener("click", () => {
+                    const m = state.params.multinomial;
+                    const sum = m.p1 + m.p2 + m.p3;
+                    m.p1 /= sum;
+                    m.p2 /= sum;
+                    m.p3 /= sum;
+                    render();
+                });
+            }
+
+            document.getElementById("controlsPanel").insertAdjacentHTML("beforeend", parameterHelp());
+        }
+
+        function normalizeModelParams() {
+            const p = state.params[state.model];
+            if (state.model === "binomial") {
+                p.focusK = clamp(Math.round(p.focusK), 0, p.n);
+                p.threshold = clamp(Math.round(p.threshold), 0, p.n);
+                p.a = clamp(Math.round(p.a ?? 0), 0, p.n);
+                p.b = clamp(Math.round(p.b ?? p.n), 0, p.n);
+            } else if (state.model === "hypergeo") {
+                p.K = clamp(Math.round(p.K), 0, p.N);
+                p.n = clamp(Math.round(p.n), 1, p.N);
+                p.focusK = clamp(Math.round(p.focusK), 0, p.n);
+                p.threshold = clamp(Math.round(p.threshold), 0, p.n);
+                p.a = clamp(Math.round(p.a ?? 0), 0, p.n);
+                p.b = clamp(Math.round(p.b ?? p.n), 0, p.n);
+            } else if (state.model === "geometric" || state.model === "poisson") {
+                p.maxK = clamp(Math.round(p.maxK), 4, 30);
+                p.focusK = clamp(Math.round(p.focusK), state.model === "geometric" ? 1 : 0, p.maxK);
+                p.threshold = clamp(Math.round(p.threshold), state.model === "geometric" ? 1 : 0, p.maxK);
+                p.a = clamp(Math.round(p.a ?? 1), state.model === "geometric" ? 1 : 0, p.maxK);
+                p.b = clamp(Math.round(p.b ?? p.maxK), state.model === "geometric" ? 1 : 0, p.maxK);
+            } else {
+                p.n = clamp(Math.round(p.n), 1, 8);
+                p.threshold = clamp(Math.round(p.threshold), 0, p.n);
+                p.x1 = clamp(Math.round(p.x1), 0, p.n);
+                p.x2 = clamp(Math.round(p.x2), 0, p.n);
+                p.x3 = clamp(Math.round(p.x3), 0, p.n);
+                const sum = p.p1 + p.p2 + p.p3;
+                if (sum > 0) {
+                    p.p1 /= sum;
+                    p.p2 /= sum;
+                    p.p3 /= sum;
+                }
+            }
+        }
+
+        function renderSummary(data) {
+            const model = meta[state.model];
+            const p = state.params[state.model];
+            let html = `<div class="mini">${model.variable}</div><div class="summary-grid">`;
+            if (state.model === "binomial") {
+                html += `<div class="summary-item"><strong>Proby</strong>${p.n}</div>`;
+                html += `<div class="summary-item"><strong>Sukces</strong>wadliwy element</div>`;
+                html += `<div class="summary-item"><strong>p</strong>${round(p.p, 3)}</div>`;
+                html += `<div class="summary-item"><strong>Wsparcie</strong>0,1,...,${p.n}</div>`;
+            } else if (state.model === "hypergeo") {
+                html += `<div class="summary-item"><strong>Populacja</strong>N=${p.N}</div>`;
+                html += `<div class="summary-item"><strong>Sukcesy</strong>K=${p.K}</div>`;
+                html += `<div class="summary-item"><strong>Losowania</strong>n=${p.n}</div>`;
+                html += `<div class="summary-item"><strong>Bez zwracania</strong>tak</div>`;
+            } else if (state.model === "geometric") {
+                html += `<div class="summary-item"><strong>Sukces</strong>pierwszy blad</div>`;
+                html += `<div class="summary-item"><strong>p</strong>${round(p.p, 3)}</div>`;
+                html += `<div class="summary-item"><strong>Wsparcie</strong>1,2,3,...</div>`;
+                html += `<div class="summary-item"><strong>Widok</strong>do k=${p.maxK}</div>`;
+            } else if (state.model === "poisson") {
+                html += `<div class="summary-item"><strong>Lambda</strong>${round(p.lambda, 2)}</div>`;
+                html += `<div class="summary-item"><strong>Znaczenie</strong>srednia liczba zdarzen</div>`;
+                html += `<div class="summary-item"><strong>Wsparcie</strong>0,1,2,...</div>`;
+                html += `<div class="summary-item"><strong>Widok</strong>do k=${p.maxK}</div>`;
+            } else {
+                html += `<div class="summary-item"><strong>Proby</strong>${p.n}</div>`;
+                html += `<div class="summary-item"><strong>Kategorie</strong>3</div>`;
+                html += `<div class="summary-item"><strong>p1,p2,p3</strong>${round(p.p1, 2)}, ${round(p.p2, 2)}, ${round(p.p3, 2)}</div>`;
+                html += `<div class="summary-item"><strong>Sledzony margines</strong>X<sub>${p.marginal.slice(1)}</sub></div>`;
+            }
+            html += `</div>`;
+            document.getElementById("summaryPanel").innerHTML = html;
+            document.getElementById("taskPanel").textContent = model.scenario;
+        }
+
+        function tokensForScheme() {
+            const p = state.params[state.model];
+            if (state.model === "binomial") {
+                return Array.from({ length: p.n }, (_, i) => `<div class="token"><strong>Proba ${i + 1}</strong><br>sukces / porazka</div>`).join("");
+            }
+            if (state.model === "hypergeo") {
+                return `
+                    <div class="token"><strong>Populacja</strong><br>${p.K} sukcesow i ${p.N - p.K} porazek</div>
+                    <div class="token"><strong>Losowanie 1</strong><br>bez zwracania</div>
+                    <div class="token"><strong>Losowanie 2</strong><br>sklad juz sie zmienia</div>
+                    <div class="token"><strong>...</strong><br>az do ${p.n} losowan</div>
+                `;
+            }
+            if (state.model === "geometric") {
+                return `
+                    <div class="token"><strong>Proba 1</strong><br>czy juz byl sukces?</div>
+                    <div class="token"><strong>Proba 2</strong><br>jesli nie, probujemy dalej</div>
+                    <div class="token"><strong>Proba 3</strong><br>dalej czekamy</div>
+                    <div class="token"><strong>Stop</strong><br>konczymy przy 1 sukcesie</div>
+                `;
+            }
+            if (state.model === "poisson") {
+                return `
+                    <div class="token"><strong>Przedzial</strong><br>np. 1 godzina</div>
+                    <div class="token"><strong>Zdarzenia</strong><br>bledy / zgloszenia</div>
+                    <div class="token"><strong>Wynik</strong><br>liczba zdarzen w tym oknie</div>
+                `;
+            }
+            return `
+                <div class="token"><strong>Proba 1</strong><br>mala / srednia / duza</div>
+                <div class="token"><strong>Proba 2</strong><br>znow 1 z 3 kategorii</div>
+                <div class="token"><strong>...</strong><br>az do ${p.n} prob</div>
+                <div class="token"><strong>Wynik</strong><br>wektor (X<sub>1</sub>,X<sub>2</sub>,X<sub>3</sub>)</div>
+            `;
+        }
+
+        function renderPmfChart(dist, activePredicate, labelKey = "x") {
+            const width = Math.max(620, dist.length * 54 + 120);
+            const height = 330;
+            const margin = { top: 22, right: 20, bottom: 72, left: 58 };
+            const innerWidth = width - margin.left - margin.right;
+            const innerHeight = height - margin.top - margin.bottom;
+            const maxP = Math.max(...dist.map(item => item.p), 0.0001);
+            const step = innerWidth / dist.length;
+            const barWidth = Math.max(14, step - 10);
+
+            const grid = [0, 0.25, 0.5, 0.75, 1].map((t) => {
+                const value = t * maxP;
+                const y = margin.top + innerHeight - (value / maxP) * innerHeight;
+                return `
+                    <line x1="${margin.left}" y1="${y}" x2="${width - margin.right}" y2="${y}" stroke="#e8e2d8" />
+                    <text x="${margin.left - 10}" y="${y + 4}" text-anchor="end" font-size="12" fill="#6b7280">${round(value, 3)}</text>
+                `;
+            }).join("");
+
+            const bars = dist.map((item, index) => {
+                const x = margin.left + index * step + (step - barWidth) / 2;
+                const barHeight = (item.p / maxP) * innerHeight;
+                const y = margin.top + innerHeight - barHeight;
+                const active = activePredicate(item);
+                const fill = active ? "var(--accent)" : "color-mix(in srgb, var(--accent) 78%, white)";
+                const stroke = active ? "#183049" : "none";
+                return `
+                    <rect x="${x}" y="${y}" width="${barWidth}" height="${Math.max(barHeight, 2)}" rx="8" fill="${fill}" stroke="${stroke}" stroke-width="${active ? 2 : 0}"></rect>
+                    <text x="${x + barWidth / 2}" y="${height - 22}" text-anchor="middle" font-size="12" fill="#475569">${item[labelKey]}</text>
+                    <text x="${x + barWidth / 2}" y="${Math.max(y - 8, 12)}" text-anchor="middle" font-size="11" fill="#475569">${round(item.p, 4)}</text>
+                `;
+            }).join("");
+
+            return `
+                <div class="chart-frame">
+                    <svg class="chart-svg" viewBox="0 0 ${width} ${height}" aria-label="wykres rozkladu">
+                        ${grid}
+                        <line x1="${margin.left}" y1="${margin.top}" x2="${margin.left}" y2="${margin.top + innerHeight}" stroke="#7b8792" />
+                        <line x1="${margin.left}" y1="${margin.top + innerHeight}" x2="${width - margin.right}" y2="${margin.top + innerHeight}" stroke="#7b8792" />
+                        ${bars}
+                    </svg>
+                </div>
+            `;
+        }
+
+        function renderCdfChart(dist, activeX, labelKey = "x") {
+            const width = Math.max(620, dist.length * 56 + 120);
+            const height = 330;
+            const margin = { top: 22, right: 20, bottom: 72, left: 58 };
+            const innerWidth = width - margin.left - margin.right;
+            const innerHeight = height - margin.top - margin.bottom;
+            const step = dist.length === 1 ? innerWidth : innerWidth / dist.length;
+
+            const grid = [0, 0.25, 0.5, 0.75, 1].map((t) => {
+                const y = margin.top + innerHeight - t * innerHeight;
+                return `
+                    <line x1="${margin.left}" y1="${y}" x2="${width - margin.right}" y2="${y}" stroke="#e8e2d8" />
+                    <text x="${margin.left - 10}" y="${y + 4}" text-anchor="end" font-size="12" fill="#6b7280">${t.toFixed(2)}</text>
+                `;
+            }).join("");
+
+            const segments = dist.map((item, index) => {
+                const x = margin.left + index * step;
+                const y = margin.top + innerHeight - item.cdf * innerHeight;
+                const nextX = index === dist.length - 1 ? width - margin.right : margin.left + (index + 1) * step;
+                const active = item.x === activeX;
+                return `
+                    <line x1="${x}" y1="${y}" x2="${nextX}" y2="${y}" stroke="${active ? "var(--accent)" : "#475569"}" stroke-width="${active ? 5 : 4}" stroke-linecap="round"></line>
+                    <circle cx="${x}" cy="${y}" r="${active ? 5 : 4}" fill="${active ? "var(--accent)" : "#475569"}"></circle>
+                    <text x="${x}" y="${height - 22}" text-anchor="middle" font-size="12" fill="#475569">${item[labelKey]}</text>
+                `;
+            }).join("");
+
+            const activeItem = dist.find(item => item.x === activeX);
+            const guide = activeItem ? (() => {
+                const index = dist.findIndex(item => item.x === activeX);
+                const x = margin.left + index * step;
+                const y = margin.top + innerHeight - activeItem.cdf * innerHeight;
+                return `
+                    <line x1="${x}" y1="${margin.top + innerHeight}" x2="${x}" y2="${y}" stroke="var(--accent)" stroke-dasharray="6 6"></line>
+                    <text x="${x + 8}" y="${Math.max(18, y - 10)}" font-size="12" fill="var(--accent)">${round(activeItem.cdf, 4)}</text>
+                `;
+            })() : "";
+
+            return `
+                <div class="chart-frame">
+                    <svg class="chart-svg" viewBox="0 0 ${width} ${height}" aria-label="wykres dystrybuanty">
+                        ${grid}
+                        <line x1="${margin.left}" y1="${margin.top}" x2="${margin.left}" y2="${margin.top + innerHeight}" stroke="#7b8792" />
+                        <line x1="${margin.left}" y1="${margin.top + innerHeight}" x2="${width - margin.right}" y2="${margin.top + innerHeight}" stroke="#7b8792" />
+                        ${segments}
+                        ${guide}
+                    </svg>
+                </div>
+            `;
+        }
+
+        function eventResultOneDim(dist) {
+            const p = state.params[state.model];
+            const type = p.eventType;
+            const sum = (predicate) => dist.filter(predicate).reduce((acc, item) => acc + item.p, 0);
+            if (type === "eq") return { desc: `P(X = ${p.focusK})`, value: sum(item => item.x === p.focusK), active: (item) => item.x === p.focusK };
+            if (type === "le") return { desc: `P(X &le; ${p.threshold})`, value: sum(item => item.x <= p.threshold), active: (item) => item.x <= p.threshold };
+            if (type === "ge") return { desc: `P(X &ge; ${p.threshold})`, value: sum(item => item.x >= p.threshold), active: (item) => item.x >= p.threshold };
+            return {
+                desc: `P(${p.a} &le; X &le; ${p.b})`,
+                value: sum(item => item.x >= Math.min(p.a, p.b) && item.x <= Math.max(p.a, p.b)),
+                active: (item) => item.x >= Math.min(p.a, p.b) && item.x <= Math.max(p.a, p.b)
+            };
+        }
+
+        function eventResultMultinomial(joint) {
+            const p = state.params.multinomial;
+            const sum = (predicate) => joint.filter(predicate).reduce((acc, item) => acc + item.p, 0);
+            if (p.eventType === "exact") {
+                return {
+                    desc: `P(X<sub>1</sub>=${p.x1}, X<sub>2</sub>=${p.x2}, X<sub>3</sub>=${p.x3})`,
+                    value: p.x1 + p.x2 + p.x3 === p.n ? sum(item => item.x1 === p.x1 && item.x2 === p.x2 && item.x3 === p.x3) : 0,
+                    active: (item) => item.x1 === p.x1 && item.x2 === p.x2 && item.x3 === p.x3
+                };
+            }
+            if (p.eventType === "ge") {
+                const key = p.marginal;
+                return {
+                    desc: `P(X<sub>${key.slice(1)}</sub> &ge; ${p.threshold})`,
+                    value: sum(item => item[key] >= p.threshold),
+                    active: (item) => item[key] >= p.threshold
+                };
+            }
+            return {
+                desc: `P(${p.a} &le; X<sub>${p.marginal.slice(1)}</sub> &le; ${p.b})`,
+                value: sum(item => item[p.marginal] >= Math.min(p.a, p.b) && item[p.marginal] <= Math.max(p.a, p.b)),
+                active: (item) => item[p.marginal] >= Math.min(p.a, p.b) && item[p.marginal] <= Math.max(p.a, p.b)
+            };
+        }
+
+        function renderContent() {
+            const data = getData();
+            const panel = document.getElementById("contentPanel");
+            if (state.step === "scheme") panel.innerHTML = renderSchemeStep(data);
+            if (state.step === "variable") panel.innerHTML = renderVariableStep(data);
+            if (state.step === "pmf") panel.innerHTML = renderPmfStep(data);
+            if (state.step === "cdf") panel.innerHTML = renderCdfStep(data);
+            if (state.step === "events") panel.innerHTML = renderEventsStep(data);
+            bindEventStepControls();
+        }
+
+        function renderSchemeStep(data) {
+            const m = meta[state.model];
+            let right = "";
+            if (state.model === "binomial") {
+                const p = state.params.binomial;
+                right = `
+                    <div class="note">Tutaj najwazniejsze jest to, ze <strong>liczba prob jest z gory ustalona</strong> i kazda proba ma takie samo p.</div>
+                    <div class="formula">n = ${p.n}, p = ${round(p.p, 3)}, X = liczba sukcesow</div>
+                    <div class="bullets">
+                        <div class="bullet">Kazda proba ma tylko 2 wyniki: sukces albo porazka.</div>
+                        <div class="bullet">Proby sa niezalezne, wiec wynik jednej nie zmienia kolejnej.</div>
+                        <div class="bullet">Interesuje nas tylko ile sukcesow bylo lacznie.</div>
+                    </div>
+                `;
+            } else if (state.model === "hypergeo") {
+                const p = state.params.hypergeo;
+                right = `
+                    <div class="note">Tutaj kluczowe jest <strong>losowanie bez zwracania</strong>, wiec po kazdym ruchu sklad populacji juz jest inny.</div>
+                    <div class="formula">N = ${p.N}, K = ${p.K}, n = ${p.n}, X = liczba sukcesow w probce</div>
+                    <div class="bullets">
+                        <div class="bullet">Na starcie mamy ${p.K} sukcesow i ${p.N - p.K} porazek.</div>
+                        <div class="bullet">Po kazdym losowaniu nie wracamy z elementem do urny / partii.</div>
+                        <div class="bullet">To odroznia ten model od dwumianowego.</div>
+                    </div>
+                `;
+            } else if (state.model === "geometric") {
+                const p = state.params.geometric;
+                right = `
+                    <div class="note">Tutaj nie ustalamy z gory liczby prob. <strong>Konczymy dopiero przy pierwszym sukcesie</strong>.</div>
+                    <div class="formula">p = ${round(p.p, 3)}, X = numer proby pierwszego sukcesu</div>
+                    <div class="bullets">
+                        <div class="bullet">Jesli pierwszy sukces wypada od razu, to ${math("X=1")}.</div>
+                        <div class="bullet">Jesli najpierw sa 3 porazki, a potem sukces, to ${math("X=4")}.</div>
+                        <div class="bullet">Model ma nieskonczone wsparcie: 1,2,3,...</div>
+                    </div>
+                `;
+            } else if (state.model === "poisson") {
+                const p = state.params.poisson;
+                right = `
+                    <div class="note">Tutaj nie ma pojedynczych prob Bernoulliego. <strong>Zliczamy zdarzenia w calym oknie czasu</strong>.</div>
+                    <div class="formula">&lambda; = ${round(p.lambda, 2)}, X = liczba zdarzen w przedziale</div>
+                    <div class="bullets">
+                        <div class="bullet">X moze przyjmowac wartosci 0,1,2,3,...</div>
+                        <div class="bullet">Parametr &lambda; opisuje srednia liczbe zdarzen w takim oknie.</div>
+                        <div class="bullet">Np. ${math("&lambda;=3")} oznacza srednio 3 zgloszenia na godzine.</div>
+                    </div>
+                `;
+            } else {
+                const p = state.params.multinomial;
+                right = `
+                    <div class="note">To jest rozszerzenie modelu dwumianowego: <strong>zamiast 2 wynikow mamy 3 kategorie</strong>.</div>
+                    <div class="formula">n = ${p.n}, p<sub>1</sub> = ${round(p.p1, 2)}, p<sub>2</sub> = ${round(p.p2, 2)}, p<sub>3</sub> = ${round(p.p3, 2)}</div>
+                    <div class="bullets">
+                        <div class="bullet">Po ${p.n} probach dostajemy wektor (X<sub>1</sub>,X<sub>2</sub>,X<sub>3</sub>).</div>
+                        <div class="bullet">Suma X<sub>1</sub>+X<sub>2</sub>+X<sub>3</sub>=n zawsze jest rowna n.</div>
+                        <div class="bullet">Kazda proba wpada dokladnie do jednej kategorii.</div>
+                    </div>
+                `;
+            }
+
+            return `
+                <div class="split">
+                    <div>
+                        <h2>${m.label} — jak wyglada doswiadczenie?</h2>
+                        <p>${m.task}</p>
+                        <div class="scheme-strip" style="margin-top:14px;">${tokensForScheme()}</div>
+                    </div>
+                    <div>${right}</div>
+                </div>
+                ${stepHelp("scheme")}
+            `;
+        }
+
+        function renderVariableStep(data) {
+            const m = meta[state.model];
+            if (data.type === "one") {
+                const supportTokens = data.support.map(x => `<div class="token"><strong>X=${x}</strong></div>`).join("");
+                return `
+                    <div class="split">
+                        <div>
+                            <h2>${m.label} — co oznacza zmienna losowa?</h2>
+                            <div class="note">${m.variable}</div>
+                            <div class="bullets">
+                                <div class="bullet">Nie zapisujemy calej historii prob, tylko jedna liczbe X.</div>
+                                <div class="bullet">Ta liczba ma swoje <strong>mozliwe wartosci</strong>, czyli wsparcie rozkladu.</div>
+                                <div class="bullet">Dopiero na tych wartosciach budujemy funkcje ${math("P(X=x)")} i ${math("F(x)")}.</div>
+                            </div>
+                        </div>
+                        <div>
+                            <h3>Wsparcie zmiennej</h3>
+                            <div class="support-strip">${supportTokens}</div>
+                            <div class="mini" style="margin-top:12px;">
+                                W tym modelu wsparcie ma ${data.support.length} punktow pokazanych przy aktualnych parametrach.
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            const tuples = data.joint.slice(0, 12).map(item => `
+                <div class="tuple">
+                    <strong>${item.key}</strong><br>
+                    p = ${round(item.p, 5)}
+                </div>
+            `).join("");
+            return `
+                <div class="split">
+                    <div>
+                        <h2>${m.label} — tu zmienna jest wektorem</h2>
+                        <div class="note">${m.variable}</div>
+                        <div class="bullets">
+                            <div class="bullet">Nie dostajemy jednej liczby, tylko trojke liczebnosci.</div>
+                            <div class="bullet">Kazda mozliwa trojka musi spelnic warunek X<sub>1</sub>+X<sub>2</sub>+X<sub>3</sub>=n.</div>
+                            <div class="bullet">To jest wlasciwa przestrzen wartosci dla rozkladu wielomianowego.</div>
+                        </div>
+                    </div>
+                    <div>
+                        <h3>Przykladowe punkty wsparcia</h3>
+                        <div class="tuple-list">${tuples}</div>
+                        <div class="mini" style="margin-top:12px;">
+                            Pokazujemy najbardziej prawdopodobne trojki, zeby nie zalewac strony cala lista.
+                        </div>
+                    </div>
+                </div>
+                ${stepHelp("variable")}
+            `;
+        }
+
+        function renderPmfStep(data) {
+            if (data.type === "one") {
+                const p = state.params[state.model];
+                const focus = data.dist.find(item => item.x === p.focusK);
+                const formulaText = state.model === "binomial"
+                    ? `P(X=k) = C(n,k) p<sup>k</sup> (1-p)<sup>n-k</sup>`
+                    : state.model === "hypergeo"
+                    ? `P(X=k) = C(K,k) C(N-K,n-k) / C(N,n)`
+                    : state.model === "geometric"
+                    ? `P(X=k) = (1-p)<sup>k-1</sup> p`
+                    : `P(X=k) = e<sup>-&lambda;</sup> &lambda;<sup>k</sup> / k!`;
+                return `
+                    <div class="split">
+                        <div>
+                            <h2>Jak powstaje rozklad?</h2>
+                            <div class="formula">${formulaText}</div>
+                            <div class="bullets">
+                                <div class="bullet">Kazdy slupek to jedna wartosc ${math("P(X=x)")}.</div>
+                                <div class="bullet">Wszystkie slupki razem sumuja sie do 1.</div>
+                                <div class="bullet">Wyrozniony slupek pokazuje teraz wartosc dla k=${p.focusK}.</div>
+                            </div>
+                            <div class="result" style="margin-top:12px;">
+                                <strong>P(X = ${p.focusK})</strong>
+                                ${focus ? round(focus.p, 8) : 0}
+                            </div>
+                        </div>
+                        <div>
+                            ${renderPmfChart(data.dist, item => item.x === p.focusK)}
+                            <div class="chart-caption">Rozklad pokazujemy jako szeroki wykres slupkowy: kazda wartosc x ma swoje stale miejsce na osi.</div>
+                        </div>
+                    </div>
+                    ${stepHelp("pmf")}
+                `;
+            }
+
+            const p = state.params.multinomial;
+            const jointFocus = data.joint[p.focusIndex] || data.joint[0];
+            const marginalLabel = `X<sub>${p.marginal.slice(1)}</sub>`;
+            return `
+                <div class="split">
+                    <div>
+                        <h2>Rozklad wielomianowy: czesc wspolna i marginesy</h2>
+                        <div class="formula">P(X<sub>1</sub>=x<sub>1</sub>, X<sub>2</sub>=x<sub>2</sub>, X<sub>3</sub>=x<sub>3</sub>) = n!/(x<sub>1</sub>!x<sub>2</sub>!x<sub>3</sub>!) p<sub>1</sub><sup>x<sub>1</sub></sup> p<sub>2</sub><sup>x<sub>2</sub></sup> p<sub>3</sub><sup>x<sub>3</sub></sup></div>
+                        <div class="bullets">
+                            <div class="bullet">Pelny rozklad dotyczy trojek (x1,x2,x3), a nie jednej liczby.</div>
+                            <div class="bullet">Zeby czytac wykres bardziej intuicyjnie, po prawej pokazujemy <strong>marginalny rozklad</strong> ${marginalLabel}.</div>
+                            <div class="bullet">Nizej widzisz tez jedna konkretna trojke z rozkladu lacznego.</div>
+                        </div>
+                        <div class="result" style="margin-top:12px;">
+                            <strong>Przykladowy punkt rozkladu lacznego</strong>
+                            ${jointFocus.key} ma prawdopodobienstwo ${round(jointFocus.p, 8)}
+                        </div>
+                    </div>
+                    <div>
+                        ${renderPmfChart(data.marginal, item => false)}
+                        <div class="mini" style="margin-top:12px;">To jest rozklad marginalny zmiennej ${marginalLabel}, uzyskany przez zsumowanie wszystkich odpowiednich trojek.</div>
+                    </div>
+                </div>
+                ${stepHelp("pmf")}
+            `;
+        }
+
+        function renderCdfStep(data) {
+            if (data.type === "one") {
+                const p = state.params[state.model];
+                const threshold = p.threshold;
+                const chosen = data.dist.filter(item => item.x <= threshold);
+                const total = chosen.reduce((acc, item) => acc + item.p, 0);
+                return `
+                    <div class="split">
+                        <div>
+                            <h2>Jak czytac dystrybuante?</h2>
+                            <div class="note">Dystrybuanta dodaje do siebie kolejne wartosci rozkladu: <strong>F(t) = P(X &le; t)</strong>.</div>
+                            <div class="bullets">
+                                <div class="bullet">Najpierw bierzemy wszystkie wartosci X nie wieksze od progu t=${threshold}.</div>
+                                <div class="bullet">Potem sumujemy ich prawdopodobienstwa.</div>
+                                <div class="bullet">W podswietleniu widzisz dokladnie, ktore slupki weszly do sumy.</div>
+                            </div>
+                            <div class="result" style="margin-top:12px;">
+                                <strong>F(${threshold}) = P(X &le; ${threshold})</strong>
+                                ${round(total, 8)}
+                            </div>
+                        </div>
+                        <div>
+                            ${renderCdfChart(data.dist, threshold)}
+                            <div class="legend">
+                                <span>Aktywny stopien pokazuje wartosc F(${threshold})</span>
+                                <span>Dystrybuanta rosnie schodkowo, bo dodajemy kolejne punkty rozkladu</span>
+                            </div>
+                        </div>
+                    </div>
+                    ${stepHelp("cdf")}
+                `;
+            }
+
+            const p = state.params.multinomial;
+            const marginal = data.marginal;
+            const chosen = marginal.find(item => item.x === p.threshold);
+            return `
+                <div class="split">
+                    <div>
+                        <h2>Dystrybuanta dla marginesu X<sub>${p.marginal.slice(1)}</sub></h2>
+                        <div class="note">Pelna dystrybuanta wielowymiarowa jest mniej wygodna do nauki, dlatego tutaj pokazujemy <strong>dystrybuante marginalna</strong> jednej skladowej.</div>
+                        <div class="bullets">
+                            <div class="bullet">Najpierw bierzemy rozklad marginalny wybranej zmiennej, np. X<sub>1</sub>.</div>
+                            <div class="bullet">Potem liczymy F(t)=P(X<sub>1</sub> &le; t).</div>
+                            <div class="bullet">To pozwala zadawac pytania typu: "jakie jest prawdopodobienstwo, ze liczba malych wynikow nie przekroczy 2?".</div>
+                        </div>
+                        <div class="result" style="margin-top:12px;">
+                            <strong>F(${p.threshold}) = P(X<sub>${p.marginal.slice(1)}</sub> &le; ${p.threshold})</strong>
+                            ${chosen ? round(chosen.cdf, 8) : 0}
+                        </div>
+                    </div>
+                    <div>
+                        ${renderCdfChart(marginal, p.threshold)}
+                    </div>
+                </div>
+                ${stepHelp("cdf")}
+            `;
+        }
+
+        function renderEventsStep(data) {
+            if (data.type === "one") {
+                const p = state.params[state.model];
+                const res = eventResultOneDim(data.dist);
+                return `
+                    <div class="split">
+                        <div>
+                            <h2>Pytania o zdarzenia</h2>
+                            <div class="event-controls">
+                                <label>
+                                    Typ zdarzenia
+                                    <select id="eventTypeSelect">
+                                        <option value="eq" ${p.eventType === "eq" ? "selected" : ""}>dokladnie X = k</option>
+                                        <option value="le" ${p.eventType === "le" ? "selected" : ""}>co najwyzej X &le; t</option>
+                                        <option value="ge" ${p.eventType === "ge" ? "selected" : ""}>co najmniej X &ge; t</option>
+                                        <option value="between" ${p.eventType === "between" ? "selected" : ""}>przedzial a &le; X &le; b</option>
+                                    </select>
+                                </label>
+                                <label>
+                                    k
+                                    <input id="focusKInput" type="number" min="${data.dist[0].x}" max="${data.dist[data.dist.length - 1].x}" value="${p.focusK}">
+                                </label>
+                                <label>
+                                    t
+                                    <input id="thresholdInput" type="number" min="${data.dist[0].x}" max="${data.dist[data.dist.length - 1].x}" value="${p.threshold}">
+                                </label>
+                                <label>
+                                    a
+                                    <input id="aInput" type="number" min="${data.dist[0].x}" max="${data.dist[data.dist.length - 1].x}" value="${p.a ?? data.dist[0].x}">
+                                </label>
+                                <label>
+                                    b
+                                    <input id="bInput" type="number" min="${data.dist[0].x}" max="${data.dist[data.dist.length - 1].x}" value="${p.b ?? data.dist[data.dist.length - 1].x}">
+                                </label>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="result">
+                                <strong>${res.desc}</strong>
+                                ${round(res.value, 8)}
+                            </div>
+                            <div style="margin-top:14px;">${renderPmfChart(data.dist, res.active)}</div>
+                            <div class="mini" style="margin-top:12px;">
+                                Podswietlone slupki sa tymi skladnikami, ktore rzeczywiscie dodajemy. To jest najwazniejsza rzecz przy czytaniu pytan typu "dokladnie", "co najwyzej", "co najmniej" i "miedzy".
+                            </div>
+                        </div>
+                    </div>
+                    ${stepHelp("events")}
+                `;
+            }
+
+            const p = state.params.multinomial;
+            const res = eventResultMultinomial(data.joint);
+            const matching = data.joint.filter(res.active).slice(0, 12);
+            return `
+                <div class="split">
+                    <div>
+                        <h2>Pytania o zdarzenia w modelu wielomianowym</h2>
+                        <div class="event-controls">
+                            <label>
+                                Typ zdarzenia
+                                <select id="eventTypeSelect">
+                                    <option value="exact" ${p.eventType === "exact" ? "selected" : ""}>dokladna trojka</option>
+                                    <option value="ge" ${p.eventType === "ge" ? "selected" : ""}>co najmniej dla wybranego marginesu</option>
+                                    <option value="between" ${p.eventType === "between" ? "selected" : ""}>przedzial dla wybranego marginesu</option>
+                                </select>
+                            </label>
+                            <label>
+                                X<sub>1</sub>
+                                <input id="x1Input" type="number" min="0" max="${p.n}" value="${p.x1}">
+                            </label>
+                            <label>
+                                X<sub>2</sub>
+                                <input id="x2Input" type="number" min="0" max="${p.n}" value="${p.x2}">
+                            </label>
+                            <label>
+                                X<sub>3</sub>
+                                <input id="x3Input" type="number" min="0" max="${p.n}" value="${p.x3}">
+                            </label>
+                            <label>
+                                Prog t
+                                <input id="thresholdInput" type="number" min="0" max="${p.n}" value="${p.threshold}">
+                            </label>
+                            <label>
+                                a
+                                <input id="aInput" type="number" min="0" max="${p.n}" value="${p.a}">
+                            </label>
+                            <label>
+                                b
+                                <input id="bInput" type="number" min="0" max="${p.n}" value="${p.b}">
+                            </label>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="result">
+                            <strong>${res.desc}</strong>
+                            ${round(res.value, 8)}
+                        </div>
+                        <div class="tuple-list" style="margin-top:14px;">
+                            ${matching.length ? matching.map(item => `
+                                <div class="tuple">
+                                    <strong>${item.key}</strong><br>
+                                    p = ${round(item.p, 6)}
+                                </div>
+                            `).join("") : `<div class="mini">Brak pasujacych trojek przy tych ustawieniach.</div>`}
+                        </div>
+                        <div class="mini" style="margin-top:12px;">
+                            Dla dokladnej trojki aktywny jest zwykle jeden punkt. Dla pytania o margines aktywnych trojek moze byc wiele, a wynik dostajemy przez ich zsumowanie.
+                        </div>
+                    </div>
+                </div>
+                ${stepHelp("events")}
+            `;
+        }
+
+        function bindEventStepControls() {
+            if (state.step !== "events") return;
+            const p = state.params[state.model];
+            const typeEl = document.getElementById("eventTypeSelect");
+            if (typeEl) {
+                typeEl.addEventListener("input", (event) => {
+                    p.eventType = event.target.value;
+                    renderContent();
+                });
+            }
+
+            const numericIds = ["focusKInput", "thresholdInput", "aInput", "bInput", "x1Input", "x2Input", "x3Input"];
+            numericIds.forEach((id) => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                el.addEventListener("input", (event) => {
+                    const value = Number(event.target.value);
+                    if (id === "focusKInput") p.focusK = value;
+                    if (id === "thresholdInput") p.threshold = value;
+                    if (id === "aInput") p.a = value;
+                    if (id === "bInput") p.b = value;
+                    if (id === "x1Input") p.x1 = value;
+                    if (id === "x2Input") p.x2 = value;
+                    if (id === "x3Input") p.x3 = value;
+                    normalizeModelParams();
+                    renderContent();
+                });
+            });
+        }
+
+        function render() {
+            normalizeModelParams();
+            setAccent();
+            renderModelTabs();
+            renderControls();
+            renderStepTabs();
+            renderSummary(getData());
+            renderContent();
+        }
+
+        render();
+    </script>
+</body>
+</html>

@@ -1,6 +1,5 @@
-# Task List 04 — Probability Distributions (Selected Models)
+# Task List 03 — Probability Distributions (Selected Models)
 
-> **Note:** This task list is still being developed. For now, please don’t work on it yet. :)
 
 ## Introduction
 
@@ -24,6 +23,7 @@ The analysis of these models allows us to formally describe random experiments a
 
 In a factory, screws are produced. Each screw can be either **good** or **defective**.  
 The probability that a randomly selected screw is defective equals \(p\).
+Assume that successive inspections are independent and that the probability \(p\) is the same for each screw.
 
 We consider an experiment consisting of checking **3 consecutive screws**.
 
@@ -45,8 +45,8 @@ We randomly select **4 components without replacement** for inspection.
 **Tasks**
 
 1. Describe the random experiment.  
-2. Define the sample space \( \Omega \) as the number of defective elements in the sample.  
-3. Determine the possible values of the random variable.  
+2. Define the random variable \(X\) as the number of defective elements in the sample.  
+3. Determine the possible values of \(X\).  
 4. Provide the probability distribution.  
 5. Explain what a **success** means in this model.
 
@@ -55,6 +55,7 @@ We randomly select **4 components without replacement** for inspection.
 ## Task 3 — Geometric Model (Waiting for the First Event)
 
 In a printing house, each printed page may contain a **printing error** with probability \(p\).
+Assume that pages are independent and that the probability \(p\) is the same for each page.
 
 The experiment consists of observing consecutive pages until the **first error** appears.
 
@@ -78,7 +79,7 @@ We assume that the number of reports in a given time interval follows a **Poisso
 1. Describe the random experiment.  
 2. Determine the sample space \( \Omega \).  
 3. Provide the formula of the probability distribution.  
-4. Interpret the parameter \( \lambda \).
+4. Interpret the parameter \( \lambda \) and explain its value for one hour.
 
 ---
 
@@ -92,6 +93,8 @@ The outcomes are grouped into three categories:
 - medium numbers (3–4)  
 - large numbers (5–6)
 
+Thus, the probabilities of the three categories are \(1/3\), \(1/3\), and \(1/3\), respectively.
+
 **Tasks**
 
 1. Describe the random experiment.  
@@ -104,6 +107,7 @@ The outcomes are grouped into three categories:
 ## Task 6 — Binomial Model
 
 The probability of producing a defective part is **0.04**.
+Assume that the inspections are independent.
 
 An inspector checks **10 parts**.
 
@@ -130,6 +134,7 @@ Calculate the probability that the sample contains **exactly 2 defective bulbs**
 ## Task 8 — Geometric Model
 
 The probability of an error in program compilation is **0.1** for each compilation.
+Assume that successive compilations are independent.
 
 A programmer performs consecutive compilations until the **first error** occurs.
 
@@ -159,7 +164,7 @@ A box contains candies of three flavors:
 - lemon – 35%  
 - mint – 25%
 
-We randomly select **6 candies independently**.
+We perform **6 independent selections with replacement**.
 
 Calculate the probability that we obtain:
 

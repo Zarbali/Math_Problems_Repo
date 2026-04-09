@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>List 3 - Task 1 - Quality Control</title>
+    <style>
+        :root {
+            --ink: #1f2937;
+            --muted: #6b7280;
+            --panel: rgba(255, 254, 250, 0.94);
+            --line: #d7d2c6;
+            --navy: #1d3557;
+            --navy-soft: #dbeafe;
+            --good: #15803d;
+            --good-soft: #dcfce7;
+            --bad: #be123c;
+            --bad-soft: #ffe4e6;
+            --accent: #7c3aed;
+            --accent-soft: #ede9fe;
+            --shadow: 0 18px 52px rgba(29, 53, 87, 0.14);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            color: var(--ink);
+            font-family: Georgia, "Times New Roman", serif;
+            background:
+                radial-gradient(circle at top left, rgba(29,53,87,0.12), transparent 22%),
+                radial-gradient(circle at bottom right, rgba(124,58,237,0.12), transparent 24%),
+                linear-gradient(180deg, #f8f4ee 0%, #edf4fb 100%);
+            min-height: 100vh;
+        }
+
+        .page {
+            max-width: 1220px;
+            margin: 0 auto;
+            padding: 24px 18px 42px;
+        }
+
+        .panel {
+            background: var(--panel);
+            border: 1px solid rgba(29,53,87,0.12);
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+        }
+
+        .hero, .workspace { padding: 24px; }
+
+        .eyebrow {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: var(--navy-soft);
+            color: var(--navy);
+            font-size: 12px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        h1 {
+            margin: 14px 0 10px;
+            font-size: clamp(2.1rem, 5vw, 4rem);
+            line-height: 0.95;
+            letter-spacing: -0.04em;
+            color: var(--navy);
+        }
+
+        p { margin: 0; line-height: 1.6; }
+
+        .workspace { margin-top: 22px; }
+
+        .solver {
+            display: grid;
+            grid-template-columns: 320px minmax(0, 1fr);
+            gap: 18px;
+            align-items: start;
+        }
+
+        .sidebar {
+            position: sticky;
+            top: 14px;
+            display: grid;
+            gap: 14px;
+        }
+
+        .card {
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            background: rgba(255,255,255,0.88);
+            padding: 14px 16px;
+        }
+
+        .card h2 {
+            margin: 0 0 8px;
+            font-size: 1rem;
+            color: var(--navy);
+        }
+
+        .task-list {
+            display: grid;
+            gap: 10px;
+        }
+
+        .task-btn {
+            width: 100%;
+            text-align: left;
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 11px 12px;
+            background: white;
+            cursor: pointer;
+            transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+        }
+
+        .task-btn:hover,
+        button:hover {
+            transform: translateY(-1px);
+        }
+
+        .task-btn.active {
+            border-color: rgba(29,53,87,0.35);
+            background: linear-gradient(180deg, #eef4ff, #ffffff);
+        }
+
+        .task-btn strong {
+            display: block;
+            color: var(--navy);
+            margin-bottom: 3px;
+        }
+
+        button {
+            font: inherit;
+            width: 100%;
+            padding: 11px 12px;
+            border-radius: 14px;
+            border: 1px solid var(--line);
+            background: white;
+            color: var(--ink);
+            cursor: pointer;
+            transition: transform 0.18s ease, border-color 0.18s ease;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .primary {
+            background: linear-gradient(135deg, #1d3557, #2563eb);
+            color: white;
+            border-color: #1d3557;
+        }
+
+        .main {
+            display: grid;
+            gap: 16px;
+        }
+
+        .equation {
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            background: white;
+            padding: 14px 16px;
+            line-height: 1.6;
+        }
+
+        .equation strong { color: var(--navy); }
+
+        .notes {
+            display: grid;
+            gap: 8px;
+        }
+
+        .note {
+            border-left: 4px solid #cbd5e1;
+            border-radius: 0 12px 12px 0;
+            background: rgba(255,255,255,0.88);
+            padding: 10px 12px;
+            color: #475569;
+        }
+
+        .strip-3, .omega-grid, .prob-grid {
+            display: grid;
+            gap: 10px;
+        }
+
+        .strip-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .omega-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+        .prob-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+        .tile {
+            position: relative;
+            min-height: 92px;
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            background: white;
+            padding: 12px;
+            display: grid;
+            align-items: center;
+            justify-items: center;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        .tile.good { background: linear-gradient(135deg, var(--good), #4ade80); color: white; }
+        .tile.bad { background: linear-gradient(135deg, var(--bad), #fb7185); color: white; }
+        .tile.neutral { background: linear-gradient(180deg, #ffffff, #f8fafc); }
+
+        .tile .big {
+            font-size: 1.35rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+        }
+
+        .tile .small {
+            font-size: 0.78rem;
+            color: var(--muted);
+        }
+
+        .tile.good .small,
+        .tile.bad .small {
+            color: rgba(255,255,255,0.88);
+        }
+
+        .tree {
+            display: grid;
+            gap: 12px;
+        }
+
+        .tree-row {
+            display: grid;
+            grid-template-columns: 80px 1fr;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .tree-label {
+            font-weight: 700;
+            color: var(--navy);
+        }
+
+        .branches {
+            display: grid;
+            gap: 8px;
+        }
+
+        .branch {
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            background: white;
+            padding: 10px 12px;
+            font-family: "Courier New", monospace;
+        }
+
+        .omega-box {
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            background: white;
+            padding: 16px;
+            font-family: "Courier New", monospace;
+            line-height: 1.8;
+            overflow-wrap: anywhere;
+        }
+
+        .summary {
+            display: grid;
+            gap: 10px;
+        }
+
+        .summary-item {
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            background: rgba(255,255,255,0.92);
+            padding: 10px 12px;
+        }
+
+        @media (max-width: 900px) {
+            .solver { grid-template-columns: 1fr; }
+            .sidebar { position: static; }
+            .controls, .strip-3, .omega-grid, .prob-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <section class="panel hero">
+            <div class="eyebrow">List 3 · Task 1</div>
+            <h1>Quality Control — Actual Task Solution</h1>
+            <p>
+                This animation follows the exact structure of the task. It does not jump to the model in the abstract.
+                Instead, it answers the four questions one by one:
+                describe the experiment, determine \( \Omega \), assign probabilities to the elements of \( \Omega \),
+                and identify what counts as success.
+            </p>
+        </section>
+
+        <section class="panel workspace">
+            <div class="solver">
+                <aside class="sidebar">
+                    <div class="card">
+                        <h2>The Four Task Questions</h2>
+                        <div class="task-list" id="taskList"></div>
+                    </div>
+
+                    <div class="card">
+                        <h2>Navigation</h2>
+                        <div class="controls">
+                            <button id="prevBtn">Previous</button>
+                            <button class="primary" id="nextBtn">Next</button>
+                            <button id="resetBtn">Reset</button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h2>Given Data</h2>
+                        <div class="summary">
+                            <div class="summary-item">Number of screws checked: <strong>3</strong></div>
+                            <div class="summary-item">Defective probability for one screw: <strong>p</strong></div>
+                            <div class="summary-item">Good probability for one screw: <strong>1 - p</strong></div>
+                            <div class="summary-item">Successive inspections: <strong>independent</strong></div>
+                        </div>
+                    </div>
+                </aside>
+
+                <main class="main">
+                    <div class="equation" id="mainExplanation"></div>
+                    <div id="visualPanel"></div>
+                </main>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        const taskSteps = [
+            {
+                id: 1,
+                title: "1. Describe the random experiment",
+                short: "What exactly are we doing?",
+                explanation: `
+                    <strong>Task 1.</strong> We inspect <strong>3 consecutive screws</strong>.
+                    For each screw we record one of two possible observations:
+                    <strong>G</strong> for good or <strong>D</strong> for defective.
+                    So the experiment is not “count a number” at the start.
+                    It is first a sequence of <strong>three individual inspections</strong>.
+                `,
+                visual: `
+                    <div class="strip-3">
+                        <div class="tile neutral">
+                            <div class="big">Inspection 1</div>
+                            <div class="small">possible result: G or D</div>
+                        </div>
+                        <div class="tile neutral">
+                            <div class="big">Inspection 2</div>
+                            <div class="small">possible result: G or D</div>
+                        </div>
+                        <div class="tile neutral">
+                            <div class="big">Inspection 3</div>
+                            <div class="small">possible result: G or D</div>
+                        </div>
+                    </div>
+                    <div class="notes" style="margin-top:14px;">
+                        <div class="note">We are observing outcomes one after another, so an elementary result must remember the order of the three inspections.</div>
+                        <div class="note">This already tells us we are dealing with repeated trials of the same type.</div>
+                    </div>
+                `
+            },
+            {
+                id: 2,
+                title: "2. Determine the sample space Ω",
+                short: "List all elementary outcomes",
+                explanation: `
+                    <strong>Task 2.</strong> Since each of the three inspections may give either
+                    <strong>G</strong> or <strong>D</strong>, every elementary outcome is a sequence of length 3.
+                    Therefore \( \\Omega \\) must contain <strong>all</strong> such sequences.
+                `,
+                visual: `
+                    <div class="omega-box">
+                        Ω = { GGG, GGD, GDG, GDD, DGG, DGD, DDG, DDD }
+                    </div>
+                    <div class="notes" style="margin-top:14px;">
+                        <div class="note">Why 8 outcomes? Because we have 2 choices for the first screw, 2 for the second, and 2 for the third.</div>
+                        <div class="note">So the number of elementary outcomes is \(2 \\cdot 2 \\cdot 2 = 2^3 = 8\).</div>
+                    </div>
+                `
+            },
+            {
+                id: 3,
+                title: "3. Specify probabilities of elements of Ω",
+                short: "Use p, 1-p, and independence",
+                explanation: `
+                    <strong>Task 3.</strong> We know that
+                    \( P(D)=p \) and \( P(G)=1-p \).
+                    Because the inspections are <strong>independent</strong>,
+                    the probability of a full sequence is the product of the factors corresponding to its letters.
+                `,
+                visual: `
+                    <div class="tree">
+                        <div class="tree-row">
+                            <div class="tree-label">Rule</div>
+                            <div class="branches">
+                                <div class="branch">replace each G by (1-p)</div>
+                                <div class="branch">replace each D by p</div>
+                                <div class="branch">multiply the three factors</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="prob-grid" style="margin-top:14px;">
+                        <div class="tile neutral">
+                            <div class="big">GGG</div>
+                            <div class="small">\(P(GGG)=(1-p)^3\)</div>
+                        </div>
+                        <div class="tile neutral">
+                            <div class="big">GGD</div>
+                            <div class="small">\(P(GGD)=(1-p)^2p\)</div>
+                        </div>
+                        <div class="tile neutral">
+                            <div class="big">GDG</div>
+                            <div class="small">\(P(GDG)=(1-p)^2p\)</div>
+                        </div>
+                        <div class="tile neutral">
+                            <div class="big">GDD</div>
+                            <div class="small">\(P(GDD)=(1-p)p^2\)</div>
+                        </div>
+                        <div class="tile neutral">
+                            <div class="big">DGG</div>
+                            <div class="small">\(P(DGG)=p(1-p)^2\)</div>
+                        </div>
+                        <div class="tile neutral">
+                            <div class="big">DGD</div>
+                            <div class="small">\(P(DGD)=p^2(1-p)\)</div>
+                        </div>
+                        <div class="tile neutral">
+                            <div class="big">DDG</div>
+                            <div class="small">\(P(DDG)=p^2(1-p)\)</div>
+                        </div>
+                        <div class="tile neutral">
+                            <div class="big">DDD</div>
+                            <div class="small">\(P(DDD)=p^3\)</div>
+                        </div>
+                    </div>
+                    <div class="notes" style="margin-top:14px;">
+                        <div class="note">Example: for \(GGD\) we read the sequence from left to right and write \((1-p)(1-p)p\).</div>
+                        <div class="note">Outcomes with the same number of defective screws often have the same probability, which is exactly what later leads to the binomial distribution.</div>
+                    </div>
+                `
+            },
+            {
+                id: 4,
+                title: "4. Define success",
+                short: "What is counted in the binomial model?",
+                explanation: `
+                    <strong>Task 4.</strong> In a binomial model we must declare what counts as a
+                    <strong>success</strong> in one trial.
+                    Here the task gives the probability \(p\) for the event
+                    <em>“a screw is defective”</em>,
+                    so the natural success is:
+                    <strong>the inspected screw is defective</strong>.
+                `,
+                visual: `
+                    <div class="strip-3">
+                        <div class="tile bad">
+                            <div class="big">D</div>
+                            <div class="small">success</div>
+                        </div>
+                        <div class="tile good">
+                            <div class="big">G</div>
+                            <div class="small">failure</div>
+                        </div>
+                        <div class="tile neutral">
+                            <div class="big">What X counts</div>
+                            <div class="small">the number of defective screws among the 3 checked ones</div>
+                        </div>
+                    </div>
+                    <div class="notes" style="margin-top:14px;">
+                        <div class="note">So one Bernoulli trial is: inspect one screw and ask whether it is defective.</div>
+                        <div class="note">Then the binomial random variable counts how many times the outcome D appears in the 3-inspection sequence.</div>
+                    </div>
+                `
+            }
+        ];
+
+        let currentStep = 1;
+
+        function renderTaskList() {
+            const list = document.getElementById("taskList");
+            list.innerHTML = taskSteps.map((step) => `
+                <button class="task-btn ${step.id === currentStep ? "active" : ""}" data-step="${step.id}">
+                    <strong>${step.title}</strong>
+                    <span>${step.short}</span>
+                </button>
+            `).join("");
+
+            list.querySelectorAll(".task-btn").forEach((button) => {
+                button.addEventListener("click", () => {
+                    currentStep = Number(button.dataset.step);
+                    render();
+                });
+            });
+        }
+
+        function render() {
+            renderTaskList();
+            const step = taskSteps.find((item) => item.id === currentStep);
+            document.getElementById("mainExplanation").innerHTML = step.explanation;
+            document.getElementById("visualPanel").innerHTML = step.visual;
+            document.getElementById("prevBtn").disabled = currentStep === 1;
+            document.getElementById("nextBtn").disabled = currentStep === taskSteps.length;
+        }
+
+        document.getElementById("prevBtn").addEventListener("click", () => {
+            if (currentStep > 1) {
+                currentStep -= 1;
+                render();
+            }
+        });
+
+        document.getElementById("nextBtn").addEventListener("click", () => {
+            if (currentStep < taskSteps.length) {
+                currentStep += 1;
+                render();
+            }
+        });
+
+        document.getElementById("resetBtn").addEventListener("click", () => {
+            currentStep = 1;
+            render();
+        });
+
+        render();
+    </script>
+</body>
+</html>
