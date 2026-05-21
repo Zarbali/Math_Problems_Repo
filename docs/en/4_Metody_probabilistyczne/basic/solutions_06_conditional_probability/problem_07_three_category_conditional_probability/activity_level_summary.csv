@@ -1,0 +1,4 @@
+activity_level,event,renewed_count,not_renewed_count,total_count,P(category),P(R|category),contribution_to_P(R),P(category|R)
+High,H,80,20,100,0.25,0.8,0.2,0.4
+Medium,M,90,60,150,0.375,0.6,0.22499999999999998,0.45
+Low,L,30,120,150,0.375,0.2,0.07500000000000001,0.15

@@ -1,0 +1,2 @@
+count,mean,median,variance,std,min,q1,q3,max,within_spec_proportion
+540,49.9998,49.9625,0.4872,0.698,47.873,49.5522,50.446,53.01,0.9666666666666667

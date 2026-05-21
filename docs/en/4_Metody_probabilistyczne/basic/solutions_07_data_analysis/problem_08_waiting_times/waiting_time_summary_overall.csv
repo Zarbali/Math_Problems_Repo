@@ -1,0 +1,2 @@
+count,mean,median,variance,std,min,q1,q3,max,resolved_under_10_min
+500,11.5661,9.2,75.9222,8.7133,0.46,5.0825,16.7275,55.34,0.538

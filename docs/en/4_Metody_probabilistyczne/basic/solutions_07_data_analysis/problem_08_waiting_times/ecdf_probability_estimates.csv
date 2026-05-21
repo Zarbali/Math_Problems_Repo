@@ -1,0 +1,4 @@
+event,empirical_probability
+waiting time <= 5,0.244
+waiting time <= 10,0.538
+waiting time > 20,0.17

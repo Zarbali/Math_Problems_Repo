@@ -1,0 +1,3 @@
+suspicious_transaction_type,count,conditional_probability_given_suspicious
+fraudulent,98,0.2481012658227848
+legitimate,297,0.7518987341772152

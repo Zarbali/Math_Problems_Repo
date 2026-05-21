@@ -1,0 +1,11 @@
+quantity,value
+P(H),0.25
+P(M),0.375
+P(L),0.375
+P(R | H),0.8
+P(R | M),0.6
+P(R | L),0.2
+P(R) by total probability,0.5
+P(H | R),0.4
+P(M | R),0.45
+P(L | R),0.15

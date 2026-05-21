@@ -1,0 +1,5 @@
+region,description,count,probability
+F ∩ S,fraudulent and marked suspicious,98,0.0098
+F ∩ S^c,fraudulent and not marked suspicious,2,0.0002
+F^c ∩ S,legitimate and marked suspicious,297,0.0297
+F^c ∩ S^c,legitimate and not marked suspicious,9603,0.9603

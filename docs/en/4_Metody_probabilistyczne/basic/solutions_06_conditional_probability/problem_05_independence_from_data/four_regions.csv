@@ -1,0 +1,5 @@
+region,description,count,probability
+A ∩ M,premium and watched a movie,84,0.42
+A ∩ M^c,premium and did not watch a movie,36,0.18
+A^c ∩ M,free and watched a movie,56,0.28
+A^c ∩ M^c,free and did not watch a movie,24,0.12

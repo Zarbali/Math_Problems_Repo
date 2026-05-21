@@ -1,0 +1,5 @@
+region,description,count,probability
+W ∩ Q,watched lecture and passed quiz,72,0.48
+W ∩ Q^c,watched lecture and did not pass quiz,18,0.12
+W^c ∩ Q,did not watch lecture and passed quiz,28,0.18666666666666668
+W^c ∩ Q^c,did not watch lecture and did not pass quiz,32,0.21333333333333335

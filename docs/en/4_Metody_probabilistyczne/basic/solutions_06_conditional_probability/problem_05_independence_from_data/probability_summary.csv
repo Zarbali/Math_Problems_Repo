@@ -1,0 +1,7 @@
+quantity,value
+P(A),0.6
+P(M),0.7
+P(A ∩ M),0.42
+P(A)P(M),0.42
+P(M | A),0.7
+P(M | A^c),0.7

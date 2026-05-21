@@ -1,0 +1,12 @@
+quantity,value
+P(T),0.5
+P(C),0.6
+P(T ∩ C),0.36
+P(T ∪ C),0.7400000000000001
+P(C | T),0.72
+P(C | T^c),0.48
+P(T | C),0.6
+P(T | C^c),0.35
+P(T)P(C),0.3
+difference P(C|T)-P(C|T^c),0.24
+risk ratio P(C|T)/P(C|T^c),1.5

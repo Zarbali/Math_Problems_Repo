@@ -1,0 +1,4 @@
+machine,count,mean,median,std,mean_deviation,mean_abs_deviation,within_spec_proportion
+M1,180,49.9813,49.972,0.5343,-0.0187,0.4399,1.0
+M2,180,50.3074,50.2755,0.791,0.3074,0.6513,0.9222
+M3,180,49.7106,49.731,0.6135,-0.2894,0.5426,0.9778

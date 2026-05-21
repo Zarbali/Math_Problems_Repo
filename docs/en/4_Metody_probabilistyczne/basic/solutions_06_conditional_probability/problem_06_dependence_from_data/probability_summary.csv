@@ -1,0 +1,10 @@
+quantity,value
+P(I),0.3333333333333333
+P(D),0.1
+P(I ∩ D),0.06
+P(I)P(D),0.03333333333333333
+P(D | I),0.18
+P(D | I^c),0.06
+P(I | D),0.6
+risk difference P(D|I)-P(D|I^c),0.12
+risk ratio P(D|I)/P(D|I^c),3.0

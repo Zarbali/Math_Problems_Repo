@@ -1,0 +1,5 @@
+region,description,count,probability
+A ∩ B,uses both Tool A and Tool B,60,0.3
+A \ B,uses Tool A but not Tool B,70,0.35
+B \ A,uses Tool B but not Tool A,30,0.15
+A^c ∩ B^c,uses neither tool,40,0.2

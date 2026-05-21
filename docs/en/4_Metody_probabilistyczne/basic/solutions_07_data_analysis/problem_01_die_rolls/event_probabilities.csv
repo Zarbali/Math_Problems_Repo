@@ -1,0 +1,4 @@
+event,empirical_probability,fair_die_probability
+result is even,0.534,0.5
+result is at least 5,0.334,0.3333333333333333
+result is equal to 6,0.176,0.16666666666666666

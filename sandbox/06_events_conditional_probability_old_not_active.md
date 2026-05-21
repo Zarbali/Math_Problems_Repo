@@ -1,4 +1,4 @@
-# Task List 04 — Algebra of Events and Conditional Probability
+# Task List 06 — Algebra of Events and Conditional Probability
 
 > **Note:** This task list is still being developed. For now, please don’t work on it yet. :)
 

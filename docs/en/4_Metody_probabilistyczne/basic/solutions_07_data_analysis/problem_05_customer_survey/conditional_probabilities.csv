@@ -1,0 +1,4 @@
+quantity,value
+probability of renewal among customers with satisfaction equal to 5,0.9545
+probability of satisfaction equal to 5 among customers who renewed,0.2313
+overall renewal rate,0.7567

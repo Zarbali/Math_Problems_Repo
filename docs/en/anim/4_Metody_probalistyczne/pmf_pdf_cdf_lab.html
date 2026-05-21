@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PMF / PDF / CDF Lab</title>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$']],
+                displayMath: [['$$', '$$']]
+            },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+    <style>
+        :root {
+            --bg: #f3efe7;
+            --paper: #fcfbf7;
+            --paper-2: #f7f3eb;
+            --ink: #142033;
+            --muted: #566273;
+            --line: #d4c7b4;
+            --line-2: #bba98f;
+            --accent: #a44c12;
+            --teal: #0f766e;
+            --blue: #2453d4;
+            --navy: #20324d;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            color: var(--ink);
+            background: linear-gradient(180deg, #f7f3ec 0%, var(--bg) 100%);
+            font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .page {
+            width: min(1440px, 100%);
+            margin: 0 auto;
+            padding: 18px 16px 28px;
+        }
+
+        .panel {
+            background: var(--paper);
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            box-shadow: 0 8px 18px rgba(20, 32, 51, 0.04);
+            min-width: 0;
+        }
+
+        .eyebrow {
+            font-size: 11px;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: var(--muted);
+            font-weight: 800;
+        }
+
+        h1, h2, h3 {
+            margin: 0;
+            font-family: Georgia, "Times New Roman", serif;
+        }
+
+        h1 {
+            font-size: clamp(2rem, 3.4vw, 3.4rem);
+            line-height: 0.98;
+            margin-top: 6px;
+        }
+
+        .topbar {
+            display: grid;
+            grid-template-columns: minmax(0, 1.4fr) minmax(320px, 0.8fr);
+            gap: 14px;
+            margin-bottom: 14px;
+        }
+
+        .masthead {
+            padding: 18px 22px;
+            background: linear-gradient(135deg, #23344f 0%, #17263b 100%);
+            color: white;
+            border-color: #22334e;
+        }
+
+        .masthead .eyebrow,
+        .masthead p {
+            color: rgba(240, 244, 250, 0.82);
+        }
+
+        .masthead p {
+            font-size: 0.98rem;
+            line-height: 1.65;
+            margin: 14px 0 0;
+            max-width: 70ch;
+        }
+
+        .summary-row {
+            margin-top: 14px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .summary-chip {
+            padding: 7px 11px;
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,0.18);
+            background: rgba(255,255,255,0.08);
+            font-size: 0.84rem;
+        }
+
+        .switch-card {
+            padding: 14px;
+            background: var(--paper-2);
+        }
+
+        .task-switcher {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .task-button {
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            background: white;
+            color: var(--ink);
+            padding: 13px 14px;
+            text-align: left;
+            cursor: pointer;
+            transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+        }
+
+        .task-button:hover {
+            transform: translateY(-1px);
+            border-color: #c8b090;
+        }
+
+        .task-button.active {
+            background: linear-gradient(180deg, #fff3e9 0%, #f3dcc9 100%);
+            border-color: #b77749;
+        }
+
+        .task-button .id {
+            display: block;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            color: var(--muted);
+            font-weight: 800;
+            margin-bottom: 6px;
+        }
+
+        .task-button .name {
+            display: block;
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        .workspace {
+            display: grid;
+            gap: 14px;
+            min-width: 0;
+        }
+
+        .quick-layout {
+            display: grid;
+            grid-template-columns: 320px minmax(0, 1fr) 280px;
+            gap: 14px;
+            min-width: 0;
+        }
+
+        .section {
+            padding: 16px 18px;
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            background: var(--paper);
+        }
+
+        .section h3 {
+            font-size: 1.15rem;
+            margin-top: 4px;
+        }
+
+        .section p {
+            margin: 8px 0 0;
+            color: var(--muted);
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        .control {
+            margin-top: 12px;
+        }
+
+        .control label {
+            display: block;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            font-weight: 800;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+
+        .control input[type="range"],
+        .control select {
+            width: 100%;
+        }
+
+        .control .value {
+            margin-top: 5px;
+            font-size: 0.88rem;
+            color: var(--ink);
+            font-weight: 700;
+        }
+
+        .headline {
+            padding: 16px 18px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            align-items: end;
+            justify-content: space-between;
+        }
+
+        .headline p {
+            margin: 8px 0 0;
+            color: var(--muted);
+            line-height: 1.6;
+            max-width: 70ch;
+        }
+
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .metric {
+            padding: 14px;
+            border-radius: 14px;
+            border: 1px solid var(--line);
+            background: var(--paper-2);
+        }
+
+        .metric .label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            color: var(--muted);
+            font-weight: 800;
+        }
+
+        .metric .number {
+            margin-top: 10px;
+            font-size: 1.7rem;
+            font-family: Georgia, "Times New Roman", serif;
+            font-weight: 700;
+        }
+
+        .metric .note {
+            margin-top: 4px;
+            color: var(--muted);
+            font-size: 0.82rem;
+            line-height: 1.45;
+        }
+
+        .chart-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            gap: 14px;
+            align-items: stretch;
+            min-width: 0;
+        }
+
+        .chart-card {
+            padding: 14px 14px 12px;
+            min-width: 0;
+        }
+
+        .chart-card h3 {
+            font-size: 1.08rem;
+        }
+
+        .chart-subtitle {
+            margin-top: 5px;
+            color: var(--muted);
+            font-size: 0.88rem;
+        }
+
+        .chart-frame {
+            margin-top: 10px;
+            height: 286px;
+            width: 100%;
+            border-radius: 14px;
+            border: 1px solid #cdbda7;
+            background:
+                linear-gradient(180deg, rgba(255,255,255,0.9) 0%, rgba(248,243,235,0.96) 100%),
+                repeating-linear-gradient(
+                    to right,
+                    transparent 0,
+                    transparent 61px,
+                    rgba(147, 120, 80, 0.045) 61px,
+                    rgba(147, 120, 80, 0.045) 62px
+                );
+            overflow: hidden;
+        }
+
+        svg.chart {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .bottom-grid {
+            display: grid;
+            grid-template-columns: 1.15fr 1fr 1fr;
+            gap: 14px;
+            min-width: 0;
+        }
+
+        .list {
+            margin: 10px 0 0;
+            padding-left: 18px;
+            color: var(--muted);
+            line-height: 1.58;
+        }
+
+        .calc-box {
+            padding: 16px 18px;
+            background: linear-gradient(180deg, #fff8ef 0%, #fcfbf7 100%);
+        }
+
+        .formula {
+            margin-top: 10px;
+            padding: 12px 14px;
+            border-radius: 12px;
+            border: 1px solid var(--line);
+            background: #fff;
+            overflow-x: auto;
+        }
+
+        .table-wrap {
+            margin-top: 10px;
+            overflow-x: auto;
+        }
+
+        table.data {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 420px;
+        }
+
+        table.data th,
+        table.data td {
+            border: 1px solid #e5d9ca;
+            padding: 10px 12px;
+            text-align: center;
+        }
+
+        table.data th {
+            background: #f4eadc;
+            font-weight: 800;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 0.76rem;
+            font-weight: 700;
+            border: 1px solid var(--line);
+            background: #fff;
+        }
+
+        .stack {
+            display: grid;
+            gap: 14px;
+        }
+
+        @media (max-width: 1280px) {
+            .quick-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .metric-grid {
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 1100px) {
+            .topbar,
+            .metric-grid,
+            .chart-grid,
+            .bottom-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 720px) {
+            .page {
+                padding: 12px 10px 22px;
+            }
+
+            .chart-frame {
+                height: 250px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <section class="topbar">
+            <div class="panel masthead">
+                <div class="eyebrow">Probabilistic Methods</div>
+                <h1>PMF, PDF, and CDF Lab</h1>
+                <p>
+                    Two tasks only. One fixed discrete PMF and one Poisson model.
+                    The point is not to decorate the page, but to make the mechanics visible:
+                    what the PMF says, what the CDF adds, and how a probability query changes both views.
+                </p>
+                <div class="summary-row">
+                    <span class="summary-chip">PMF and CDF together</span>
+                    <span class="summary-chip">One query, two views</span>
+                    <span class="summary-chip">Compact lab layout</span>
+                </div>
+            </div>
+            <div class="panel switch-card">
+                <div class="eyebrow">Choose a task</div>
+                <div class="task-switcher" id="taskSwitcher"></div>
+            </div>
+        </section>
+
+        <main class="workspace">
+            <section class="panel headline">
+                <div>
+                    <div class="eyebrow">Overview</div>
+                    <h2 id="mainTitle"></h2>
+                    <p id="mainIntro"></p>
+                </div>
+                <div class="summary-row" style="margin-top:0;">
+                    <span class="badge" id="typeBadge"></span>
+                    <span class="badge" id="supportBadge"></span>
+                </div>
+            </section>
+
+            <section class="quick-layout">
+                <div class="panel section">
+                    <div class="eyebrow">Current task</div>
+                    <h3 id="sidebarTitle"></h3>
+                    <p id="sidebarIntro"></p>
+                </div>
+
+                <div class="stack">
+                    <div class="metric-grid" id="metrics"></div>
+                    <section class="panel calc-box">
+                        <div class="eyebrow">Calculation</div>
+                        <h3 id="calcTitle" style="margin-top:6px;"></h3>
+                        <p id="calcExplanation"></p>
+                        <div class="formula math" id="calcFormula"></div>
+                    </section>
+                </div>
+
+                <div class="panel section">
+                    <div class="eyebrow">Probability query</div>
+                    <div class="control">
+                        <label for="queryMode">Mode</label>
+                        <select id="queryMode"></select>
+                    </div>
+                    <div class="control" id="controlAWrap">
+                        <label for="paramA">Parameter a</label>
+                        <input id="paramA" type="range">
+                        <div class="value" id="paramAValue"></div>
+                    </div>
+                    <div class="control" id="controlBWrap">
+                        <label for="paramB">Parameter b</label>
+                        <input id="paramB" type="range">
+                        <div class="value" id="paramBValue"></div>
+                    </div>
+                    <div class="control" id="controlKWrap">
+                        <label for="paramK">Parameter k</label>
+                        <input id="paramK" type="range">
+                        <div class="value" id="paramKValue"></div>
+                    </div>
+                    <div id="taskSpecificControls" style="margin-top:14px;"></div>
+                </div>
+            </section>
+
+            <section class="chart-grid">
+                <div class="panel chart-card">
+                        <div class="eyebrow">Distribution view</div>
+                        <h3 id="pmfTitle"></h3>
+                        <div class="chart-subtitle" id="pmfSubtitle"></div>
+                        <div class="chart-frame">
+                            <svg class="chart" id="pmfChart" viewBox="0 0 620 340"></svg>
+                        </div>
+                </div>
+                <div class="panel chart-card">
+                        <div class="eyebrow">Cumulative view</div>
+                        <h3>CDF</h3>
+                        <div class="chart-subtitle">The same model seen through accumulated probability.</div>
+                        <div class="chart-frame">
+                            <svg class="chart" id="cdfChart" viewBox="0 0 620 340"></svg>
+                        </div>
+                </div>
+            </section>
+
+            <section class="bottom-grid">
+                <div class="panel section">
+                        <div class="eyebrow">Theory</div>
+                        <div id="theory"></div>
+                </div>
+                <div class="panel section">
+                        <div class="eyebrow">Data / Parameters</div>
+                        <div id="dataBox"></div>
+                </div>
+                <div class="stack">
+                    <div class="panel section">
+                        <div class="eyebrow">Geometric interpretation</div>
+                        <div id="geometry"></div>
+                    </div>
+                    <div class="panel section">
+                        <div class="eyebrow">Applications</div>
+                        <div id="applications"></div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        const fmt = (x, d = 4) => Number(x).toFixed(d).replace(/\.?0+$/, "");
+        const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+
+        function factorial(n) {
+            let out = 1;
+            for (let i = 2; i <= n; i += 1) out *= i;
+            return out;
+        }
+
+        function combination(n, k) {
+            if (k < 0 || k > n) return 0;
+            k = Math.min(k, n - k);
+            let out = 1;
+            for (let i = 1; i <= k; i += 1) out *= (n - k + i) / i;
+            return out;
+        }
+
+        const state = {
+            activeTask: 1,
+            params: {
+                1: { mode: "eq", a: 0, b: 3, k: 1 },
+                5: { lambda: 4.2, maxK: 14, mode: "eq", a: 2, b: 6, k: 4 }
+            }
+        };
+
+        const discreteModes = [
+            { value: "eq", label: "P(X = k)" },
+            { value: "le", label: "P(X <= a)" },
+            { value: "ge", label: "P(X >= a)" },
+            { value: "between", label: "P(a <= X <= b)" }
+        ];
+
+        const baseTaskData = {
+            1: {
+                id: 1,
+                name: "PMF from a Table",
+                type: "Discrete",
+                intro: "A finite discrete distribution is given explicitly by a table of masses. This is the clearest place to see how a PMF and a CDF are connected.",
+                support: "{-2, 0, 1, 3, 5}",
+                items() {
+                    return [
+                        { x: -2, y: 0.10 },
+                        { x: 0, y: 0.25 },
+                        { x: 1, y: 0.30 },
+                        { x: 3, y: 0.20 },
+                        { x: 5, y: 0.15 }
+                    ];
+                },
+                theory: `
+                    <p>The PMF assigns a mass to each admissible value:</p>
+                    <div class="formula math">$$P(X=x)=p(x)$$</div>
+                    <p>The CDF accumulates those masses:</p>
+                    <div class="formula math">$$F(x)=P(X\\le x)$$</div>
+                    <p>For a discrete distribution, the CDF is stepwise and each jump has size equal to the probability mass at that point.</p>
+                `,
+                dataBox() {
+                    return `
+                        <div class="table-wrap">
+                            <table class="data">
+                                <tr>
+                                    <th>$x$</th>
+                                    <th>-2</th>
+                                    <th>0</th>
+                                    <th>1</th>
+                                    <th>3</th>
+                                    <th>5</th>
+                                </tr>
+                                <tr>
+                                    <th>$P(X=x)$</th>
+                                    <td>0.10</td>
+                                    <td>0.25</td>
+                                    <td>0.30</td>
+                                    <td>0.20</td>
+                                    <td>0.15</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <p>The masses sum to 1, so this is a valid discrete distribution.</p>
+                    `;
+                },
+                geometry: `
+                    <p>Each bar of the PMF is already a complete point probability. The CDF translates those same masses into jumps.</p>
+                    <ul class="list">
+                        <li>A higher bar means a larger point probability.</li>
+                        <li>A larger jump in the CDF means the same thing.</li>
+                        <li>The CDF never decreases and ends at 1.</li>
+                    </ul>
+                `,
+                applications: `
+                    <p>This kind of explicit finite distribution appears in grading models, error-code models, risk classes, and any experiment with a small custom state space.</p>
+                `,
+                taskControls() {
+                    return `
+                        <div class="eyebrow">Task parameters</div>
+                        <p style="margin-top:10px;">This task uses a fixed table, so the model itself does not change. Only the probability query changes.</p>
+                    `;
+                }
+            },
+            5: {
+                id: 5,
+                name: "Poisson Distribution",
+                type: "Discrete",
+                intro: "The Poisson distribution models counts of rare, independent events in a fixed interval. Here the shape changes with the rate parameter lambda.",
+                supportBuilder: () => "{0, 1, 2, ...}",
+                items() {
+                    const { lambda, maxK } = state.params[5];
+                    const out = [];
+                    for (let k = 0; k <= maxK; k += 1) {
+                        out.push({ x: k, y: Math.exp(-lambda) * (lambda ** k) / factorial(k) });
+                    }
+                    return out;
+                },
+                theory() {
+                    const { lambda } = state.params[5];
+                    return `
+                        <p>The Poisson PMF is</p>
+                        <div class="formula math">$$P(X=k)=e^{-\\lambda}\\frac{\\lambda^k}{k!}, \\qquad k=0,1,2,\\ldots$$</div>
+                        <p>For the current view, the parameter is <strong>$\\lambda = ${fmt(lambda, 2)}$</strong>.</p>
+                        <p>In the full Poisson model, both the mean and the variance are equal to $\\lambda$.</p>
+                    `;
+                },
+                dataBox() {
+                    const { lambda, maxK } = state.params[5];
+                    return `
+                        <p><strong>Current parameters</strong></p>
+                        <ul class="list">
+                            <li>$\\lambda = ${fmt(lambda, 2)}$</li>
+                            <li>Displayed support: $k = 0,1,\\dots,${maxK}$</li>
+                        </ul>
+                        <p>The displayed PMF is truncated to keep the graph readable, but the visible mass remains very close to 1 for a sensible range.</p>
+                    `;
+                },
+                geometry: `
+                    <p>As $\\lambda$ increases, the distribution shifts to the right and becomes wider.</p>
+                    <ul class="list">
+                        <li>Small $\\lambda$ concentrates mass near 0.</li>
+                        <li>Larger $\\lambda$ pushes the center outward.</li>
+                        <li>The CDF grows more slowly when probability mass is spread further right.</li>
+                    </ul>
+                `,
+                applications: `
+                    <p>Typical applications include incoming calls, page errors, machine failures, defect counts, and request arrivals over time.</p>
+                `,
+                taskControls() {
+                    const p = state.params[5];
+                    return `
+                        <div class="eyebrow">Task parameters</div>
+                        <div class="control">
+                            <label for="lambda">Lambda</label>
+                            <input id="lambda" type="range" min="0.4" max="12" step="0.1" value="${p.lambda}">
+                            <div class="value">Current value: ${fmt(p.lambda, 2)}</div>
+                        </div>
+                        <div class="control">
+                            <label for="maxK">Displayed maximum k</label>
+                            <input id="maxK" type="range" min="8" max="28" step="1" value="${p.maxK}">
+                            <div class="value">Current value: ${p.maxK}</div>
+                        </div>
+                    `;
+                }
+            }
+        };
+
+        function sum(arr, fn = x => x) {
+            return arr.reduce((acc, item) => acc + fn(item), 0);
+        }
+
+        function meanDiscrete(items) {
+            return sum(items, p => p.x * p.y);
+        }
+
+        function varianceDiscrete(items, mean) {
+            return sum(items, p => ((p.x - mean) ** 2) * p.y);
+        }
+
+        function cdfAt(items, x) {
+            return sum(items.filter(p => p.x <= x), p => p.y);
+        }
+
+        function computeDiscreteQuery(items, params) {
+            const mode = params.mode;
+            const a = Number(params.a);
+            const b = Number(params.b);
+            const k = Number(params.k);
+
+            if (mode === "eq") {
+                const value = sum(items.filter(p => p.x === k), p => p.y);
+                return {
+                    title: "Point probability",
+                    explanation: `We focus on the single value $k=${k}$. For a discrete distribution this is just the height of one PMF bar.`,
+                    formula: `$$P(X=${k})=${fmt(value, 5)}$$`,
+                    value,
+                    highlight: { mode, k }
+                };
+            }
+
+            if (mode === "le") {
+                const value = cdfAt(items, a);
+                return {
+                    title: "Left cumulative probability",
+                    explanation: `We add all masses up to and including $a=${a}$. On the CDF this is exactly the height $F(a)$.`,
+                    formula: `$$P(X\\le ${a})=F(${a})=${fmt(value, 5)}$$`,
+                    value,
+                    highlight: { mode, a }
+                };
+            }
+
+            if (mode === "ge") {
+                const prev = sum(items.filter(p => p.x < a), p => p.y);
+                const value = 1 - prev;
+                return {
+                    title: "Right-tail probability",
+                    explanation: `We collect all masses at and to the right of $a=${a}$.`,
+                    formula: `$$P(X\\ge ${a})=1-P(X<${a})=1-${fmt(prev, 5)}=${fmt(value, 5)}$$`,
+                    value,
+                    highlight: { mode, a }
+                };
+            }
+
+            const lo = Math.min(a, b);
+            const hi = Math.max(a, b);
+            const leftBefore = sum(items.filter(p => p.x < lo), p => p.y);
+            const right = cdfAt(items, hi);
+            const value = right - leftBefore;
+            return {
+                title: "Interval probability",
+                explanation: `We add the masses from $${lo}$ through $${hi}$. On the CDF this is a difference of two heights.`,
+                formula: `$$P(${lo}\\le X\\le ${hi})=F(${hi})-F(${lo}^{-})=${fmt(right, 5)}-${fmt(leftBefore, 5)}=${fmt(value, 5)}$$`,
+                value,
+                highlight: { mode, lo, hi }
+            };
+        }
+
+        function makeTicks(min, max, count) {
+            const out = [];
+            for (let i = 0; i <= count; i += 1) out.push(min + ((max - min) * i) / count);
+            return out;
+        }
+
+        function drawDiscretePMF(svg, items, query, color) {
+            const W = 620;
+            const H = 340;
+            const pad = { l: 60, r: 20, t: 20, b: 42 };
+            const maxY = Math.max(...items.map(p => p.y), 0.35) * 1.18;
+            const stepX = items.length === 1 ? 0 : (W - pad.l - pad.r) / (items.length - 1);
+            const sxIndex = i => pad.l + i * stepX;
+            const sy = y => H - pad.b - (y / maxY) * (H - pad.t - pad.b);
+            const barWidth = Math.max(10, Math.min(34, stepX * 0.56));
+            const barRadius = Math.min(8, barWidth * 0.24);
+
+            const yTicks = makeTicks(0, maxY, 4);
+            let out = "";
+
+            yTicks.forEach(t => {
+                out += `<line x1="${pad.l}" y1="${sy(t)}" x2="${W - pad.r}" y2="${sy(t)}" stroke="#eadfce" stroke-width="1"/>`;
+                out += `<text x="${pad.l - 10}" y="${sy(t) + 4}" text-anchor="end" fill="#6b7280" font-size="12">${fmt(t, 2)}</text>`;
+            });
+
+            out += `<line x1="${pad.l}" y1="${sy(0)}" x2="${W - pad.r}" y2="${sy(0)}" stroke="#7c6f60" stroke-width="1.5"/>`;
+            out += `<line x1="${pad.l}" y1="${pad.t}" x2="${pad.l}" y2="${H - pad.b}" stroke="#7c6f60" stroke-width="1.5"/>`;
+
+            items.forEach((p, i) => {
+                let fill = color;
+                if (query.highlight.mode === "eq" && p.x === query.highlight.k) fill = "#1d4ed8";
+                if (query.highlight.mode === "le" && p.x <= query.highlight.a) fill = "#0f766e";
+                if (query.highlight.mode === "ge" && p.x >= query.highlight.a) fill = "#0f766e";
+                if (query.highlight.mode === "between" && p.x >= query.highlight.lo && p.x <= query.highlight.hi) fill = "#1d4ed8";
+                const center = sxIndex(i);
+                const x = center - barWidth / 2;
+                const y = sy(p.y);
+                const h = sy(0) - y;
+                out += `<rect x="${x}" y="${y}" width="${barWidth}" height="${h}" rx="${barRadius}" fill="${fill}" opacity="0.78"/>`;
+                out += `<text x="${center}" y="${H - 18}" text-anchor="middle" fill="#4b5563" font-size="12">${p.x}</text>`;
+            });
+
+            svg.innerHTML = out;
+        }
+
+        function drawDiscreteCDF(svg, items, query) {
+            const W = 620;
+            const H = 340;
+            const pad = { l: 60, r: 20, t: 20, b: 42 };
+            const stepX = items.length === 1 ? 0 : (W - pad.l - pad.r) / items.length;
+            const sxBoundary = i => pad.l + i * stepX;
+            const sxCenter = i => pad.l + (i + 0.5) * stepX;
+            const sy = y => H - pad.b - y * (H - pad.t - pad.b);
+
+            let out = "";
+            [0, 0.25, 0.5, 0.75, 1].forEach(t => {
+                out += `<line x1="${pad.l}" y1="${sy(t)}" x2="${W - pad.r}" y2="${sy(t)}" stroke="#eadfce" stroke-width="1"/>`;
+                out += `<text x="${pad.l - 10}" y="${sy(t) + 4}" text-anchor="end" fill="#6b7280" font-size="12">${fmt(t, 2)}</text>`;
+            });
+            out += `<line x1="${pad.l}" y1="${sy(0)}" x2="${W - pad.r}" y2="${sy(0)}" stroke="#7c6f60" stroke-width="1.5"/>`;
+            out += `<line x1="${pad.l}" y1="${pad.t}" x2="${pad.l}" y2="${H - pad.b}" stroke="#7c6f60" stroke-width="1.5"/>`;
+
+            let acc = 0;
+            for (let i = 0; i < items.length; i += 1) {
+                const x0 = sxBoundary(i);
+                const x1 = sxBoundary(i + 1);
+                const next = acc + items[i].y;
+                out += `<line x1="${x0}" y1="${sy(acc)}" x2="${x1}" y2="${sy(acc)}" stroke="#0f766e" stroke-width="4" stroke-linecap="round"/>`;
+                out += `<line x1="${x1}" y1="${sy(acc)}" x2="${x1}" y2="${sy(next)}" stroke="#0f766e" stroke-width="4" stroke-linecap="round"/>`;
+                acc = next;
+                out += `<text x="${sxCenter(i)}" y="${H - 18}" text-anchor="middle" fill="#4b5563" font-size="12">${items[i].x}</text>`;
+            }
+
+            if (query.highlight.mode === "le") {
+                const idx = items.findIndex(p => p.x === query.highlight.a);
+                if (idx >= 0) out += `<line x1="${sxBoundary(idx + 1)}" y1="${sy(0)}" x2="${sxBoundary(idx + 1)}" y2="${sy(1)}" stroke="#1d4ed8" stroke-dasharray="6 6" stroke-width="2"/>`;
+            }
+            if (query.highlight.mode === "ge") {
+                const idx = items.findIndex(p => p.x === query.highlight.a);
+                if (idx >= 0) out += `<line x1="${sxBoundary(idx)}" y1="${sy(0)}" x2="${sxBoundary(idx)}" y2="${sy(1)}" stroke="#1d4ed8" stroke-dasharray="6 6" stroke-width="2"/>`;
+            }
+            if (query.highlight.mode === "between") {
+                const loIdx = items.findIndex(p => p.x === query.highlight.lo);
+                const hiIdx = items.findIndex(p => p.x === query.highlight.hi);
+                if (loIdx >= 0) out += `<line x1="${sxBoundary(loIdx)}" y1="${sy(0)}" x2="${sxBoundary(loIdx)}" y2="${sy(1)}" stroke="#1d4ed8" stroke-dasharray="6 6" stroke-width="2"/>`;
+                if (hiIdx >= 0) out += `<line x1="${sxBoundary(hiIdx + 1)}" y1="${sy(0)}" x2="${sxBoundary(hiIdx + 1)}" y2="${sy(1)}" stroke="#1d4ed8" stroke-dasharray="6 6" stroke-width="2"/>`;
+            }
+
+            svg.innerHTML = out;
+        }
+
+        function renderTaskSwitcher() {
+            const el = document.getElementById("taskSwitcher");
+            el.innerHTML = [1, 5].map(id => {
+                const task = baseTaskData[id];
+                const active = id === state.activeTask ? "active" : "";
+                return `
+                    <button class="task-button ${active}" onclick="selectTask(${id})">
+                        <span class="id">Task ${id}</span>
+                        <span class="name">${task.name}</span>
+                    </button>
+                `;
+            }).join("");
+        }
+
+        function selectTask(id) {
+            state.activeTask = id;
+            render();
+        }
+
+        function buildQueryControls(taskId, items) {
+            const params = state.params[taskId];
+            const xs = items.map(p => p.x);
+            const min = Math.min(...xs);
+            const max = Math.max(...xs);
+            const step = 1;
+
+            const queryMode = document.getElementById("queryMode");
+            queryMode.innerHTML = discreteModes.map(opt => `<option value="${opt.value}" ${opt.value === params.mode ? "selected" : ""}>${opt.label}</option>`).join("");
+            queryMode.onchange = e => {
+                params.mode = e.target.value;
+                render();
+            };
+
+            const a = document.getElementById("paramA");
+            const b = document.getElementById("paramB");
+            const k = document.getElementById("paramK");
+            [a, b, k].forEach(input => {
+                input.min = min;
+                input.max = max;
+                input.step = step;
+            });
+            a.value = clamp(params.a, min, max);
+            b.value = clamp(params.b, min, max);
+            k.value = clamp(params.k, min, max);
+
+            params.a = Number(a.value);
+            params.b = Number(b.value);
+            params.k = Number(k.value);
+
+            document.getElementById("paramAValue").textContent = fmt(params.a, 2);
+            document.getElementById("paramBValue").textContent = fmt(params.b, 2);
+            document.getElementById("paramKValue").textContent = fmt(params.k, 2);
+
+            a.oninput = e => { params.a = Number(e.target.value); render(); };
+            b.oninput = e => { params.b = Number(e.target.value); render(); };
+            k.oninput = e => { params.k = Number(e.target.value); render(); };
+
+            const mode = params.mode;
+            document.getElementById("controlAWrap").style.display = mode === "eq" ? "none" : "block";
+            document.getElementById("controlBWrap").style.display = mode === "between" ? "block" : "none";
+            document.getElementById("controlKWrap").style.display = mode === "eq" ? "block" : "none";
+        }
+
+        function renderTaskSpecificControls(taskId) {
+            const box = document.getElementById("taskSpecificControls");
+            box.innerHTML = baseTaskData[taskId].taskControls();
+
+            if (taskId === 5) {
+                const lambda = document.getElementById("lambda");
+                const maxK = document.getElementById("maxK");
+                lambda.oninput = e => {
+                    state.params[5].lambda = Number(e.target.value);
+                    render();
+                };
+                maxK.oninput = e => {
+                    state.params[5].maxK = Number(e.target.value);
+                    render();
+                };
+            }
+        }
+
+        function renderMetrics(items, query) {
+            const mean = meanDiscrete(items);
+            const variance = varianceDiscrete(items, mean);
+            const norm = sum(items, p => p.y);
+            const modeItem = items.reduce((best, p) => p.y > best.y ? p : best, items[0]);
+
+            document.getElementById("metrics").innerHTML = `
+                <div class="panel metric">
+                    <div class="label">Selected Probability</div>
+                    <div class="number">${fmt(query.value, 5)}</div>
+                    <div class="note">The current query result computed from the PMF and interpreted via the CDF.</div>
+                </div>
+                <div class="panel metric">
+                    <div class="label">Normalization</div>
+                    <div class="number">${fmt(norm, 5)}</div>
+                    <div class="note">For a valid displayed discrete distribution, the total mass should be 1.</div>
+                </div>
+                <div class="panel metric">
+                    <div class="label">Expected Value</div>
+                    <div class="number">${fmt(mean, 4)}</div>
+                    <div class="note">The center of mass of the distribution.</div>
+                </div>
+                <div class="panel metric">
+                    <div class="label">Variance</div>
+                    <div class="number">${fmt(variance, 4)}</div>
+                    <div class="note">The spread around the mean. The most likely point here is ${modeItem.x}.</div>
+                </div>
+            `;
+        }
+
+        function render() {
+            renderTaskSwitcher();
+            const task = baseTaskData[state.activeTask];
+            const items = task.items();
+            buildQueryControls(state.activeTask, items);
+            renderTaskSpecificControls(state.activeTask);
+
+            const query = computeDiscreteQuery(items, state.params[state.activeTask]);
+
+            document.getElementById("sidebarTitle").textContent = `Task ${task.id} — ${task.name}`;
+            document.getElementById("sidebarIntro").textContent = task.intro;
+            document.getElementById("mainTitle").textContent = `Task ${task.id} — ${task.name}`;
+            document.getElementById("mainIntro").textContent = task.intro;
+            document.getElementById("typeBadge").textContent = task.type;
+            document.getElementById("supportBadge").textContent = `Support: ${task.support || task.supportBuilder()}`;
+            document.getElementById("pmfTitle").textContent = state.activeTask === 5 ? "PMF" : "PMF";
+            document.getElementById("pmfSubtitle").textContent = state.activeTask === 5
+                ? "The highlighted bars show the probability requested by the current query."
+                : "The highlighted bars show how the selected event is assembled from point masses.";
+
+            document.getElementById("theory").innerHTML = task.theory instanceof Function ? task.theory() : task.theory;
+            document.getElementById("dataBox").innerHTML = task.dataBox instanceof Function ? task.dataBox() : task.dataBox;
+            document.getElementById("geometry").innerHTML = task.geometry;
+            document.getElementById("applications").innerHTML = task.applications;
+            document.getElementById("calcTitle").textContent = query.title;
+            document.getElementById("calcExplanation").innerHTML = query.explanation;
+            document.getElementById("calcFormula").innerHTML = query.formula;
+
+            renderMetrics(items, query);
+            drawDiscretePMF(document.getElementById("pmfChart"), items, query, "#b45309");
+            drawDiscreteCDF(document.getElementById("cdfChart"), items, query);
+
+            if (window.MathJax && window.MathJax.typesetPromise) {
+                window.MathJax.typesetPromise([
+                    document.getElementById("theory"),
+                    document.getElementById("dataBox"),
+                    document.getElementById("geometry"),
+                    document.getElementById("applications"),
+                    document.getElementById("calcFormula")
+                ]).catch(() => {});
+            }
+        }
+
+        render();
+    </script>
+</body>
+</html>

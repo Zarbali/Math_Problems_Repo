@@ -1,0 +1,5 @@
+region,description,count,probability
+T ∩ C,received tutorial and completed onboarding,180,0.36
+T ∩ C^c,received tutorial and did not complete onboarding,70,0.14
+T^c ∩ C,did not receive tutorial and completed onboarding,120,0.24
+T^c ∩ C^c,did not receive tutorial and did not complete onboarding,130,0.26

@@ -1,0 +1,5 @@
+region,description,count,probability
+T ∩ S,technical and solved during first contact,90,0.2571428571428571
+T ∩ S^c,technical and not solved during first contact,60,0.17142857142857143
+T^c ∩ S,non-technical and solved during first contact,160,0.45714285714285713
+T^c ∩ S^c,non-technical and not solved during first contact,40,0.11428571428571428

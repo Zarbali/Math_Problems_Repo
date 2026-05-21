@@ -1,0 +1,6 @@
+product_group,order_lines,total_quantity,average_quantity,returned_lines,return_rate
+filters,353,1405,3.9802,19,0.0538
+brakes,263,825,3.1369,12,0.0456
+suspension,191,501,2.623,19,0.0995
+electrical,205,488,2.3805,15,0.0732
+engine,188,427,2.2713,9,0.0479

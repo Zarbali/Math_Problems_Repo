@@ -109,6 +109,9 @@ plugins:
                     - '2. Combinatorics': '4_Metody_probabilistyczne/basic/02_combinatorics.md'
                     - '3. Probability Distributions': '4_Metody_probabilistyczne/basic/03_probability_distributions.md'
                     - '4. Discovering Formalism': '4_Metody_probabilistyczne/basic/04_discovery_formalism.md'
+                    - '5. PMF, PDF, and CDF': '4_Metody_probabilistyczne/basic/05_pmf_pdf_cdf.md'
+                    - '6. Conditional Probability': '4_Metody_probabilistyczne/basic/06_conditional_probability.md'
+                    - '7. Data Analysis': '4_Metody_probabilistyczne/basic/07_data_analysis.md'
                 - Advanced:
                     - '1. Events & Probability': '4_Metody_probabilistyczne/advanced/01_events_and_probability.md'
                     - '2. Random Variables': '4_Metody_probabilistyczne/advanced/02_random_variables.md'

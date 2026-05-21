@@ -1,0 +1,2 @@
+deliveries,mean,median,q1,q2,q3,iqr,lower_fence,upper_fence,possible_outliers,delayed_proportion
+350,37.73,33.3,24.625,33.3,43.775,19.15,-4.1,72.5,20,0.1

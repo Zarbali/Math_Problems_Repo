@@ -1,0 +1,5 @@
+region,description,count,probability
+I ∩ D,international and delayed,36,0.06
+I ∩ D^c,international and not delayed,164,0.2733333333333333
+I^c ∩ D,domestic and delayed,24,0.04
+I^c ∩ D^c,domestic and not delayed,376,0.6266666666666667

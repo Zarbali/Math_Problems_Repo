@@ -1,0 +1,4 @@
+channel_event,channel,P(channel),P(C|channel),contribution_to_P(C),P(channel|C)
+W,website,0.5,0.04,0.02,0.3571428571428572
+A,mobile app,0.35,0.06,0.020999999999999998,0.375
+H,phone,0.15,0.1,0.015,0.26785714285714285
