@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Distribution viewer — Tasks 3–6 (Binomial, Geometric, Poisson, Hypergeometric)</title>
+<style>
+  :root {
+    --fg:#1f2937; --muted:#6b7280; --line:#d1d5db; --accent:#2563eb;
+    --bg-soft:#f9fafb; --ok:#047857; --warn:#b91c1c;
+  }
+  *{box-sizing:border-box}
+  body{font-family:ui-sans-serif,system-ui,sans-serif;color:var(--fg);margin:0;padding:24px 32px 48px;max-width:1150px}
+  h1{margin:0 0 6px;font-size:22px}
+  p.lead{color:var(--muted);margin:0 0 18px;line-height:1.5}
+  .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px}
+  .tab{font:inherit;padding:8px 14px;border:1px solid var(--line);background:var(--bg-soft);border-radius:8px;cursor:pointer}
+  .tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .grid{display:grid;grid-template-columns:320px 1fr;gap:24px;align-items:start}
+  label{font-size:13px;color:var(--muted);display:block;margin:8px 0 4px}
+  input[type=number],select{width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:6px;font:inherit}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  button{font:inherit;padding:7px 12px;border:1px solid var(--line);background:var(--bg-soft);border-radius:6px;cursor:pointer;margin-top:10px}
+  button:hover{background:#eef2ff;border-color:var(--accent)}
+  .plot-card{border:1px solid var(--line);border-radius:8px;padding:12px;margin-bottom:14px}
+  .plot-card h3{margin:0 0 8px;font-size:15px}
+  svg{width:100%;height:240px;display:block}
+  table.probs{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+  table.probs td,table.probs th{border-bottom:1px solid var(--line);padding:5px 8px;text-align:left}
+  table.probs td.val{text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
+  .compare-hdr{font-size:14px;font-weight:600;margin:14px 0 6px;color:var(--fg)}
+  small.note{color:var(--muted);font-size:12px}
+</style>
+</head>
+<body>
+<h1>Distribution viewer — Tasks 3–6</h1>
+<p class="lead">
+Compare PMF and CDF for <strong>Binomial</strong>, <strong>Geometric</strong>, <strong>Poisson</strong>, and <strong>Hypergeometric</strong> families.
+Two parameter sets (A and B) can be overlaid on the same plot. Probabilities are computed from the PMF (exact summation).
+</p>
+
+<div class="tabs" id="tabs">
+  <button class="tab active" data-fam="binomial">Binomial</button>
+  <button class="tab" data-fam="geometric">Geometric</button>
+  <button class="tab" data-fam="poisson">Poisson</button>
+  <button class="tab" data-fam="hypergeom">Hypergeometric</button>
+</div>
+
+<div class="grid">
+  <div id="controls"></div>
+  <div>
+    <div class="plot-card">
+      <h3>PMF comparison</h3>
+      <svg id="pmfSvg" viewBox="0 0 620 240"></svg>
+    </div>
+    <div class="plot-card">
+      <h3>CDF comparison</h3>
+      <svg id="cdfSvg" viewBox="0 0 620 240"></svg>
+    </div>
+    <div class="plot-card">
+      <h3>Probability query (set A)</h3>
+      <div class="row2">
+        <div><label>a</label><input id="qa" type="number" step="1" value="2"></div>
+        <div><label>b</label><input id="qb" type="number" step="1" value="5"></div>
+      </div>
+      <table class="probs" id="probs"></table>
+    </div>
+  </div>
+</div>
+
+<script>
+const fmt = v => (Math.round(v * 1e6) / 1e6).toString();
+
+function comb(n, k) {
+  if (k < 0 || k > n) return 0;
+  k = Math.min(k, n - k);
+  let r = 1;
+  for (let i = 1; i <= k; i++) r = r * (n - k + i) / i;
+  return r;
+}
+
+const families = {
+  binomial: {
+    title: 'Binomial Bin(n,p)',
+    fields: [
+      { id: 'n', label: 'n (trials)', def: 10, min: 1, max: 100 },
+      { id: 'p', label: 'p (success prob)', def: 0.4, min: 0, max: 1, step: 0.01 },
+    ],
+    pmf(k, par) {
+      if (k < 0 || k > par.n) return 0;
+      return comb(par.n, k) * par.p ** k * (1 - par.p) ** (par.n - k);
+    },
+    support(par) {
+      const arr = [];
+      for (let k = 0; k <= par.n; k++) arr.push(k);
+      return arr;
+    },
+  },
+  geometric: {
+    title: 'Geometric (trial of first success)',
+    fields: [{ id: 'p', label: 'p', def: 0.25, min: 0.001, max: 1, step: 0.01 }],
+    pmf(k, par) {
+      if (k < 1) return 0;
+      const q = 1 - par.p;
+      return par.p * q ** (k - 1);
+    },
+    support(par) {
+      const arr = [];
+      let s = 0, k = 1;
+      while (k <= 60 && s < 0.9999) { arr.push(k); s += this.pmf(k, par); k++; }
+      if (arr.length === 0) arr.push(1);
+      return arr;
+    },
+  },
+  poisson: {
+    title: 'Poisson(λ)',
+    fields: [{ id: 'lam', label: 'λ (rate)', def: 3, min: 0.01, max: 50, step: 0.1 }],
+    pmf(k, par) {
+      if (k < 0) return 0;
+      let f = 1;
+      for (let i = 2; i <= k; i++) f *= i;
+      return Math.exp(-par.lam) * par.lam ** k / f;
+    },
+    support(par) {
+      const arr = [];
+      let s = 0, k = 0;
+      while (k <= 80 && (k === 0 || s < 0.9999)) { arr.push(k); s += this.pmf(k, par); k++; }
+      return arr;
+    },
+  },
+  hypergeom: {
+    title: 'Hypergeometric(N,K,n)',
+    fields: [
+      { id: 'N', label: 'N (population)', def: 30, min: 1, max: 500 },
+      { id: 'K', label: 'K (successes in pop)', def: 10, min: 0, max: 500 },
+      { id: 'n', label: 'n (sample size)', def: 5, min: 1, max: 500 },
+    ],
+    pmf(k, par) {
+      const { N, K, n } = par;
+      if (K > N || n > N) return 0;
+      const lo = Math.max(0, n - (N - K)), hi = Math.min(n, K);
+      if (k < lo || k > hi) return 0;
+      return comb(K, k) * comb(N - K, n - k) / comb(N, n);
+    },
+    support(par) {
+      const { N, K, n } = par;
+      const lo = Math.max(0, n - (N - K)), hi = Math.min(n, K);
+      const arr = [];
+      for (let k = lo; k <= hi; k++) arr.push(k);
+      return arr;
+    },
+  },
+};
+
+let currentFam = 'binomial';
+const state = { A: {}, B: {} };
+
+function readParams(which) {
+  const fam = families[currentFam];
+  const par = {};
+  fam.fields.forEach(f => {
+    const el = document.getElementById(`${which}_${f.id}`);
+    par[f.id] = parseFloat(el.value);
+  });
+  if (currentFam === 'hypergeom') {
+    par.K = Math.min(par.K, par.N);
+    par.n = Math.min(par.n, par.N);
+  }
+  return par;
+}
+
+function cdfAt(pmfFn, par, x) {
+  const fam = families[currentFam];
+  let s = 0;
+  for (const k of fam.support(par)) {
+    if (k <= x + 1e-12) s += pmfFn(k, par);
+    else break;
+  }
+  return s;
+}
+function cdfLeft(pmfFn, par, x) {
+  const fam = families[currentFam];
+  let s = 0;
+  for (const k of fam.support(par)) {
+    if (k < x - 1e-12) s += pmfFn(k, par);
+    else break;
+  }
+  return s;
+}
+
+function buildControls() {
+  const fam = families[currentFam];
+  const div = document.getElementById('controls');
+  let html = `<div class="compare-hdr">${fam.title}</div>`;
+  ['A', 'B'].forEach(which => {
+    html += `<div class="compare-hdr">Parameters ${which}</div>`;
+    fam.fields.forEach(f => {
+      html += `<label for="${which}_${f.id}">${f.label}</label>`;
+      html += `<input id="${which}_${f.id}" type="number" step="${f.step || 1}" min="${f.min ?? ''}" max="${f.max ?? ''}" value="${f.def}">`;
+    });
+  });
+  html += `<button id="updateBtn">Update plots</button>`;
+  html += `<p class="note">Set A and B differently to compare two curves on one plot (Task 3/4/5/6 item 9).</p>`;
+  div.innerHTML = html;
+  document.getElementById('updateBtn').addEventListener('click', update);
+  fam.fields.forEach(f => {
+    ['A', 'B'].forEach(w => {
+      document.getElementById(`${w}_${f.id}`).addEventListener('input', update);
+    });
+  });
+  if (currentFam === 'poisson') {
+    document.getElementById('A_lam').addEventListener('input', e => {
+      /* live slider feel for λ */
+      update();
+    });
+  }
+}
+
+function plotSeries(svgId, series, yMax, yLabel, isCdf) {
+  const svg = document.getElementById(svgId);
+  const W = 620, H = 240, ml = 48, mr = 16, mt = 14, mb = 32;
+  const innerW = W - ml - mr, innerH = H - mt - mb;
+  const allK = [...new Set(series.flatMap(s => s.ks))].sort((a, b) => a - b);
+  if (!allK.length) { svg.innerHTML = ''; return; }
+  const xMin = allK[0], xMax = allK[allK.length - 1];
+  const sx = x => ml + (xMax === xMin ? innerW / 2 : (x - xMin) / (xMax - xMin) * innerW);
+  const sy = v => mt + innerH - (v / yMax) * innerH;
+  const colors = ['#2563eb', '#dc2626'];
+  let s = `<rect x="${ml}" y="${mt}" width="${innerW}" height="${innerH}" fill="#fbfbfd" stroke="#e5e7eb"/>`;
+  series.forEach((ser, idx) => {
+    const c = colors[idx % 2];
+    if (isCdf) {
+      let prev = 0;
+      ser.ks.forEach((k, i) => {
+        const cur = ser.vals[i];
+        const kNext = i + 1 < ser.ks.length ? ser.ks[i + 1] : k + 0.9;
+        s += `<line x1="${sx(k)}" x2="${sx(kNext)}" y1="${sy(cur)}" y2="${sy(cur)}" stroke="${c}" stroke-width="2"/>`;
+        s += `<circle cx="${sx(k)}" cy="${sy(prev)}" r="3" fill="#fff" stroke="${c}" stroke-width="2"/>`;
+        s += `<circle cx="${sx(k)}" cy="${sy(cur)}" r="3" fill="${c}"/>`;
+        prev = cur;
+      });
+    } else {
+      ser.ks.forEach((k, i) => {
+        const v = ser.vals[i];
+        s += `<line x1="${sx(k)}" x2="${sx(k)}" y1="${sy(0)}" y2="${sy(v)}" stroke="${c}" stroke-width="2"/>`;
+        s += `<circle cx="${sx(k)}" cy="${sy(v)}" r="3.5" fill="${c}"/>`;
+      });
+    }
+  });
+  s += `<text x="${ml + innerW/2}" y="${H-4}" text-anchor="middle" font-size="11" fill="#6b7280">k</text>`;
+  s += `<text x="12" y="${mt+innerH/2}" text-anchor="middle" font-size="11" fill="#6b7280" transform="rotate(-90 12 ${mt+innerH/2})">${yLabel}</text>`;
+  svg.innerHTML = s;
+}
+
+function updateProbs(pmfFn, parA) {
+  const a = parseFloat(document.getElementById('qa').value);
+  const b = parseFloat(document.getElementById('qb').value);
+  const rows = [];
+  if (Number.isFinite(a)) {
+    rows.push([`P(X = ${a})`, pmfFn(a, parA)]);
+    rows.push([`P(X ≤ ${a})`, cdfAt(pmfFn, parA, a)]);
+    rows.push([`P(X < ${a})`, cdfLeft(pmfFn, parA, a)]);
+    rows.push([`P(X ≥ ${a})`, 1 - cdfLeft(pmfFn, parA, a)]);
+    rows.push([`P(X > ${a})`, 1 - cdfAt(pmfFn, parA, a)]);
+  }
+  if (Number.isFinite(a) && Number.isFinite(b) && a <= b) {
+    rows.push([`P(${a} < X ≤ ${b})`, cdfAt(pmfFn, parA, b) - cdfAt(pmfFn, parA, a)]);
+    rows.push([`P(${a} ≤ X ≤ ${b})`, cdfAt(pmfFn, parA, b) - cdfLeft(pmfFn, parA, a)]);
+  }
+  document.getElementById('probs').innerHTML = rows.map(([e, v]) =>
+    `<tr><td>${e}</td><td class="val">${fmt(v)}</td></tr>`
+  ).join('');
+}
+
+function update() {
+  const fam = families[currentFam];
+  const parA = readParams('A'), parB = readParams('B');
+  const pmfFn = (k, p) => fam.pmf(k, p);
+  const seriesPmf = [], seriesCdf = [];
+  [{ par: parA, label: 'A' }, { par: parB, label: 'B' }].forEach(({ par }) => {
+    const ks = fam.support(par);
+    const pmfV = ks.map(k => pmfFn(k, par));
+    const cdfV = ks.map((k, i) => pmfV.slice(0, i + 1).reduce((s, v) => s + v, 0));
+    seriesPmf.push({ ks, vals: pmfV });
+    seriesCdf.push({ ks, vals: cdfV });
+  });
+  const yMaxP = Math.max(0.001, ...seriesPmf.flatMap(s => s.vals)) * 1.15;
+  plotSeries('pmfSvg', seriesPmf, yMaxP, 'P(X=k)', false);
+  plotSeries('cdfSvg', seriesCdf, 1, 'F(k)', true);
+  updateProbs(pmfFn, parA);
+}
+
+document.getElementById('tabs').addEventListener('click', e => {
+  const btn = e.target.closest('.tab');
+  if (!btn) return;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  currentFam = btn.dataset.fam;
+  buildControls();
+  update();
+});
+
+document.getElementById('qa').addEventListener('input', update);
+document.getElementById('qb').addEventListener('input', update);
+
+buildControls();
+update();
+</script>
+</body>
+</html>
