@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Solution 01 — PMF / CDF interactive viewer</title>
+<style>
+  :root {
+    --fg: #1f2937;
+    --muted: #6b7280;
+    --line: #d1d5db;
+    --accent: #2563eb;
+    --accent-soft: #dbeafe;
+    --warn: #b91c1c;
+    --ok: #047857;
+    --bg-soft: #f9fafb;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    color: var(--fg);
+    margin: 0;
+    padding: 28px 36px 60px;
+    max-width: 1100px;
+    background: #ffffff;
+  }
+  h1 { margin: 0 0 4px; font-size: 22px; }
+  h2 { margin: 28px 0 8px; font-size: 17px; }
+  p.lead { color: var(--muted); margin: 0 0 20px; }
+  .grid {
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    gap: 28px;
+    align-items: start;
+  }
+  table.data {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 14px;
+  }
+  table.data th, table.data td {
+    border: 1px solid var(--line);
+    padding: 6px 8px;
+    text-align: center;
+  }
+  table.data th { background: var(--bg-soft); font-weight: 600; }
+  table.data input {
+    width: 100%;
+    border: 0;
+    text-align: center;
+    font: inherit;
+    background: transparent;
+  }
+  table.data input:focus { outline: 2px solid var(--accent-soft); border-radius: 3px; }
+  .row-actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  button {
+    font: inherit;
+    padding: 6px 12px;
+    border: 1px solid var(--line);
+    background: var(--bg-soft);
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  button:hover { background: #eef2ff; border-color: var(--accent); }
+  button.primary { background: var(--accent); color: white; border-color: var(--accent); }
+  button.primary:hover { background: #1d4ed8; }
+  .total {
+    margin-top: 12px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-variant-numeric: tabular-nums;
+    background: var(--bg-soft);
+  }
+  .total.ok { background: #ecfdf5; color: var(--ok); }
+  .total.bad { background: #fef2f2; color: var(--warn); }
+  svg { width: 100%; height: 260px; display: block; }
+  .plot-card {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 12px 14px 16px;
+    background: white;
+  }
+  .plot-card + .plot-card { margin-top: 16px; }
+  .controls {
+    display: grid;
+    grid-template-columns: 120px 120px 1fr;
+    gap: 10px 14px;
+    align-items: center;
+    margin-top: 8px;
+  }
+  .controls label { font-size: 13px; color: var(--muted); }
+  .controls input[type=number] {
+    width: 100%;
+    padding: 6px 8px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    font: inherit;
+  }
+  table.probs {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    margin-top: 10px;
+  }
+  table.probs th, table.probs td {
+    border-bottom: 1px solid var(--line);
+    padding: 6px 8px;
+    text-align: left;
+  }
+  table.probs td.val {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+  }
+  small.note { color: var(--muted); }
+  code { background: var(--bg-soft); padding: 1px 5px; border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<h1>Solution 01 — PMF / CDF interactive viewer</h1>
+<p class="lead">
+Edit the table on the left. The PMF (top right) and the right-continuous CDF (bottom right)
+are recomputed live. Probabilities of the form
+<code>P(X = a)</code>, <code>P(X ≤ a)</code>, <code>P(X &lt; a)</code>,
+<code>P(X ≥ a)</code>, <code>P(X &gt; a)</code>, <code>P(a &lt; X ≤ b)</code>
+and <code>P(a ≤ X ≤ b)</code> are evaluated from the CDF.
+</p>
+
+<div class="grid">
+  <div>
+    <h2>Probability table</h2>
+    <table class="data" id="tbl">
+      <thead><tr><th style="width:30%">x</th><th>P(X = x)</th><th style="width:48px">·</th></tr></thead>
+      <tbody></tbody>
+    </table>
+    <div class="row-actions">
+      <button id="addRow">+ Add row</button>
+      <button id="reset">Reset to problem table</button>
+    </div>
+    <div id="total" class="total">total = 0</div>
+
+    <h2>Query</h2>
+    <div class="controls">
+      <label for="a">a =</label>
+      <label for="b">b =</label>
+      <span></span>
+      <input id="a" type="number" step="0.1" value="1">
+      <input id="b" type="number" step="0.1" value="3">
+      <small class="note">Used by interval probabilities below.</small>
+    </div>
+    <table class="probs" id="probs">
+      <thead><tr><th>Event</th><th class="val">Probability</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div>
+    <div class="plot-card">
+      <h2 style="margin-top:0">PMF (stems)</h2>
+      <svg id="pmfSvg" viewBox="0 0 600 260" preserveAspectRatio="none"></svg>
+    </div>
+    <div class="plot-card">
+      <h2 style="margin-top:0">CDF (right-continuous step)</h2>
+      <svg id="cdfSvg" viewBox="0 0 600 260" preserveAspectRatio="none"></svg>
+    </div>
+  </div>
+</div>
+
+<script>
+  const DEFAULT_ROWS = [
+    [-2, 0.10],
+    [ 0, 0.25],
+    [ 1, 0.30],
+    [ 3, 0.20],
+    [ 5, 0.15],
+  ];
+
+  const tblBody = document.querySelector('#tbl tbody');
+  const totalDiv = document.querySelector('#total');
+  const probsBody = document.querySelector('#probs tbody');
+
+  function buildTable(rows) {
+    tblBody.innerHTML = '';
+    rows.forEach(([x, p]) => addRow(x, p));
+  }
+
+  function addRow(x = 0, p = 0) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input type="number" step="any" value="${x}" class="x"></td>
+      <td><input type="number" step="any" min="0" value="${p}" class="p"></td>
+      <td><button class="del" title="Delete row">×</button></td>`;
+    tr.querySelector('.del').addEventListener('click', () => { tr.remove(); update(); });
+    tr.querySelectorAll('input').forEach(inp => inp.addEventListener('input', update));
+    tblBody.appendChild(tr);
+  }
+
+  function readRows() {
+    const rows = [...tblBody.querySelectorAll('tr')].map(tr => {
+      const x = parseFloat(tr.querySelector('.x').value);
+      const p = parseFloat(tr.querySelector('.p').value);
+      return [x, p];
+    }).filter(([x, p]) => Number.isFinite(x) && Number.isFinite(p) && p > 0);
+    rows.sort((u, v) => u[0] - v[0]);
+    const merged = [];
+    rows.forEach(([x, p]) => {
+      const last = merged[merged.length - 1];
+      if (last && Math.abs(last[0] - x) < 1e-12) last[1] += p;
+      else merged.push([x, p]);
+    });
+    return merged;
+  }
+
+  function cdfAt(rows, x) {
+    let s = 0;
+    for (const [xk, pk] of rows) if (xk <= x + 1e-12) s += pk;
+    return s;
+  }
+  function cdfLeftAt(rows, x) {
+    let s = 0;
+    for (const [xk, pk] of rows) if (xk < x - 1e-12) s += pk;
+    return s;
+  }
+  function pmfAt(rows, x) {
+    for (const [xk, pk] of rows) if (Math.abs(xk - x) < 1e-12) return pk;
+    return 0;
+  }
+
+  function fmt(v) { return (Math.round(v * 1e6) / 1e6).toString(); }
+
+  function plotPmf(rows) {
+    const svg = document.getElementById('pmfSvg');
+    const W = 600, H = 260, ml = 50, mr = 20, mt = 18, mb = 38;
+    const innerW = W - ml - mr, innerH = H - mt - mb;
+    const xs = rows.map(r => r[0]);
+    const ps = rows.map(r => r[1]);
+    const xMin = xs.length ? Math.min(...xs) - 1 : -1;
+    const xMax = xs.length ? Math.max(...xs) + 1 :  1;
+    const pMax = Math.max(0.001, ...ps) * 1.2;
+
+    const sx = x => ml + (x - xMin) / (xMax - xMin) * innerW;
+    const sy = p => mt + innerH - (p / pMax) * innerH;
+
+    let s = `<rect x="${ml}" y="${mt}" width="${innerW}" height="${innerH}" fill="#fbfbfd" stroke="#e5e7eb"/>`;
+    const ticksX = xs;
+    ticksX.forEach(x => {
+      s += `<line x1="${sx(x)}" x2="${sx(x)}" y1="${mt+innerH}" y2="${mt+innerH+5}" stroke="#9ca3af"/>`;
+      s += `<text x="${sx(x)}" y="${mt+innerH+18}" text-anchor="middle" font-size="11" fill="#374151">${x}</text>`;
+    });
+    [0, 0.25, 0.5, 0.75, 1].filter(v => v <= pMax + 1e-9).forEach(v => {
+      s += `<line x1="${ml}" x2="${ml+innerW}" y1="${sy(v)}" y2="${sy(v)}" stroke="#eef0f3"/>`;
+      s += `<text x="${ml-6}" y="${sy(v)+3}" text-anchor="end" font-size="11" fill="#374151">${v}</text>`;
+    });
+
+    rows.forEach(([x, p]) => {
+      s += `<line x1="${sx(x)}" x2="${sx(x)}" y1="${sy(0)}" y2="${sy(p)}" stroke="#2563eb" stroke-width="2"/>`;
+      s += `<circle cx="${sx(x)}" cy="${sy(p)}" r="4.5" fill="#2563eb"/>`;
+      s += `<text x="${sx(x)}" y="${sy(p)-8}" text-anchor="middle" font-size="11" fill="#1e3a8a">${fmt(p)}</text>`;
+    });
+
+    s += `<text x="${ml+innerW/2}" y="${H-6}" text-anchor="middle" font-size="11" fill="#6b7280">x</text>`;
+    s += `<text x="14" y="${mt+innerH/2}" text-anchor="middle" font-size="11" fill="#6b7280" transform="rotate(-90 14 ${mt+innerH/2})">P(X = x)</text>`;
+    svg.innerHTML = s;
+  }
+
+  function plotCdf(rows) {
+    const svg = document.getElementById('cdfSvg');
+    const W = 600, H = 260, ml = 50, mr = 20, mt = 18, mb = 38;
+    const innerW = W - ml - mr, innerH = H - mt - mb;
+    const xs = rows.map(r => r[0]);
+    const xMin = xs.length ? Math.min(...xs) - 1.5 : -1;
+    const xMax = xs.length ? Math.max(...xs) + 1.5 :  1;
+
+    const sx = x => ml + (x - xMin) / (xMax - xMin) * innerW;
+    const sy = p => mt + innerH - p * innerH;
+
+    let s = `<rect x="${ml}" y="${mt}" width="${innerW}" height="${innerH}" fill="#fbfbfd" stroke="#e5e7eb"/>`;
+    [0, 0.25, 0.5, 0.75, 1].forEach(v => {
+      s += `<line x1="${ml}" x2="${ml+innerW}" y1="${sy(v)}" y2="${sy(v)}" stroke="#eef0f3"/>`;
+      s += `<text x="${ml-6}" y="${sy(v)+3}" text-anchor="end" font-size="11" fill="#374151">${v.toFixed(2)}</text>`;
+    });
+    xs.forEach(x => {
+      s += `<line x1="${sx(x)}" x2="${sx(x)}" y1="${mt+innerH}" y2="${mt+innerH+5}" stroke="#9ca3af"/>`;
+      s += `<text x="${sx(x)}" y="${mt+innerH+18}" text-anchor="middle" font-size="11" fill="#374151">${x}</text>`;
+    });
+
+    let prev = 0;
+    s += `<line x1="${sx(xMin)}" x2="${sx(xs[0])}" y1="${sy(0)}" y2="${sy(0)}" stroke="#dc2626" stroke-width="2"/>`;
+    rows.forEach(([x, p], i) => {
+      const cur = prev + p;
+      const xR = i + 1 < rows.length ? rows[i+1][0] : xMax;
+      s += `<line x1="${sx(x)}" x2="${sx(xR)}" y1="${sy(cur)}" y2="${sy(cur)}" stroke="#dc2626" stroke-width="2"/>`;
+      s += `<circle cx="${sx(x)}" cy="${sy(prev)}" r="4" fill="white" stroke="#dc2626" stroke-width="2"/>`;
+      s += `<circle cx="${sx(x)}" cy="${sy(cur)}" r="4" fill="#dc2626"/>`;
+      prev = cur;
+    });
+
+    s += `<text x="${ml+innerW/2}" y="${H-6}" text-anchor="middle" font-size="11" fill="#6b7280">x</text>`;
+    s += `<text x="14" y="${mt+innerH/2}" text-anchor="middle" font-size="11" fill="#6b7280" transform="rotate(-90 14 ${mt+innerH/2})">F(x) = P(X ≤ x)</text>`;
+    svg.innerHTML = s;
+  }
+
+  function updateProbs(rows) {
+    const a = parseFloat(document.getElementById('a').value);
+    const b = parseFloat(document.getElementById('b').value);
+    const events = [];
+    if (Number.isFinite(a)) {
+      events.push([`P(X = ${a})`,     cdfAt(rows, a) - cdfLeftAt(rows, a)]);
+      events.push([`P(X ≤ ${a})`,     cdfAt(rows, a)]);
+      events.push([`P(X < ${a})`,     cdfLeftAt(rows, a)]);
+      events.push([`P(X ≥ ${a})`,     1 - cdfLeftAt(rows, a)]);
+      events.push([`P(X > ${a})`,     1 - cdfAt(rows, a)]);
+    }
+    if (Number.isFinite(a) && Number.isFinite(b) && a <= b) {
+      events.push([`P(${a} < X ≤ ${b})`, cdfAt(rows, b) - cdfAt(rows, a)]);
+      events.push([`P(${a} ≤ X ≤ ${b})`, cdfAt(rows, b) - cdfLeftAt(rows, a)]);
+    }
+    probsBody.innerHTML = events.map(([e, v]) =>
+      `<tr><td>${e}</td><td class="val">${fmt(v)}</td></tr>`
+    ).join('');
+  }
+
+  function update() {
+    const rows = readRows();
+    const sum = rows.reduce((s, [, p]) => s + p, 0);
+    const ok = Math.abs(sum - 1) < 1e-9;
+    totalDiv.textContent = `total = ${fmt(sum)}${ok ? '   (valid distribution)' : ''}`;
+    totalDiv.className = `total ${ok ? 'ok' : 'bad'}`;
+    plotPmf(rows);
+    plotCdf(rows);
+    updateProbs(rows);
+  }
+
+  document.getElementById('addRow').addEventListener('click', () => { addRow(); update(); });
+  document.getElementById('reset').addEventListener('click', () => { buildTable(DEFAULT_ROWS); update(); });
+  document.getElementById('a').addEventListener('input', update);
+  document.getElementById('b').addEventListener('input', update);
+
+  buildTable(DEFAULT_ROWS);
+  update();
+</script>
+
+</body>
+</html>
