@@ -2,68 +2,80 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<title>Distribution viewer — Tasks 3–6 (Binomial, Geometric, Poisson, Hypergeometric)</title>
+<title>Distribution Visualizer — Tasks 3–10</title>
 <style>
   :root {
     --fg:#1f2937; --muted:#6b7280; --line:#d1d5db; --accent:#2563eb;
-    --bg-soft:#f9fafb; --ok:#047857; --warn:#b91c1c;
+    --bg-soft:#f9fafb; --ok:#047857;
   }
   *{box-sizing:border-box}
-  body{font-family:ui-sans-serif,system-ui,sans-serif;color:var(--fg);margin:0;padding:24px 32px 48px;max-width:1150px}
+  body{font-family:ui-sans-serif,system-ui,sans-serif;color:var(--fg);margin:0;padding:24px 32px 48px;max-width:1180px}
   h1{margin:0 0 6px;font-size:22px}
   p.lead{color:var(--muted);margin:0 0 18px;line-height:1.5}
   .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px}
   .tab{font:inherit;padding:8px 14px;border:1px solid var(--line);background:var(--bg-soft);border-radius:8px;cursor:pointer}
   .tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
-  .grid{display:grid;grid-template-columns:320px 1fr;gap:24px;align-items:start}
+  .grid{display:grid;grid-template-columns:340px 1fr;gap:24px;align-items:start}
   label{font-size:13px;color:var(--muted);display:block;margin:8px 0 4px}
   input[type=number],select{width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:6px;font:inherit}
+  input[type=range]{width:100%;margin:4px 0}
   .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
   button{font:inherit;padding:7px 12px;border:1px solid var(--line);background:var(--bg-soft);border-radius:6px;cursor:pointer;margin-top:10px}
   button:hover{background:#eef2ff;border-color:var(--accent)}
   .plot-card{border:1px solid var(--line);border-radius:8px;padding:12px;margin-bottom:14px}
   .plot-card h3{margin:0 0 8px;font-size:15px}
-  svg{width:100%;height:240px;display:block}
+  svg{width:100%;height:260px;display:block}
   table.probs{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
   table.probs td,table.probs th{border-bottom:1px solid var(--line);padding:5px 8px;text-align:left}
   table.probs td.val{text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
   .compare-hdr{font-size:14px;font-weight:600;margin:14px 0 6px;color:var(--fg)}
+  .support-box{font-size:13px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:8px 10px;margin:10px 0;line-height:1.45}
+  .apps{font-size:12px;color:var(--muted);margin-top:12px;line-height:1.5;border-top:1px solid var(--line);padding-top:10px}
   small.note{color:var(--muted);font-size:12px}
+  .preset-row{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
+  .preset{font-size:12px;padding:4px 8px;border:1px solid var(--line);border-radius:5px;background:#fff;cursor:pointer}
+  .preset:hover{border-color:var(--accent);color:var(--accent)}
 </style>
 </head>
 <body>
-<h1>Distribution viewer — Tasks 3–6</h1>
+<h1>Distribution Visualizer — Tasks 3–10</h1>
 <p class="lead">
-Compare PMF and CDF for <strong>Binomial</strong>, <strong>Geometric</strong>, <strong>Poisson</strong>, and <strong>Hypergeometric</strong> families.
-Two parameter sets (A and B) can be overlaid on the same plot. Probabilities are computed from the PMF (exact summation).
+Explore discrete PMF/CDF and continuous PDF/CDF families. Compare parameter sets A and B on one plot,
+query probabilities numerically, and see the support. Interval shading highlights <strong>P(a ≤ X ≤ b)</strong> for continuous laws.
 </p>
 
 <div class="tabs" id="tabs">
-  <button class="tab active" data-fam="binomial">Binomial</button>
+  <button class="tab" data-fam="binomial">Binomial</button>
   <button class="tab" data-fam="geometric">Geometric</button>
   <button class="tab" data-fam="poisson">Poisson</button>
   <button class="tab" data-fam="hypergeom">Hypergeometric</button>
+  <button class="tab" data-fam="negbinom">Negative Binomial</button>
+  <button class="tab" data-fam="beta">Beta</button>
+  <button class="tab" data-fam="gamma">Gamma</button>
+  <button class="tab active" data-fam="normal">Normal</button>
 </div>
 
 <div class="grid">
   <div id="controls"></div>
   <div>
+    <div id="supportBox" class="support-box"></div>
     <div class="plot-card">
-      <h3>PMF comparison</h3>
-      <svg id="pmfSvg" viewBox="0 0 620 240"></svg>
+      <h3 id="densityTitle">PMF / PDF comparison</h3>
+      <svg id="densitySvg" viewBox="0 0 640 260"></svg>
     </div>
     <div class="plot-card">
       <h3>CDF comparison</h3>
-      <svg id="cdfSvg" viewBox="0 0 620 240"></svg>
+      <svg id="cdfSvg" viewBox="0 0 640 260"></svg>
     </div>
     <div class="plot-card">
       <h3>Probability query (set A)</h3>
       <div class="row2">
-        <div><label>a</label><input id="qa" type="number" step="1" value="2"></div>
-        <div><label>b</label><input id="qb" type="number" step="1" value="5"></div>
+        <div><label>a</label><input id="qa" type="number" step="any" value="1.5"></div>
+        <div><label>b</label><input id="qb" type="number" step="any" value="2.5"></div>
       </div>
       <table class="probs" id="probs"></table>
     </div>
+    <div id="apps" class="apps"></div>
   </div>
 </div>
 
@@ -77,10 +89,82 @@ function comb(n, k) {
   for (let i = 1; i <= k; i++) r = r * (n - k + i) / i;
   return r;
 }
+function logGamma(z) {
+  if (z <= 0) return Infinity;
+  let x = (z - 0.5) * Math.log(z) - z + 0.9189385332046727;
+  x += 1 / (12 * z) - 1 / (360 * z ** 3);
+  return x;
+}
+function betaFn(a, b) { return Math.exp(logGamma(a) + logGamma(b) - logGamma(a + b)); }
+function betainc(a, b, x) {
+  if (x <= 0) return 0;
+  if (x >= 1) return 1;
+  const bt = Math.exp(logGamma(a + b) - logGamma(a) - logGamma(b) + a * Math.log(x) + b * Math.log(1 - x));
+  const maxIter = 200, eps = 1e-10;
+  let m = Math.floor((a + b) / 2);
+  let aa = a, bb = b, xx = x;
+  let qab = a + b, qap = a + 1, qam = a - 1;
+  let c = 1, d = 1 - qab * xx / qap;
+  if (Math.abs(d) < 1e-30) d = 1e-30;
+  d = 1 / d;
+  let h = d;
+  for (let m2 = 1; m2 <= maxIter; m2++) {
+    let m2f = m2;
+    let aa2 = m2f * (b - m2f) * xx / ((qam + 2 * m2f) * (a + 2 * m2f));
+    d = 1 + aa2 * d; if (Math.abs(d) < 1e-30) d = 1e-30; d = 1 / d;
+    c = 1 + aa2 / c; if (Math.abs(c) < 1e-30) c = 1e-30;
+    h *= d * c;
+    aa2 = -(a + m2f) * (qab + m2f) * xx / ((a + 2 * m2f) * (qap + 2 * m2f));
+    d = 1 + aa2 * d; if (Math.abs(d) < 1e-30) d = 1e-30; d = 1 / d;
+    c = 1 + aa2 / c; if (Math.abs(c) < 1e-30) c = 1e-30;
+    const del = d * c;
+    h *= del;
+    if (Math.abs(del - 1) < eps) break;
+  }
+  return bt * h / a;
+}
+function gammaPdf(x, k, scale) {
+  if (x <= 0) return 0;
+  const theta = scale;
+  return (x ** (k - 1) * Math.exp(-x / theta)) / (Math.exp(logGamma(k)) * theta ** k);
+}
+function gammaCdf(x, k, scale) {
+  if (x <= 0) return 0;
+  const n = 120, step = x / n;
+  let s = 0;
+  for (let i = 0; i <= n; i++) {
+    const t = i * step;
+    const w = i === 0 || i === n ? 0.5 : 1;
+    s += w * gammaPdf(t, k, scale);
+  }
+  return Math.min(1, Math.max(0, s * step));
+}
+function normPdf(x, mu, sigma) {
+  const z = (x - mu) / sigma;
+  return Math.exp(-0.5 * z * z) / (sigma * Math.sqrt(2 * Math.PI));
+}
+function normCdf(x, mu, sigma) {
+  const z = (x - mu) / (sigma * Math.SQRT2);
+  return 0.5 * (1 + erf(z));
+}
+function erf(x) {
+  const sign = x < 0 ? -1 : 1;
+  x = Math.abs(x);
+  const a1=0.254829592,a2=-0.284496736,a3=1.421413741,a4=-1.453152027,a5=1.061405429,p=0.3275911;
+  const t = 1 / (1 + p * x);
+  const y = 1 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-x * x);
+  return sign * y;
+}
+function nbPmf(k, r, p) {
+  if (k < r) return 0;
+  return comb(k - 1, r - 1) * p ** r * (1 - p) ** (k - r);
+}
 
 const families = {
   binomial: {
-    title: 'Binomial Bin(n,p)',
+    title: 'Binomial Bin(n,p)', continuous: false,
+    supportText: 'supp(X) = {0, 1, …, n}',
+    apps: 'Fixed number of independent trials; counts successes (quality control, coin flips, survey yes/no).',
     fields: [
       { id: 'n', label: 'n (trials)', def: 10, min: 1, max: 100 },
       { id: 'p', label: 'p (success prob)', def: 0.4, min: 0, max: 1, step: 0.01 },
@@ -89,70 +173,135 @@ const families = {
       if (k < 0 || k > par.n) return 0;
       return comb(par.n, k) * par.p ** k * (1 - par.p) ** (par.n - k);
     },
-    support(par) {
-      const arr = [];
-      for (let k = 0; k <= par.n; k++) arr.push(k);
-      return arr;
-    },
+    support(par) { const a=[]; for (let k=0;k<=par.n;k++) a.push(k); return a; },
+    defaultQuery: { a: 2, b: 5 },
   },
   geometric: {
-    title: 'Geometric (trial of first success)',
+    title: 'Geometric (trial of first success)', continuous: false,
+    supportText: 'supp(X) = {1, 2, 3, …}',
+    apps: 'Waiting time until first success in Bernoulli trials (reliability, first conversion).',
     fields: [{ id: 'p', label: 'p', def: 0.25, min: 0.001, max: 1, step: 0.01 }],
-    pmf(k, par) {
-      if (k < 1) return 0;
-      const q = 1 - par.p;
-      return par.p * q ** (k - 1);
-    },
+    pmf(k, par) { return k < 1 ? 0 : par.p * (1 - par.p) ** (k - 1); },
     support(par) {
-      const arr = [];
-      let s = 0, k = 1;
-      while (k <= 60 && s < 0.9999) { arr.push(k); s += this.pmf(k, par); k++; }
-      if (arr.length === 0) arr.push(1);
-      return arr;
+      const a=[]; let s=0,k=1;
+      while (k<=60 && s<0.9999) { a.push(k); s+=this.pmf(k,par); k++; }
+      return a.length ? a : [1];
     },
+    defaultQuery: { a: 3, b: 8 },
   },
   poisson: {
-    title: 'Poisson(λ)',
-    fields: [{ id: 'lam', label: 'λ (rate)', def: 3, min: 0.01, max: 50, step: 0.1 }],
+    title: 'Poisson(λ)', continuous: false,
+    supportText: 'supp(X) = {0, 1, 2, …}',
+    apps: 'Rare events in fixed interval (calls per hour, defects per meter, radioactive decays).',
+    fields: [{ id: 'lam', label: 'λ (rate)', def: 3, min: 0.01, max: 50, step: 0.1, slider: true }],
     pmf(k, par) {
       if (k < 0) return 0;
-      let f = 1;
-      for (let i = 2; i <= k; i++) f *= i;
+      let f=1; for (let i=2;i<=k;i++) f*=i;
       return Math.exp(-par.lam) * par.lam ** k / f;
     },
     support(par) {
-      const arr = [];
-      let s = 0, k = 0;
-      while (k <= 80 && (k === 0 || s < 0.9999)) { arr.push(k); s += this.pmf(k, par); k++; }
-      return arr;
+      const a=[]; let s=0,k=0;
+      while (k<=80 && (k===0 || s<0.9999)) { a.push(k); s+=this.pmf(k,par); k++; }
+      return a;
     },
+    defaultQuery: { a: 1, b: 5 },
   },
   hypergeom: {
-    title: 'Hypergeometric(N,K,n)',
+    title: 'Hypergeometric(N,K,n)', continuous: false,
+    supportText: 'supp(X) = {max(0,n−N+K), …, min(n,K)}',
+    apps: 'Sampling without replacement (audits, card draws, finite population defect counts).',
     fields: [
       { id: 'N', label: 'N (population)', def: 30, min: 1, max: 500 },
       { id: 'K', label: 'K (successes in pop)', def: 10, min: 0, max: 500 },
       { id: 'n', label: 'n (sample size)', def: 5, min: 1, max: 500 },
     ],
     pmf(k, par) {
-      const { N, K, n } = par;
-      if (K > N || n > N) return 0;
-      const lo = Math.max(0, n - (N - K)), hi = Math.min(n, K);
-      if (k < lo || k > hi) return 0;
-      return comb(K, k) * comb(N - K, n - k) / comb(N, n);
+      const {N,K,n}=par;
+      if (K>N || n>N) return 0;
+      const lo=Math.max(0,n-(N-K)), hi=Math.min(n,K);
+      if (k<lo || k>hi) return 0;
+      return comb(K,k)*comb(N-K,n-k)/comb(N,n);
     },
     support(par) {
-      const { N, K, n } = par;
-      const lo = Math.max(0, n - (N - K)), hi = Math.min(n, K);
-      const arr = [];
-      for (let k = lo; k <= hi; k++) arr.push(k);
-      return arr;
+      const {N,K,n}=par;
+      const lo=Math.max(0,n-(N-K)), hi=Math.min(n,K);
+      const a=[]; for (let k=lo;k<=hi;k++) a.push(k); return a;
     },
+    defaultQuery: { a: 1, b: 3 },
+  },
+  negbinom: {
+    title: 'Negative Binomial (trial of r-th success)', continuous: false,
+    supportText: 'supp(X) = {r, r+1, r+2, …}',
+    apps: 'Trials until r-th success (r>1 quality checks, r-th sale). r=1 gives geometric.',
+    fields: [
+      { id: 'r', label: 'r (target successes)', def: 3, min: 1, max: 20 },
+      { id: 'p', label: 'p (success prob)', def: 0.4, min: 0.001, max: 1, step: 0.01 },
+    ],
+    pmf(k, par) { return nbPmf(Math.round(k), par.r, par.p); },
+    support(par) {
+      const a=[]; let s=0;
+      for (let k=par.r; k<=par.r+50 && s<0.9999; k++) { a.push(k); s+=nbPmf(k,par.r,par.p); }
+      return a;
+    },
+    defaultQuery: { a: 5, b: 10 },
+  },
+  beta: {
+    title: 'Beta(α, β) on [0,1]', continuous: true,
+    supportText: 'supp(X) = [0, 1]',
+    apps: 'Proportions, probabilities, Bayesian priors for rates, PERT task times.',
+    fields: [
+      { id: 'alpha', label: 'α (shape)', def: 2, min: 0.1, max: 20, step: 0.1, slider: true },
+      { id: 'beta', label: 'β (shape)', def: 5, min: 0.1, max: 20, step: 0.1, slider: true },
+    ],
+    xRange(par) { return [0, 1]; },
+    pdf(x, par) {
+      if (x<=0 || x>=1) return 0;
+      return x**(par.alpha-1)*(1-x)**(par.beta-1)/betaFn(par.alpha, par.beta);
+    },
+    cdf(x, par) { return betainc(par.alpha, par.beta, x); },
+    defaultQuery: { a: 0.2, b: 0.5 },
+    presets: [
+      { label: 'Symmetric (2,2)', A: {alpha:2,beta:2}, B: {alpha:2,beta:2} },
+      { label: 'Left skew (2,5)', A: {alpha:2,beta:5}, B: {alpha:2,beta:5} },
+    ],
+  },
+  gamma: {
+    title: 'Gamma(shape k, scale θ)', continuous: true,
+    supportText: 'supp(X) = [0, ∞)',
+    apps: 'Waiting times, service durations, rainfall; χ² is Gamma(ν/2, scale=2).',
+    fields: [
+      { id: 'k', label: 'shape k', def: 2, min: 0.1, max: 20, step: 0.1 },
+      { id: 'scale', label: 'scale θ', def: 2, min: 0.1, max: 20, step: 0.1 },
+    ],
+    xRange(par) { return [0, Math.max(12, par.k * par.scale * 4)]; },
+    pdf(x, par) { return gammaPdf(x, par.k, par.scale); },
+    cdf(x, par) { return gammaCdf(x, par.k, par.scale); },
+    defaultQuery: { a: 1, b: 4 },
+    presets: [
+      { label: 'χ²(4) = Gamma(2,2)', A: {k:2,scale:2}, B: {k:2,scale:2} },
+      { label: 'Exp = Gamma(1,2)', A: {k:1,scale:2}, B: {k:1,scale:2} },
+    ],
+  },
+  normal: {
+    title: 'Normal N(μ, σ²)', continuous: true,
+    supportText: 'supp(X) = (−∞, ∞)',
+    apps: 'Measurement error, heights, scores; CLT limit for sums/averages.',
+    fields: [
+      { id: 'mu', label: 'μ (mean)', def: 0, min: -20, max: 20, step: 0.1 },
+      { id: 'sigma', label: 'σ (std dev)', def: 1, min: 0.05, max: 10, step: 0.05 },
+    ],
+    xRange(par) { return [par.mu - 4*par.sigma, par.mu + 4*par.sigma]; },
+    pdf(x, par) { return normPdf(x, par.mu, par.sigma); },
+    cdf(x, par) { return normCdf(x, par.mu, par.sigma); },
+    defaultQuery: { a: -1, b: 1 },
+    presets: [
+      { label: 'N(0,1) vs N(2,1)', A: {mu:0,sigma:1}, B: {mu:2,sigma:1} },
+      { label: 'σ=0.5 vs σ=2', A: {mu:0,sigma:0.5}, B: {mu:0,sigma:2} },
+    ],
   },
 };
 
-let currentFam = 'binomial';
-const state = { A: {}, B: {} };
+let currentFam = 'normal';
 
 function readParams(which) {
   const fam = families[currentFam];
@@ -165,128 +314,237 @@ function readParams(which) {
     par.K = Math.min(par.K, par.N);
     par.n = Math.min(par.n, par.N);
   }
+  if (currentFam === 'normal' && par.sigma <= 0) par.sigma = 0.05;
   return par;
 }
 
-function cdfAt(pmfFn, par, x) {
-  const fam = families[currentFam];
+function cdfAtDiscrete(pmfFn, par, x) {
   let s = 0;
-  for (const k of fam.support(par)) {
+  for (const k of families[currentFam].support(par)) {
     if (k <= x + 1e-12) s += pmfFn(k, par);
     else break;
   }
   return s;
 }
-function cdfLeft(pmfFn, par, x) {
-  const fam = families[currentFam];
+function cdfLeftDiscrete(pmfFn, par, x) {
   let s = 0;
-  for (const k of fam.support(par)) {
+  for (const k of families[currentFam].support(par)) {
     if (k < x - 1e-12) s += pmfFn(k, par);
     else break;
   }
   return s;
 }
+function cdfAtCont(cdfFn, par, x) { return cdfFn(x, par); }
 
 function buildControls() {
   const fam = families[currentFam];
   const div = document.getElementById('controls');
   let html = `<div class="compare-hdr">${fam.title}</div>`;
+  if (fam.presets) {
+    html += `<div class="preset-row">`;
+    fam.presets.forEach((pr, i) => {
+      html += `<button class="preset" data-preset="${i}">${pr.label}</button>`;
+    });
+    html += `</div>`;
+  }
   ['A', 'B'].forEach(which => {
     html += `<div class="compare-hdr">Parameters ${which}</div>`;
     fam.fields.forEach(f => {
       html += `<label for="${which}_${f.id}">${f.label}</label>`;
-      html += `<input id="${which}_${f.id}" type="number" step="${f.step || 1}" min="${f.min ?? ''}" max="${f.max ?? ''}" value="${f.def}">`;
+      if (f.slider) {
+        html += `<input id="${which}_${f.id}_range" type="range" min="${f.min}" max="${f.max}" step="${f.step||0.1}" value="${f.def}">`;
+      }
+      html += `<input id="${which}_${f.id}" type="number" step="${f.step||1}" min="${f.min??''}" max="${f.max??''}" value="${f.def}">`;
     });
   });
   html += `<button id="updateBtn">Update plots</button>`;
-  html += `<p class="note">Set A and B differently to compare two curves on one plot (Task 3/4/5/6 item 9).</p>`;
+  html += `<p class="note">Set A and B differently to compare two curves (Tasks 3–10 item 9 / Final Project).</p>`;
   div.innerHTML = html;
   document.getElementById('updateBtn').addEventListener('click', update);
   fam.fields.forEach(f => {
     ['A', 'B'].forEach(w => {
-      document.getElementById(`${w}_${f.id}`).addEventListener('input', update);
+      const num = document.getElementById(`${w}_${f.id}`);
+      num.addEventListener('input', update);
+      const rng = document.getElementById(`${w}_${f.id}_range`);
+      if (rng) {
+        rng.addEventListener('input', e => { num.value = e.target.value; update(); });
+        num.addEventListener('input', e => { rng.value = e.target.value; });
+      }
     });
   });
-  if (currentFam === 'poisson') {
-    document.getElementById('A_lam').addEventListener('input', e => {
-      /* live slider feel for λ */
+  if (fam.defaultQuery) {
+    document.getElementById('qa').value = fam.defaultQuery.a;
+    document.getElementById('qb').value = fam.defaultQuery.b;
+  }
+  div.querySelectorAll('.preset').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const pr = fam.presets[+btn.dataset.preset];
+      Object.entries(pr.A).forEach(([k,v]) => {
+        document.getElementById(`A_${k}`).value = v;
+        const r = document.getElementById(`A_${k}_range`); if (r) r.value = v;
+      });
+      Object.entries(pr.B).forEach(([k,v]) => {
+        document.getElementById(`B_${k}`).value = v;
+        const r = document.getElementById(`B_${k}_range`); if (r) r.value = v;
+      });
       update();
     });
-  }
-}
-
-function plotSeries(svgId, series, yMax, yLabel, isCdf) {
-  const svg = document.getElementById(svgId);
-  const W = 620, H = 240, ml = 48, mr = 16, mt = 14, mb = 32;
-  const innerW = W - ml - mr, innerH = H - mt - mb;
-  const allK = [...new Set(series.flatMap(s => s.ks))].sort((a, b) => a - b);
-  if (!allK.length) { svg.innerHTML = ''; return; }
-  const xMin = allK[0], xMax = allK[allK.length - 1];
-  const sx = x => ml + (xMax === xMin ? innerW / 2 : (x - xMin) / (xMax - xMin) * innerW);
-  const sy = v => mt + innerH - (v / yMax) * innerH;
-  const colors = ['#2563eb', '#dc2626'];
-  let s = `<rect x="${ml}" y="${mt}" width="${innerW}" height="${innerH}" fill="#fbfbfd" stroke="#e5e7eb"/>`;
-  series.forEach((ser, idx) => {
-    const c = colors[idx % 2];
-    if (isCdf) {
-      let prev = 0;
-      ser.ks.forEach((k, i) => {
-        const cur = ser.vals[i];
-        const kNext = i + 1 < ser.ks.length ? ser.ks[i + 1] : k + 0.9;
-        s += `<line x1="${sx(k)}" x2="${sx(kNext)}" y1="${sy(cur)}" y2="${sy(cur)}" stroke="${c}" stroke-width="2"/>`;
-        s += `<circle cx="${sx(k)}" cy="${sy(prev)}" r="3" fill="#fff" stroke="${c}" stroke-width="2"/>`;
-        s += `<circle cx="${sx(k)}" cy="${sy(cur)}" r="3" fill="${c}"/>`;
-        prev = cur;
-      });
-    } else {
-      ser.ks.forEach((k, i) => {
-        const v = ser.vals[i];
-        s += `<line x1="${sx(k)}" x2="${sx(k)}" y1="${sy(0)}" y2="${sy(v)}" stroke="${c}" stroke-width="2"/>`;
-        s += `<circle cx="${sx(k)}" cy="${sy(v)}" r="3.5" fill="${c}"/>`;
-      });
-    }
   });
-  s += `<text x="${ml + innerW/2}" y="${H-4}" text-anchor="middle" font-size="11" fill="#6b7280">k</text>`;
-  s += `<text x="12" y="${mt+innerH/2}" text-anchor="middle" font-size="11" fill="#6b7280" transform="rotate(-90 12 ${mt+innerH/2})">${yLabel}</text>`;
-  svg.innerHTML = s;
 }
 
-function updateProbs(pmfFn, parA) {
-  const a = parseFloat(document.getElementById('qa').value);
-  const b = parseFloat(document.getElementById('qb').value);
-  const rows = [];
-  if (Number.isFinite(a)) {
-    rows.push([`P(X = ${a})`, pmfFn(a, parA)]);
-    rows.push([`P(X ≤ ${a})`, cdfAt(pmfFn, parA, a)]);
-    rows.push([`P(X < ${a})`, cdfLeft(pmfFn, parA, a)]);
-    rows.push([`P(X ≥ ${a})`, 1 - cdfLeft(pmfFn, parA, a)]);
-    rows.push([`P(X > ${a})`, 1 - cdfAt(pmfFn, parA, a)]);
-  }
-  if (Number.isFinite(a) && Number.isFinite(b) && a <= b) {
-    rows.push([`P(${a} < X ≤ ${b})`, cdfAt(pmfFn, parA, b) - cdfAt(pmfFn, parA, a)]);
-    rows.push([`P(${a} ≤ X ≤ ${b})`, cdfAt(pmfFn, parA, b) - cdfLeft(pmfFn, parA, a)]);
-  }
-  document.getElementById('probs').innerHTML = rows.map(([e, v]) =>
-    `<tr><td>${e}</td><td class="val">${fmt(v)}</td></tr>`
-  ).join('');
+function plotDiscreteStems(svgId, series, yMax) {
+  const svg = document.getElementById(svgId);
+  const W=640,H=260,ml=48,mr=16,mt=14,mb=32, innerW=W-ml-mr, innerH=H-mt-mb;
+  const allK=[...new Set(series.flatMap(s=>s.ks))].sort((a,b)=>a-b);
+  if (!allK.length) { svg.innerHTML=''; return; }
+  const xMin=allK[0], xMax=allK[allK.length-1];
+  const sx=x=>ml+(xMax===xMin?innerW/2:(x-xMin)/(xMax-xMin)*innerW);
+  const sy=v=>mt+innerH-(v/yMax)*innerH;
+  const colors=['#2563eb','#dc2626'];
+  let s=`<rect x="${ml}" y="${mt}" width="${innerW}" height="${innerH}" fill="#fbfbfd" stroke="#e5e7eb"/>`;
+  series.forEach((ser,idx)=>{
+    const c=colors[idx%2];
+    ser.ks.forEach((k,i)=>{
+      const v=ser.vals[i];
+      s+=`<line x1="${sx(k)}" x2="${sx(k)}" y1="${sy(0)}" y2="${sy(v)}" stroke="${c}" stroke-width="2"/>`;
+      s+=`<circle cx="${sx(k)}" cy="${sy(v)}" r="3.5" fill="${c}"/>`;
+    });
+  });
+  s+=`<text x="${ml+innerW/2}" y="${H-4}" text-anchor="middle" font-size="11" fill="#6b7280">x / k</text>`;
+  svg.innerHTML=s;
 }
 
+function plotDiscreteCdf(svgId, series) {
+  const svg = document.getElementById(svgId);
+  const W=640,H=260,ml=48,mr=16,mt=14,mb=32, innerW=W-ml-mr, innerH=H-mt-mb;
+  const allK=[...new Set(series.flatMap(s=>s.ks))].sort((a,b)=>a-b);
+  const xMin=allK[0], xMax=allK[allK.length-1];
+  const sx=x=>ml+(xMax===xMin?innerW/2:(x-xMin)/(xMax-xMin)*innerW);
+  const sy=v=>mt+innerH-v*innerH;
+  const colors=['#2563eb','#dc2626'];
+  let s=`<rect x="${ml}" y="${mt}" width="${innerW}" height="${innerH}" fill="#fbfbfd" stroke="#e5e7eb"/>`;
+  series.forEach((ser,idx)=>{
+    const c=colors[idx%2]; let prev=0;
+    ser.ks.forEach((k,i)=>{
+      const cur=ser.vals[i];
+      const kNext=i+1<ser.ks.length?ser.ks[i+1]:k+0.9;
+      s+=`<line x1="${sx(k)}" x2="${sx(kNext)}" y1="${sy(cur)}" y2="${sy(cur)}" stroke="${c}" stroke-width="2"/>`;
+      s+=`<circle cx="${sx(k)}" cy="${sy(prev)}" r="3" fill="#fff" stroke="${c}" stroke-width="2"/>`;
+      s+=`<circle cx="${sx(k)}" cy="${sy(cur)}" r="3" fill="${c}"/>`;
+      prev=cur;
+    });
+  });
+  s+=`<text x="${ml+innerW/2}" y="${H-4}" text-anchor="middle" font-size="11" fill="#6b7280">x / k</text>`;
+  svg.innerHTML=s;
+}
+
+function plotContinuous(svgId, series, yMax, isCdf, shade) {
+  const svg = document.getElementById(svgId);
+  const W=640,H=260,ml=48,mr=16,mt=14,mb=32, innerW=W-ml-mr, innerH=H-mt-mb;
+  const allX=series[0].xs;
+  const xMin=allX[0], xMax=allX[allX.length-1];
+  const sx=x=>ml+(x-xMin)/(xMax-xMin)*innerW;
+  const sy=v=>mt+innerH-(v/(isCdf?1:yMax))*innerH;
+  const colors=['#2563eb','#dc2626'];
+  let s=`<rect x="${ml}" y="${mt}" width="${innerW}" height="${innerH}" fill="#fbfbfd" stroke="#e5e7eb"/>`;
+  if (shade && !isCdf && series[0]) {
+    const {xs, vals}=series[0];
+    let path=`M ${sx(xs[0])} ${sy(0)}`;
+    xs.forEach((x,i)=>path+=` L ${sx(x)} ${sy(vals[i])}`);
+    path+=` L ${sx(xs[xs.length-1])} ${sy(0)} Z`;
+    const lo=Math.min(shade.a, shade.b), hi=Math.max(shade.a, shade.b);
+    let clip='';
+    xs.forEach((x,i)=>{
+      if (x>=lo && x<=hi) {
+        const x0=i>0?xs[i-1]:x, x1=x;
+        if (i===0 || xs[i-1]<lo) clip+=`M ${sx(Math.max(lo,x0))} ${sy(0)} L ${sx(x1)} ${sy(vals[i])} `;
+        else clip+=`L ${sx(x1)} ${sy(vals[i])} `;
+      }
+    });
+    s+=`<path d="${path}" fill="#dbeafe" opacity="0.35"/>`;
+    if (lo>=xMin && hi<=xMax) {
+      let areaPath=`M ${sx(lo)} ${sy(0)}`;
+      xs.forEach((x,i)=>{ if(x>=lo&&x<=hi) areaPath+=` L ${sx(x)} ${sy(vals[i])}`; });
+      areaPath+=` L ${sx(hi)} ${sy(0)} Z`;
+      s+=`<path d="${areaPath}" fill="#2563eb" opacity="0.25"/>`;
+    }
+  }
+  series.forEach((ser,idx)=>{
+    const c=colors[idx%2];
+    let d='';
+    ser.xs.forEach((x,i)=>{ d+=(i?'L':'M')+` ${sx(x)} ${sy(ser.vals[i])} `; });
+    s+=`<path d="${d}" fill="none" stroke="${c}" stroke-width="2"/>`;
+  });
+  s+=`<text x="${ml+innerW/2}" y="${H-4}" text-anchor="middle" font-size="11" fill="#6b7280">x</text>`;
+  svg.innerHTML=s;
+}
+
+function updateProbs(fam, parA) {
+  const a=parseFloat(document.getElementById('qa').value);
+  const b=parseFloat(document.getElementById('qb').value);
+  const rows=[];
+  if (!fam.continuous) {
+    const pmf=(k,p)=>fam.pmf(k,p);
+    if (Number.isFinite(a)) {
+      rows.push([`P(X = ${a})`, pmf(a, parA)]);
+      rows.push([`P(X ≤ ${a})`, cdfAtDiscrete(pmf, parA, a)]);
+      rows.push([`P(X > ${a})`, 1-cdfAtDiscrete(pmf, parA, a)]);
+    }
+    if (Number.isFinite(a)&&Number.isFinite(b)&&a<=b) {
+      rows.push([`P(${a} ≤ X ≤ ${b})`, cdfAtDiscrete(pmf, parA, b)-cdfLeftDiscrete(pmf, parA, a)]);
+    }
+  } else {
+    const cdf=(x,p)=>fam.cdf(x,p);
+    if (Number.isFinite(a)) {
+      rows.push([`P(X ≤ ${a})`, cdf(a, parA)]);
+      rows.push([`P(X ≥ ${a})`, 1 - cdf(a, parA)]);
+      rows.push([`P(X = ${a})`, 0]);
+    }
+    if (Number.isFinite(a)&&Number.isFinite(b)) {
+      const lo=Math.min(a,b), hi=Math.max(a,b);
+      rows.push([`P(${lo} ≤ X ≤ ${hi})`, cdf(hi, parA) - cdf(lo, parA)]);
+    }
+  }
+  document.getElementById('probs').innerHTML=rows.map(([e,v])=>
+    `<tr><td>${e}</td><td class="val">${fmt(v)}</td></tr>`).join('');
+}
 function update() {
   const fam = families[currentFam];
   const parA = readParams('A'), parB = readParams('B');
-  const pmfFn = (k, p) => fam.pmf(k, p);
-  const seriesPmf = [], seriesCdf = [];
-  [{ par: parA, label: 'A' }, { par: parB, label: 'B' }].forEach(({ par }) => {
-    const ks = fam.support(par);
-    const pmfV = ks.map(k => pmfFn(k, par));
-    const cdfV = ks.map((k, i) => pmfV.slice(0, i + 1).reduce((s, v) => s + v, 0));
-    seriesPmf.push({ ks, vals: pmfV });
-    seriesCdf.push({ ks, vals: cdfV });
-  });
-  const yMaxP = Math.max(0.001, ...seriesPmf.flatMap(s => s.vals)) * 1.15;
-  plotSeries('pmfSvg', seriesPmf, yMaxP, 'P(X=k)', false);
-  plotSeries('cdfSvg', seriesCdf, 1, 'F(k)', true);
-  updateProbs(pmfFn, parA);
+  document.getElementById('supportBox').innerHTML = `<strong>Support:</strong> ${fam.supportText}`;
+  document.getElementById('apps').innerHTML = `<strong>Typical applications:</strong> ${fam.apps}`;
+  document.getElementById('densityTitle').textContent = fam.continuous ? 'PDF comparison' : 'PMF comparison';
+
+  const a=parseFloat(document.getElementById('qa').value);
+  const b=parseFloat(document.getElementById('qb').value);
+
+  if (!fam.continuous) {
+    const pmfFn=(k,p)=>fam.pmf(k,p);
+    const seriesPmf=[], seriesCdf=[];
+    [{par:parA},{par:parB}].forEach(({par})=>{
+      const ks=fam.support(par);
+      const pmfV=ks.map(k=>pmfFn(k,par));
+      const cdfV=ks.map((k,i)=>pmfV.slice(0,i+1).reduce((s,v)=>s+v,0));
+      seriesPmf.push({ks, vals:pmfV});
+      seriesCdf.push({ks, vals:cdfV});
+    });
+    const yMax=Math.max(0.001,...seriesPmf.flatMap(s=>s.vals))*1.15;
+    plotDiscreteStems('densitySvg', seriesPmf, yMax);
+    plotDiscreteCdf('cdfSvg', seriesCdf);
+  } else {
+    const [x0,x1]=fam.xRange(parA);
+    const xs=[]; const n=300;
+    for (let i=0;i<=n;i++) xs.push(x0+(x1-x0)*i/n);
+    const seriesPdf=[], seriesCdf=[];
+    [{par:parA},{par:parB}].forEach(({par})=>{
+      seriesPdf.push({xs, vals:xs.map(x=>fam.pdf(x,par))});
+      seriesCdf.push({xs, vals:xs.map(x=>fam.cdf(x,par))});
+    });
+    const yMax=Math.max(0.001,...seriesPdf.flatMap(s=>s.vals))*1.12;
+    plotContinuous('densitySvg', seriesPdf, yMax, false, Number.isFinite(a)&&Number.isFinite(b)?{a,b}:null);
+    plotContinuous('cdfSvg', seriesCdf, 1, true, null);
+  }
+  updateProbs(fam, parA);
 }
 
 document.getElementById('tabs').addEventListener('click', e => {
@@ -298,7 +556,6 @@ document.getElementById('tabs').addEventListener('click', e => {
   buildControls();
   update();
 });
-
 document.getElementById('qa').addEventListener('input', update);
 document.getElementById('qb').addEventListener('input', update);
 
