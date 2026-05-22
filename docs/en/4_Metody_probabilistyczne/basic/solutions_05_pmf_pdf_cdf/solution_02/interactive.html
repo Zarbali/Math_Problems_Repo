@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Solution 02 — PMF / CDF interactive viewer (dual input)</title>
+<style>
+  :root {
+    --fg: #1f2937; --muted: #6b7280; --line: #d1d5db;
+    --accent: #2563eb; --accent-soft: #dbeafe;
+    --warn: #b91c1c; --ok: #047857; --bg-soft: #f9fafb;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    color: var(--fg); margin: 0; padding: 28px 36px 60px; max-width: 1100px; background: #fff;
+  }
+  h1 { margin: 0 0 4px; font-size: 22px; }
+  h2 { margin: 28px 0 8px; font-size: 17px; }
+  p.lead { color: var(--muted); margin: 0 0 16px; }
+  .mode-bar {
+    display: flex; gap: 8px; align-items: center; margin-bottom: 20px; flex-wrap: wrap;
+  }
+  .mode-bar label { font-size: 14px; color: var(--muted); margin-right: 4px; }
+  .mode-btn {
+    font: inherit; padding: 6px 14px; border: 1px solid var(--line);
+    background: var(--bg-soft); border-radius: 6px; cursor: pointer;
+  }
+  .mode-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+  .grid { display: grid; grid-template-columns: 360px 1fr; gap: 28px; align-items: start; }
+  table.data { border-collapse: collapse; width: 100%; font-size: 14px; }
+  table.data th, table.data td { border: 1px solid var(--line); padding: 6px 8px; text-align: center; }
+  table.data th { background: var(--bg-soft); font-weight: 600; }
+  table.data input { width: 100%; border: 0; text-align: center; font: inherit; background: transparent; }
+  table.data input:focus { outline: 2px solid var(--accent-soft); border-radius: 3px; }
+  .row-actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  button {
+    font: inherit; padding: 6px 12px; border: 1px solid var(--line);
+    background: var(--bg-soft); border-radius: 6px; cursor: pointer;
+  }
+  button:hover { background: #eef2ff; border-color: var(--accent); }
+  .total { margin-top: 12px; padding: 8px 12px; border-radius: 6px; font-variant-numeric: tabular-nums; background: var(--bg-soft); }
+  .total.ok { background: #ecfdf5; color: var(--ok); }
+  .total.bad { background: #fef2f2; color: var(--warn); }
+  .recovered { margin-top: 10px; font-size: 13px; color: var(--muted); }
+  .recovered table { width: 100%; border-collapse: collapse; margin-top: 6px; font-size: 13px; }
+  .recovered th, .recovered td { border: 1px solid var(--line); padding: 4px 6px; text-align: center; }
+  svg { width: 100%; height: 260px; display: block; }
+  .plot-card { border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px 16px; background: white; }
+  .plot-card + .plot-card { margin-top: 16px; }
+  .controls { display: grid; grid-template-columns: 120px 120px 1fr; gap: 10px 14px; align-items: center; margin-top: 8px; }
+  .controls label { font-size: 13px; color: var(--muted); }
+  .controls input[type=number] { width: 100%; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; font: inherit; }
+  table.probs { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 10px; }
+  table.probs th, table.probs td { border-bottom: 1px solid var(--line); padding: 6px 8px; text-align: left; }
+  table.probs td.val { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+  small.note { color: var(--muted); }
+  code { background: var(--bg-soft); padding: 1px 5px; border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<h1>Solution 02 — PMF / CDF interactive viewer</h1>
+<p class="lead">
+Switch between <strong>PMF input</strong> (Task 1) and <strong>CDF input</strong> (Task 2).
+In CDF mode the app reconstructs PMF from jumps, then draws both graphs and computes probabilities.
+</p>
+
+<div class="mode-bar">
+  <label>Input mode:</label>
+  <button type="button" class="mode-btn" id="modePmf">PMF table</button>
+  <button type="button" class="mode-btn active" id="modeCdf">CDF table</button>
+</div>
+
+<div class="grid">
+  <div>
+    <h2 id="tblTitle">CDF table</h2>
+    <table class="data" id="tbl">
+      <thead><tr><th style="width:30%">x</th><th id="valHeader">F(x)</th><th style="width:48px">·</th></tr></thead>
+      <tbody></tbody>
+    </table>
+    <div class="row-actions">
+      <button id="addRow">+ Add row</button>
+      <button id="resetTask2">Reset to Task 2 (CDF)</button>
+      <button id="resetTask1">Reset to Task 1 (PMF)</button>
+    </div>
+    <div id="total" class="total">checking…</div>
+    <div id="recovered" class="recovered" hidden></div>
+
+    <h2>Query</h2>
+    <div class="controls">
+      <label for="a">a =</label>
+      <label for="b">b =</label>
+      <span></span>
+      <input id="a" type="number" step="0.1" value="2">
+      <input id="b" type="number" step="0.1" value="4">
+      <small class="note">Interval probabilities use a and b.</small>
+    </div>
+    <table class="probs" id="probs">
+      <thead><tr><th>Event</th><th class="val">Probability</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div>
+    <div class="plot-card">
+      <h2 style="margin-top:0">PMF (stems)</h2>
+      <svg id="pmfSvg" viewBox="0 0 600 260" preserveAspectRatio="none"></svg>
+    </div>
+    <div class="plot-card">
+      <h2 style="margin-top:0">CDF (right-continuous step)</h2>
+      <svg id="cdfSvg" viewBox="0 0 600 260" preserveAspectRatio="none"></svg>
+    </div>
+  </div>
+</div>
+
+<script>
+  const TASK1_PMF = [[-2,0.10],[0,0.25],[1,0.30],[3,0.20],[5,0.15]];
+  const TASK2_CDF = [[-1,0.15],[0,0.35],[2,0.60],[4,0.85],[6,1.00]];
+
+  let inputMode = 'cdf'; // 'pmf' | 'cdf'
+
+  const tblBody = document.querySelector('#tbl tbody');
+  const totalDiv = document.querySelector('#total');
+  const recoveredDiv = document.querySelector('#recovered');
+  const probsBody = document.querySelector('#probs tbody');
+  const valHeader = document.getElementById('valHeader');
+  const tblTitle = document.getElementById('tblTitle');
+
+  function fmt(v) { return (Math.round(v * 1e6) / 1e6).toString(); }
+
+  function setMode(mode) {
+    inputMode = mode;
+    document.getElementById('modePmf').classList.toggle('active', mode === 'pmf');
+    document.getElementById('modeCdf').classList.toggle('active', mode === 'cdf');
+    valHeader.textContent = mode === 'pmf' ? 'P(X = x)' : 'F(x)';
+    tblTitle.textContent = mode === 'pmf' ? 'PMF table' : 'CDF table';
+    recoveredDiv.hidden = mode === 'pmf';
+    update();
+  }
+
+  function buildTable(rows) {
+    tblBody.innerHTML = '';
+    rows.forEach(([x, v]) => addRow(x, v));
+  }
+
+  function addRow(x = 0, v = 0) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input type="number" step="any" value="${x}" class="x"></td>
+      <td><input type="number" step="any" min="0" value="${v}" class="v"></td>
+      <td><button type="button" class="del" title="Delete row">×</button></td>`;
+    tr.querySelector('.del').addEventListener('click', () => { tr.remove(); update(); });
+    tr.querySelectorAll('input').forEach(inp => inp.addEventListener('input', update));
+    tblBody.appendChild(tr);
+  }
+
+  function readInputRows() {
+    const rows = [...tblBody.querySelectorAll('tr')].map(tr => {
+      const x = parseFloat(tr.querySelector('.x').value);
+      const v = parseFloat(tr.querySelector('.v').value);
+      return [x, v];
+    }).filter(([x, v]) => Number.isFinite(x) && Number.isFinite(v));
+    rows.sort((a, b) => a[0] - b[0]);
+    const merged = [];
+    rows.forEach(([x, v]) => {
+      const last = merged[merged.length - 1];
+      if (last && Math.abs(last[0] - x) < 1e-12) {
+        if (inputMode === 'pmf') last[1] += v;
+        else last[1] = v;
+      } else merged.push([x, v]);
+    });
+    return merged;
+  }
+
+  /** Returns { pmfRows: [[x,p],...], valid, message } */
+  function toPmfRows(inputRows) {
+    if (inputMode === 'pmf') {
+      const pmfRows = inputRows.filter(([, p]) => p > 0);
+      const sum = pmfRows.reduce((s, [, p]) => s + p, 0);
+      const valid = Math.abs(sum - 1) < 1e-9 && pmfRows.every(([, p]) => p >= 0);
+      return {
+        pmfRows,
+        valid,
+        message: `total PMF = ${fmt(sum)}${valid ? '   (valid)' : ''}`,
+        ok: valid,
+      };
+    }
+
+    // CDF mode: inputRows are [x, F(x)]
+    if (inputRows.length === 0) {
+      return { pmfRows: [], valid: false, message: 'empty table', ok: false };
+    }
+
+    let prevF = 0;
+    const pmfRows = [];
+    let monotone = true;
+    for (let i = 0; i < inputRows.length; i++) {
+      const [x, F] = inputRows[i];
+      if (F < prevF - 1e-12) monotone = false;
+      const p = F - prevF;
+      if (p < -1e-12) {
+        return {
+          pmfRows: [],
+          valid: false,
+          message: `negative jump at x=${x} (not a valid CDF)`,
+          ok: false,
+        };
+      }
+      if (p > 1e-12) pmfRows.push([x, p]);
+      prevF = F;
+    }
+
+    const lastF = inputRows[inputRows.length - 1][1];
+    const sum = pmfRows.reduce((s, [, p]) => s + p, 0);
+    const endsAtOne = Math.abs(lastF - 1) < 1e-9;
+    const valid = monotone && endsAtOne && pmfRows.length > 0;
+
+    let message = `F(last) = ${fmt(lastF)}`;
+    if (!monotone) message += '   (not monotone!)';
+    else if (!endsAtOne) message += '   (must end at 1.00)';
+    else message += '   (valid CDF)';
+
+    return { pmfRows, valid, message, ok: valid, cdfInput: inputRows };
+  }
+
+  function cdfAt(pmfRows, x) {
+    let s = 0;
+    for (const [xk, pk] of pmfRows) if (xk <= x + 1e-12) s += pk;
+    return s;
+  }
+  function cdfLeftAt(pmfRows, x) {
+    let s = 0;
+    for (const [xk, pk] of pmfRows) if (xk < x - 1e-12) s += pk;
+    return s;
+  }
+
+  function showRecoveredPmf(pmfRows) {
+    if (inputMode !== 'cdf' || pmfRows.length === 0) {
+      recoveredDiv.innerHTML = '';
+      return;
+    }
+    const cells = pmfRows.map(([x, p]) => `<td>${fmt(p)}</td>`).join('');
+    const xs = pmfRows.map(([x]) => `<td>${x}</td>`).join('');
+    recoveredDiv.innerHTML = `
+      <strong>Recovered PMF (from CDF jumps):</strong>
+      <table><tr><th>x</th>${xs}</tr><tr><th>P(X=x)</th>${cells}</tr></table>`;
+  }
+
+  function plotPmf(pmfRows) {
+    const svg = document.getElementById('pmfSvg');
+    const W = 600, H = 260, ml = 50, mr = 20, mt = 18, mb = 38;
+    const innerW = W - ml - mr, innerH = H - mt - mb;
+    if (!pmfRows.length) { svg.innerHTML = ''; return; }
+    const xs = pmfRows.map(r => r[0]);
+    const ps = pmfRows.map(r => r[1]);
+    const xMin = Math.min(...xs) - 1, xMax = Math.max(...xs) + 1;
+    const pMax = Math.max(0.001, ...ps) * 1.2;
+    const sx = x => ml + (x - xMin) / (xMax - xMin) * innerW;
+    const sy = p => mt + innerH - (p / pMax) * innerH;
+
+    let s = `<rect x="${ml}" y="${mt}" width="${innerW}" height="${innerH}" fill="#fbfbfd" stroke="#e5e7eb"/>`;
+    xs.forEach(x => {
+      s += `<line x1="${sx(x)}" x2="${sx(x)}" y1="${mt+innerH}" y2="${mt+innerH+5}" stroke="#9ca3af"/>`;
+      s += `<text x="${sx(x)}" y="${mt+innerH+18}" text-anchor="middle" font-size="11" fill="#374151">${x}</text>`;
+    });
+    [0, 0.25, 0.5, 0.75, 1].filter(v => v <= pMax + 1e-9).forEach(v => {
+      s += `<line x1="${ml}" x2="${ml+innerW}" y1="${sy(v)}" y2="${sy(v)}" stroke="#eef0f3"/>`;
+      s += `<text x="${ml-6}" y="${sy(v)+3}" text-anchor="end" font-size="11" fill="#374151">${v}</text>`;
+    });
+    pmfRows.forEach(([x, p]) => {
+      s += `<line x1="${sx(x)}" x2="${sx(x)}" y1="${sy(0)}" y2="${sy(p)}" stroke="#2563eb" stroke-width="2"/>`;
+      s += `<circle cx="${sx(x)}" cy="${sy(p)}" r="4.5" fill="#2563eb"/>`;
+      s += `<text x="${sx(x)}" y="${sy(p)-8}" text-anchor="middle" font-size="11" fill="#1e3a8a">${fmt(p)}</text>`;
+    });
+    s += `<text x="${ml+innerW/2}" y="${H-6}" text-anchor="middle" font-size="11" fill="#6b7280">x</text>`;
+    s += `<text x="14" y="${mt+innerH/2}" text-anchor="middle" font-size="11" fill="#6b7280" transform="rotate(-90 14 ${mt+innerH/2})">P(X = x)</text>`;
+    svg.innerHTML = s;
+  }
+
+  function plotCdf(pmfRows) {
+    const svg = document.getElementById('cdfSvg');
+    const W = 600, H = 260, ml = 50, mr = 20, mt = 18, mb = 38;
+    const innerW = W - ml - mr, innerH = H - mt - mb;
+    if (!pmfRows.length) { svg.innerHTML = ''; return; }
+    const xs = pmfRows.map(r => r[0]);
+    const xMin = Math.min(...xs) - 1.5, xMax = Math.max(...xs) + 1.5;
+    const sx = x => ml + (x - xMin) / (xMax - xMin) * innerW;
+    const sy = p => mt + innerH - p * innerH;
+
+    let s = `<rect x="${ml}" y="${mt}" width="${innerW}" height="${innerH}" fill="#fbfbfd" stroke="#e5e7eb"/>`;
+    [0, 0.25, 0.5, 0.75, 1].forEach(v => {
+      s += `<line x1="${ml}" x2="${ml+innerW}" y1="${sy(v)}" y2="${sy(v)}" stroke="#eef0f3"/>`;
+      s += `<text x="${ml-6}" y="${sy(v)+3}" text-anchor="end" font-size="11" fill="#374151">${v.toFixed(2)}</text>`;
+    });
+    xs.forEach(x => {
+      s += `<line x1="${sx(x)}" x2="${sx(x)}" y1="${mt+innerH}" y2="${mt+innerH+5}" stroke="#9ca3af"/>`;
+      s += `<text x="${sx(x)}" y="${mt+innerH+18}" text-anchor="middle" font-size="11" fill="#374151">${x}</text>`;
+    });
+
+    let prev = 0;
+    s += `<line x1="${sx(xMin)}" x2="${sx(xs[0])}" y1="${sy(0)}" y2="${sy(0)}" stroke="#dc2626" stroke-width="2"/>`;
+    pmfRows.forEach(([x, p], i) => {
+      const cur = prev + p;
+      const xR = i + 1 < pmfRows.length ? pmfRows[i+1][0] : xMax;
+      s += `<line x1="${sx(x)}" x2="${sx(xR)}" y1="${sy(cur)}" y2="${sy(cur)}" stroke="#dc2626" stroke-width="2"/>`;
+      s += `<circle cx="${sx(x)}" cy="${sy(prev)}" r="4" fill="white" stroke="#dc2626" stroke-width="2"/>`;
+      s += `<circle cx="${sx(x)}" cy="${sy(cur)}" r="4" fill="#dc2626"/>`;
+      prev = cur;
+    });
+    s += `<text x="${ml+innerW/2}" y="${H-6}" text-anchor="middle" font-size="11" fill="#6b7280">x</text>`;
+    s += `<text x="14" y="${mt+innerH/2}" text-anchor="middle" font-size="11" fill="#6b7280" transform="rotate(-90 14 ${mt+innerH/2})">F(x) = P(X ≤ x)</text>`;
+    svg.innerHTML = s;
+  }
+
+  function updateProbs(pmfRows) {
+    const a = parseFloat(document.getElementById('a').value);
+    const b = parseFloat(document.getElementById('b').value);
+    const events = [];
+    if (Number.isFinite(a) && pmfRows.length) {
+      events.push([`P(X = ${a})`, cdfAt(pmfRows, a) - cdfLeftAt(pmfRows, a)]);
+      events.push([`P(X ≤ ${a})`, cdfAt(pmfRows, a)]);
+      events.push([`P(X < ${a})`, cdfLeftAt(pmfRows, a)]);
+      events.push([`P(X ≥ ${a})`, 1 - cdfLeftAt(pmfRows, a)]);
+      events.push([`P(X > ${a})`, 1 - cdfAt(pmfRows, a)]);
+    }
+    if (Number.isFinite(a) && Number.isFinite(b) && a <= b && pmfRows.length) {
+      events.push([`P(${a} < X ≤ ${b})`, cdfAt(pmfRows, b) - cdfAt(pmfRows, a)]);
+      events.push([`P(${a} ≤ X ≤ ${b})`, cdfAt(pmfRows, b) - cdfLeftAt(pmfRows, a)]);
+    }
+    probsBody.innerHTML = events.map(([e, v]) =>
+      `<tr><td>${e}</td><td class="val">${fmt(v)}</td></tr>`
+    ).join('');
+  }
+
+  function update() {
+    const inputRows = readInputRows();
+    const { pmfRows, message, ok } = toPmfRows(inputRows);
+    totalDiv.textContent = message;
+    totalDiv.className = `total ${ok ? 'ok' : 'bad'}`;
+    showRecoveredPmf(pmfRows);
+    plotPmf(pmfRows);
+    plotCdf(pmfRows);
+    updateProbs(pmfRows);
+  }
+
+  document.getElementById('modePmf').addEventListener('click', () => setMode('pmf'));
+  document.getElementById('modeCdf').addEventListener('click', () => setMode('cdf'));
+  document.getElementById('addRow').addEventListener('click', () => { addRow(); update(); });
+  document.getElementById('resetTask2').addEventListener('click', () => {
+    setMode('cdf');
+    buildTable(TASK2_CDF);
+    update();
+  });
+  document.getElementById('resetTask1').addEventListener('click', () => {
+    setMode('pmf');
+    buildTable(TASK1_PMF);
+    update();
+  });
+  document.getElementById('a').addEventListener('input', update);
+  document.getElementById('b').addEventListener('input', update);
+
+  buildTable(TASK2_CDF);
+  update();
+</script>
+
+</body>
+</html>
